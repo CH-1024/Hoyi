@@ -13,7 +13,7 @@ namespace HY.MAUI.Communication.Auth
 
         Task<bool> IsAccessTokenExpired();
 
-        Task SetAsync(TokenResult token);
+        Task SetAsync(TokenModel token);
         void Clear();
     }
 
@@ -41,7 +41,7 @@ namespace HY.MAUI.Communication.Auth
         }
 
 
-        public async Task SetAsync(TokenResult token)
+        public async Task SetAsync(TokenModel token)
         {
             await SecureStorage.SetAsync(AccessKey, token.AccessToken!);
             await SecureStorage.SetAsync(RefreshKey, token.RefreshToken!);

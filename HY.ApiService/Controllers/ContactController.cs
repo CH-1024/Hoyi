@@ -103,7 +103,7 @@ namespace HY.ApiService.Controllers
             var platform = int.Parse(User.FindFirst("DevicePlatform")!.Value);
 
             var result = await _contactService.RequestContact(userId, contactId, source, message);
-            if (result == null) return Ok(new Response(false, "请求联系人失败"));
+            if (!result.IsSucc) return Ok(new Response(false, result.Error));
 
             // 通知接收方
             await _chatNotificationService.RequestContactNotify(result!, platform);
@@ -112,10 +112,10 @@ namespace HY.ApiService.Controllers
             {
                 Data = new Dictionary<string, object?>
                 {
-                    { "ContactRequest", result.contactRequest },
-                    { "Contact", result.senderContact },
-                    { "Chat", result.senderChat },
-                    { "Message", result.senderMessage },
+                    { "ContactRequest", result.ContactRequest },
+                    { "Contact", result.SenderContact },
+                    { "Chat", result.SenderChat },
+                    { "Message", result.SenderMessage },
                 }
             });
         }
@@ -128,7 +128,7 @@ namespace HY.ApiService.Controllers
             var platform = int.Parse(User.FindFirst("DevicePlatform")!.Value);
 
             var result = await _contactService.RespondContact(userId, contactRequestId, handle);
-            if (result == null) return Ok(new Response(false, "处理联系人请求失败"));
+            if (!result.IsSucc) return Ok(new Response(false, result.Error));
 
             // 通知接收方
             await _chatNotificationService.RespondContactNotify(handle, result!, platform);
@@ -140,18 +140,18 @@ namespace HY.ApiService.Controllers
 
             if (handle == RespondContactHandle.Revoked)
             {
-                contactRequest = result.contactRequest;
+                contactRequest = result.ContactRequest;
             }
             else if (handle == RespondContactHandle.Declined)
             {
-                contactRequest = result.contactRequest;
+                contactRequest = result.ContactRequest;
             }
             else if (handle == RespondContactHandle.Accepted)
             {
-                contactRequest = result.contactRequest;
-                receiverContact = result.receiverContact;
-                receiverChat = result.receiverChat;
-                receiverMessage = result.receiverMessage;
+                contactRequest = result.ContactRequest;
+                receiverContact = result.ReceiverContact;
+                receiverChat = result.ReceiverChat;
+                receiverMessage = result.ReceiverMessage;
             }
 
             return Ok(new Response(true)
@@ -174,7 +174,7 @@ namespace HY.ApiService.Controllers
             var platform = int.Parse(User.FindFirst("DevicePlatform")!.Value);
 
             var result = await _contactService.DeleteContact(userId, targetId);
-            if (result?.IsSucc != true) return Ok(new Response(false, "删除联系人失败"));
+            if (result?.IsSucc != true) return Ok(new Response(false, result?.Error));
 
             // 通知接收方
             await _chatNotificationService.DeleteContactNotify(userId, targetId, platform);

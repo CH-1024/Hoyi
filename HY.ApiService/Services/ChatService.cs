@@ -10,9 +10,11 @@ using SqlSugar;
 
 namespace HY.ApiService.Services
 {
+    public record ChatsReturn(bool IsSucc, string? Error = null, List<ChatDto>? Chats = null);
+
     public interface IChatService
     {
-        Task<List<ChatDto>> GetAllChatsByUserId(long userId);
+        Task<ChatsReturn> GetAllChatsByUserId(long userId);
 
         Task<bool> ClearChatUnread(long chat_Id);
         Task<bool> ClearChatUnread(long userId, long targetId, ChatType chatType);
@@ -46,7 +48,7 @@ namespace HY.ApiService.Services
 
 
 
-        public async Task<List<ChatDto>> GetAllChatsByUserId(long userId)
+        public async Task<ChatsReturn> GetAllChatsByUserId(long userId)
         {
             var chatEntities = await _chatRepository.GetChatsByUserId(userId);
 
@@ -99,7 +101,7 @@ namespace HY.ApiService.Services
                 chatDtos.Add(chatDto);
             }
 
-            return chatDtos;
+            return new (true, null, chatDtos);
         }
 
 

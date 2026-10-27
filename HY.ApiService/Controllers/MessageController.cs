@@ -87,7 +87,11 @@ namespace HY.ApiService.Controllers
                 // 私聊
                 // 联系人验证
                 var contactResult = await _contactService.GetContactByUserId(messageDto.Target_Id, messageDto.Sender_Id);
-                if (contactResult.IsSucc && contactResult.Contact!.Relation_Status != RelationStatus.Friend)
+                if (!contactResult.IsSucc)
+                {
+                    return Ok(new Response(false, contactResult.Error));
+                }
+                else if (contactResult.Contact!.Relation_Status != RelationStatus.Friend)
                 {
                     return Ok(new Response(false, "不是好友关系"));
                 }

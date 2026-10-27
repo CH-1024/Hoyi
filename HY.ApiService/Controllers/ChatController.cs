@@ -30,13 +30,13 @@ namespace HY.ApiService.Controllers
         {
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            var list = await _chatService.GetAllChatsByUserId(userId);
+            var result = await _chatService.GetAllChatsByUserId(userId);
 
-            return Ok(new Response(true)
+            return Ok(new Response(result.IsSucc, result.Error)
             {
                 Data = new Dictionary<string, object?>
                 {
-                    { "Chats",  list }
+                    { "Chats",  result.Chats }
                 }
             });
         }

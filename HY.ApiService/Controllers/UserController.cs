@@ -30,24 +30,9 @@ namespace HY.ApiService.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserRequest registerRequest)
         {
-            RegisterResult result;
+            var result = await _userService.CreateUser(registerRequest);
 
-            if (await _userService.ExistsUsername(registerRequest.Username))
-            {
-                result = new RegisterResult(false, "用户名已存在");
-            }
-            else if (await _userService.ExistsEmail(registerRequest.Email))
-            {
-                result = new RegisterResult(false, "邮箱已存在");
-            }
-            else if (await _userService.ExistsPhone(registerRequest.Phone))
-            {
-                result = new RegisterResult(false, "手机号已存在");
-            }
-
-            var id = await _userService.CreateUser(registerRequest);
-
-            return Ok(new Response(id > 0));
+            return Ok(new Response(result.IsSucc, result.Error));
         }
 
         [Authorize]
@@ -63,12 +48,12 @@ namespace HY.ApiService.Controllers
             }
 
             var result = await _userService.UpdateHead(userId, url);
-            if (!result) return Ok(new Response(false, "头像更新失败"));
+            if (!result.IsSucc) return Ok(new Response(false, result.Error));
 
             // 通知接收方
             await _chatNotificationService.UpdateHeadNotify(userId, url, platform);
 
-            return Ok(new Response(result));
+            return Ok(new Response(result.IsSucc));
         }
 
         [Authorize]
@@ -92,12 +77,12 @@ namespace HY.ApiService.Controllers
             }
 
             var result = await _userService.UpdateProfile(userId, updateUserRequest);
-            if (!result) return Ok(new Response(false, "信息更新失败"));
+            if (!result.IsSucc) return Ok(new Response(false, result.Error));
 
             // 通知接收方
             await _chatNotificationService.UpdateProfileNotify(userId, updateUserRequest, platform);
 
-            return Ok(new Response(result));
+            return Ok(new Response(result.IsSucc));
         }
     }
 }

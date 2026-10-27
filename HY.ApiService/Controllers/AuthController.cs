@@ -63,7 +63,8 @@ namespace HY.ApiService.Controllers
             {
                 Data = new Dictionary<string, object?>
                 {
-                    { "Tokens", result.TokenResult },
+                    //{ "User", result.user },
+                    { "Tokens", result.Token },
                 }
             });
         }
@@ -74,6 +75,7 @@ namespace HY.ApiService.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequest param)
         {
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
+
             var result = await _loginService.Login(ip, param);
 
             return Ok(new Response(result.IsSucc, result.Error)
@@ -81,7 +83,7 @@ namespace HY.ApiService.Controllers
                 Data = new Dictionary<string, object?>
                 {
                     { "User", result.User },
-                    { "Tokens", result.TokenResult },
+                    { "Tokens", result.Token },
                 }
             });
         }

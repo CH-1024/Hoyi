@@ -9,9 +9,12 @@ using SqlSugar;
 
 namespace HY.ApiService.Services
 {
+    public record CreateUserReturn(bool IsSucc, string? Error = null);
+    public record UpdateUserReturn(bool IsSucc, string? Error = null);
+
     public interface IUserService
     {
-        Task<long> CreateUser(RegisterUserRequest registerUserRequest);
+        Task<CreateUserReturn> CreateUser(RegisterUserRequest registerRequest);
 
         Task<UserDto?> GetUserById(long id);
 
@@ -19,8 +22,8 @@ namespace HY.ApiService.Services
         Task<bool> ExistsEmail(string email);
         Task<bool> ExistsPhone(string phone);
 
-        Task<bool> UpdateHead(long userId, string url);
-        Task<bool> UpdateProfile(long userId, UpdateUserRequest updateUserRequest);
+        Task<UpdateUserReturn> UpdateHead(long userId, string url);
+        Task<UpdateUserReturn> UpdateProfile(long userId, UpdateUserRequest updateUserRequest);
     }
 
     public class UserService : IUserService
@@ -35,26 +38,41 @@ namespace HY.ApiService.Services
 
 
 
-        public async Task<long> CreateUser(RegisterUserRequest registerUserRequest)
+        public async Task<CreateUserReturn> CreateUser(RegisterUserRequest registerRequest)
         {
-            var hash = PBKDF2PasswordHasher.Hash(registerUserRequest.Password, out string salt);
+            if (await _userRepository.ExistsUsername(registerRequest.Username))
+            {
+                return new (false, "用户名已存在");
+            }
+            else if (await _userRepository.ExistsEmail(registerRequest.Email))
+            {
+                return new (false, "邮箱已存在");
+            }
+            else if (await _userRepository.ExistsPhone(registerRequest.Phone))
+            {
+                return new (false, "手机号已存在");
+            }
+
+            var hash = PBKDF2PasswordHasher.Hash(registerRequest.Password, out string salt);
             var hyid = Guid.NewGuid().ToString("N")[..16];
 
             var userEntity = new UserEntity
             {
                 HYid = hyid,
-                Username = registerUserRequest.Username,
-                Nickname = registerUserRequest.Nickname,
+                Username = registerRequest.Username,
+                Nickname = registerRequest.Nickname,
                 Avatar = null,
-                Phone = registerUserRequest.Phone,
-                Email = registerUserRequest.Email,
+                Phone = registerRequest.Phone,
+                Email = registerRequest.Email,
                 Password_Hash = hash,
                 Password_Salt = salt,
                 Status = UserStatus.Registered,
                 Created_At = DateTime.UtcNow
             };
 
-            return await _userRepository.CreateUser(userEntity);
+            var userId = await _userRepository.CreateUser(userEntity);
+
+            return new(userId > 0);
         }
 
 
@@ -87,44 +105,48 @@ namespace HY.ApiService.Services
 
 
 
-        public async Task<bool> UpdateHead(long userId, string url)
+        public async Task<UpdateUserReturn> UpdateHead(long userId, string url)
         {
             var userEntity = await _userRepository.GetUserById(userId);
             if (userEntity == null)
             {
-                return false;
+                return new(false, "User not found.");
             }
 
             userEntity.Avatar = url;
 
-            return await _userRepository.Update(userEntity);
+            var isUpdated = await _userRepository.Update(userEntity);
+
+            return new(isUpdated, isUpdated ? null : "Failed to update user avatar.");
         }
 
-        public async Task<bool> UpdateProfile(long userId, UpdateUserRequest updateUserRequest)
+        public async Task<UpdateUserReturn> UpdateProfile(long userId, UpdateUserRequest updateUserRequest)
         {
             var userEntity = await _userRepository.GetUserById(userId);
             if (userEntity == null)
             {
-                return false;
+                return new(false, "User not found.");
             }
 
             var emailExists = await _userRepository.ExistsEmail(updateUserRequest.Email);
             if (emailExists && userEntity.Email != updateUserRequest.Email)
             {
-                throw new Exception("Email already exists.");
+                return new(false, "Email already exists.");
             }
 
             var phoneExists = await _userRepository.ExistsPhone(updateUserRequest.Phone);
             if (phoneExists && userEntity.Phone != updateUserRequest.Phone)
             {
-                throw new Exception("Phone number already exists.");
+                return new(false, "Phone number already exists.");
             }
 
             userEntity.Nickname = updateUserRequest.Nickname ?? userEntity.Nickname;
             userEntity.Phone = updateUserRequest.Phone ?? userEntity.Phone;
             userEntity.Email = updateUserRequest.Email ?? userEntity.Email;
 
-            return await _userRepository.Update(userEntity);
+            var isUpdated = await _userRepository.Update(userEntity);
+
+            return new(isUpdated, isUpdated ? null : "Failed to update user profile.");
         }
     }
 }

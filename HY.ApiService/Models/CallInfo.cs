@@ -4,21 +4,21 @@ using System.Runtime.CompilerServices;
 namespace HY.ApiService.Models
 {
     public class CallInfo
-    {        
-        public string CallId { get; set; }
+    {
+        public required string CallId { get; init; }
 
-        public CallType CallType { get; set; }
+        public required CallType CallType { get; init; }
 
-        public long CallerId { get; set; }
-        public int CallerPlatform { get; set; }
+        public required long CallerId { get; init; }
+        public required int CallerPlatform { get; init; }
 
-        public long CalleeId { get; set; }
+        public required long CalleeId { get; init; }
         public int CalleePlatform { get; set; }
 
         public CallStatus CallState { get; set; }
 
-        public DateTime CreateAt { get; set; }
-        public DateTime ExpiryAt { get; set; }
+        public required DateTime CreateAt { get; init; }
+        public required DateTime ExpiryAt { get; init; }
         public DateTime? StartAt { get; set; }
     }
 }

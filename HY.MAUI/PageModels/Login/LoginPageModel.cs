@@ -80,7 +80,7 @@ namespace HY.MAUI.PageModels.Login
             var loginResp = await _loginApi.Login(Username, Password);
             if (loginResp?.IsSucc == true)
             {
-                var tokens = loginResp.GetValue<TokenResult>("Tokens");
+                var tokens = loginResp.GetValue<TokenModel>("Tokens");
                 await _tokenProvider.SetAsync(tokens!);
 
                 var userDto = loginResp.GetValue<UserDto>("User")!;

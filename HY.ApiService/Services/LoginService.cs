@@ -10,10 +10,13 @@ using SqlSugar;
 
 namespace HY.ApiService.Services
 {
+    public record RefreshReturn(bool IsSucc, string? Error = null, UserDto? User = null, TokenModel? Token = null);
+    public record LoginReturn(bool IsSucc, string? Error = null, UserDto? User = null, TokenModel? Token = null);
+
     public interface ILoginService
     {
-        Task<RefreshResult> Refresh(RefreshRequest param);
-        Task<LoginResult> Login(string ip, LoginRequest param);
+        Task<RefreshReturn> Refresh(RefreshRequest param);
+        Task<LoginReturn> Login(string ip, LoginRequest param);
         Task<bool> Logout(long userId, string deviceId);
 
         Task<bool> UpdateLoginDeviceOnline(long userId, string deviceId, bool isOnline);
@@ -44,30 +47,30 @@ namespace HY.ApiService.Services
 
 
 
-        public async Task<RefreshResult> Refresh(RefreshRequest param)
+        public async Task<RefreshReturn> Refresh(RefreshRequest param)
         {
             var loginTokenEntity = await _loginTokenRepository.GetValidityLoginTokenByDeviceIdAndRefreshToken(param.DeviceId, param.RefreshToken);
             if (loginTokenEntity == null)
             {
-                return new RefreshResult(false, "无效的刷新请求!");
+                return new (false, "无效的刷新请求!");
             }
 
             var user = await _userRepository.GetUserById(loginTokenEntity.User_Id);
             if (user == null)
             {
-                return new RefreshResult(false, "用户不存在!");
+                return new (false, "用户不存在!");
             }
             else if (user.Status == UserStatus.Banned)
             {
-                return new RefreshResult(false, "用户已被禁用!");
+                return new (false, "用户已被禁用!");
             }
             else if (user.Status == UserStatus.Deactivated)
             {
-                return new RefreshResult(false, "用户已停用!");
+                return new (false, "用户已停用!");
             }
             else if (user.Status == UserStatus.Deleted)
             {
-                return new RefreshResult(false, "用户已注销!");
+                return new (false, "用户已注销!");
             }
 
             var newRefreshToken = loginTokenEntity.Refresh_Token;
@@ -80,41 +83,46 @@ namespace HY.ApiService.Services
                 loginTokenEntity.Refresh_Expired = DateTime.UtcNow.AddDays(20);
 
                 var bol = await _loginTokenRepository.UpdateLoginToken(loginTokenEntity);
-                if (!bol) return new RefreshResult(bol);
+                if (!bol) return new (false, "更新登录令牌失败!");
             }
 
             var newAccessToken = TokenGenerator.GenerateAccessToken(user.Id, param.DeviceId, param.DevicePlatform, out DateTime accessExpires);
             await _redisTokenService.SaveAsync(user.Id, param.DeviceId, newAccessToken, accessExpires);
 
-            var tokenResult = new TokenResult(newAccessToken, newRefreshToken, accessExpires);
+            var token = new TokenModel()
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+                AccessExpiresAt = accessExpires,
+            };
 
-            return new RefreshResult(true, string.Empty, tokenResult);
+            return new (true, null, user.Adapt<UserDto>(), token);
         }
 
-        public async Task<LoginResult> Login(string ip, LoginRequest param)
+        public async Task<LoginReturn> Login(string ip, LoginRequest param)
         {
             var user = await _userRepository.GetUserByUsername(param.Username);
             if (user == null)
             {
-                return new LoginResult(false, "用户名或密码错误!");
+                return new (false, "用户名或密码错误!");
             }
             else if (user.Status == UserStatus.Banned)
             {
-                return new LoginResult(false, "用户已被禁用!");
+                return new (false, "用户已被禁用!");
             }
             else if (user.Status == UserStatus.Deactivated)
             {
-                return new LoginResult(false, "用户已停用!");
+                return new (false, "用户已停用!");
             }
             else if (user.Status == UserStatus.Deleted)
             {
-                return new LoginResult(false, "用户已注销!");
+                return new (false, "用户已注销!");
             }
 
             bool isValid = PBKDF2PasswordHasher.Verify(param.Password, user.Password_Hash!, user.Password_Salt!);
             if (!isValid)
             {
-                return new LoginResult(false, "用户名或密码错误!");
+                return new (false, "用户名或密码错误!");
             }
 
             string accessToken = null;
@@ -206,15 +214,20 @@ namespace HY.ApiService.Services
             // ---------- 事务结束 ----------
             if (!result.IsSuccess)
             {
-                return new LoginResult(false, "登录失败：" + result.ErrorMessage);
+                return new (false, "登录失败：" + result.ErrorMessage);
             }
 
             // Redis 不放事务里
             await _redisTokenService.SaveAsync(user.Id, param.DeviceId, accessToken, accessExpires);
 
-            var tokenResult = new TokenResult(accessToken, refreshToken, accessExpires);
+            var token = new TokenModel()
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                AccessExpiresAt = accessExpires,
+            };
 
-            return new LoginResult(true, string.Empty, user.Adapt<UserDto>(), tokenResult);
+            return new (true, null, user.Adapt<UserDto>(), token);
         }
 
         public async Task<bool> Logout(long userId, string deviceId)

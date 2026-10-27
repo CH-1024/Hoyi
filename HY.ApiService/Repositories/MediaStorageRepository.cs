@@ -8,7 +8,7 @@ namespace HY.ApiService.Repositories
         Task<long> CreateMediaStorage(MediaStorageEntity mediaStorage);
 
         Task<MediaStorageEntity?> GetMediaStorageById(long Id);
-        Task<MediaStorageEntity?> GetMediaStorageByMD5(string md5);
+        Task<MediaStorageEntity?> GetMediaStorageByFileSHA256(string sha256);
 
         Task<bool> UpdateMediaStorage(MediaStorageEntity mediaStorageEntity);
         Task<bool> UpdateMediaStorageRefCount(long id, int ref_Count);
@@ -40,9 +40,9 @@ namespace HY.ApiService.Repositories
             return await _db.Queryable<MediaStorageEntity>().Where(ms => ms.Id == Id && ms.Status == 1).SingleAsync();
         }
 
-        public async Task<MediaStorageEntity?> GetMediaStorageByMD5(string md5)
+        public async Task<MediaStorageEntity?> GetMediaStorageByFileSHA256(string sha256)
         {
-            return await _db.Queryable<MediaStorageEntity>().Where(ms => ms.File_MD5 == md5).SingleAsync();
+            return await _db.Queryable<MediaStorageEntity>().Where(ms => ms.File_SHA256 == sha256).SingleAsync();
         }
 
 

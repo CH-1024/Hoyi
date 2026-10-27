@@ -9,7 +9,7 @@
              x:DataType="msgvm:SystemMessageVM">
 
     <!-- ================== 消息区域 ================== -->
-    <Label HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray" FontSize="15" Padding="8" MinimumHeightRequest="0" LineBreakMode="WordWrap" IsVisible="False">
+    <Label HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray" FontSize="14" Padding="8" MinimumHeightRequest="0" LineBreakMode="WordWrap" IsVisible="False">
         <Label.Triggers>
             <DataTrigger TargetType="Label" Binding="{Binding IsSelf}" Value="True">
                 <Setter Property="IsVisible" Value="True"/>

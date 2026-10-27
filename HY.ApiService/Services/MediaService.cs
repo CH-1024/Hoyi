@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using Dm;
+using HY.ApiService.Dtos;
 using HY.ApiService.Entities;
 using HY.ApiService.Enums;
 using HY.ApiService.Models;
@@ -7,34 +8,43 @@ using HY.ApiService.Repositories;
 using HY.ApiService.Tools;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client.Extensions.Msal;
+using OracleInternal.Secure.Network;
 using SkiaSharp;
 using SqlSugar;
 using System.Configuration;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using SHA256 = System.Security.Cryptography.SHA256;
 using StorageType = HY.ApiService.Enums.StorageType;
 
 namespace HY.ApiService.Services
 {
+    public record CreateMediaFileReturn(bool IsSucc, string? Error = null, string? FileId = null);
+    public record UploadMediaFileReturn(bool IsSucc, string? Error = null, string? FileId = null);
+    public record GetMediaStorageReturn(bool IsSucc, string? Error = null, bool? IsExist = null, long? StorageId = null, StorageType? StorageType = null, string? Path = null, string? ContentType = null, string? FileDownloadName = null);
+
     public interface IMediaService
     {
-        Task<UploadResult> UploadImageToLocal(long userId, IFormFile file);
-        Task<UploadResult> UploadImageToCOS(long userId, IFormFile file);
-        Task<UploadResult> UploadImageToOSS(long userId, IFormFile file);
-        Task<UploadResult> UploadImageToS3(long userId, IFormFile file);
+        Task<CreateMediaFileReturn> CreateMediaFile(long userId, long storageId, string fileName, FileType fileType);
 
-        Task<UploadResult> UploadVideoToLocal(long userId, IFormFile file);
-        Task<UploadResult> UploadVideoToCOS(long userId, IFormFile file);
-        Task<UploadResult> UploadVideoToOSS(long userId, IFormFile file);
-        Task<UploadResult> UploadVideoToS3(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadImageToLocal(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadImageToCOS(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadImageToOSS(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadImageToS3(long userId, IFormFile file);
 
-        Task<UploadResult> UploadHeadToLocal(long userId, IFormFile file);
-        Task<UploadResult> UploadHeadToCOS(long userId, IFormFile file);
-        Task<UploadResult> UploadHeadToOSS(long userId, IFormFile file);
-        Task<UploadResult> UploadHeadToS3(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadVideoToLocal(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadVideoToCOS(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadVideoToOSS(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadVideoToS3(long userId, IFormFile file);
 
-        Task<(StorageType storageType, string path, string contentType, string? fileDownloadName)> GetMediaStorageByFileId(string fileId);
-        Task<(StorageType storageType, string path, string contentType, string? fileDownloadName)> GetMediaStorageVariantByFileId(string fileId, VariantType variantType);
+        Task<UploadMediaFileReturn> UploadHeadToLocal(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadHeadToCOS(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadHeadToOSS(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadHeadToS3(long userId, IFormFile file);
+
+        Task<GetMediaStorageReturn> GetMediaStorageByFileId(string fileId);
+        Task<GetMediaStorageReturn> GetMediaStorageVariantByFileId(string fileId, VariantType variantType);
+        Task<GetMediaStorageReturn> GetMediaStorageByFileSHA256(string fileSHA, long size);
     }
 
 
@@ -47,7 +57,7 @@ namespace HY.ApiService.Services
         private readonly IMediaFileRepository _mediaFileRepository;
         private readonly IMediaStorageVariantRepository _mediaStorageVariantRepository;
 
-        public MediaService(ISqlSugarClient db, IConfiguration configuration,IMediaStorageRepository mediaStorageRepository, IMediaFileRepository mediaFileRepository, IMediaStorageVariantRepository mediaStorageVariantRepository)
+        public MediaService(ISqlSugarClient db, IConfiguration configuration, IMediaStorageRepository mediaStorageRepository, IMediaFileRepository mediaFileRepository, IMediaStorageVariantRepository mediaStorageVariantRepository)
         {
             _db = db;
 
@@ -59,8 +69,57 @@ namespace HY.ApiService.Services
 
 
 
+        public async Task<CreateMediaFileReturn> CreateMediaFile(long userId, long storageId, string fileName, FileType fileType)
+        {
+            var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageById(storageId);
+            if (mediaStorageEntity != null && mediaStorageEntity.Status == 1)
+            {
+                // 文件已存在且可用，增加引用计数
 
-        public async Task<UploadResult> UploadImageToLocal(long userId, IFormFile file)
+                string? fileId = null;
+
+                // 开启事务
+                var result = await _db.Ado.UseTranAsync(async () =>
+                {
+                    mediaStorageEntity.Ref_Count++;
+                    var bol = await _mediaStorageRepository.UpdateMediaStorageRefCount(mediaStorageEntity.Id, mediaStorageEntity.Ref_Count);
+                    if (!bol) throw new Exception("更新引用计数失败");
+
+                    var mediaFileEntity = new MediaFileEntity
+                    {
+                        File_Id = Guid.NewGuid().ToString("N"),
+                        Storage_Id = mediaStorageEntity.Id,
+                        User_Id = userId,
+                        File_Type = fileType,
+                        Original_Name = fileName,
+                        Width = null,
+                        Height = null,
+                        Duration = null,
+                        Status = 1,
+                        Created_At = DateTime.UtcNow,
+                    };
+                    var id = await _mediaFileRepository.CreateMediaFile(mediaFileEntity);
+                    if (id <= 0) throw new Exception("创建文件记录失败");
+
+                    fileId = mediaFileEntity.File_Id;
+                });
+
+                // ---------- 事务结束 ----------
+                if (!result.IsSuccess)
+                {
+                    return new (false, result.ErrorMessage);
+                }
+
+                return new (true, null, fileId);
+            }
+
+            return new (false, "storage is not available ");
+        }
+
+
+
+
+        public async Task<UploadMediaFileReturn> UploadImageToLocal(long userId, IFormFile file)
         {
             var tempPath = Path.GetTempFileName();
             var filePathWithBucket = string.Empty;
@@ -79,10 +138,10 @@ namespace HY.ApiService.Services
             MediaFileEntity mediaFileEntity;
             try
             {
-                // 保存文件到临时位置并计算MD5
-                var fileMD5 = await SaveAndHashAsync(tempPath, file);
+                // 保存文件到临时位置并计算SHA256
+                var sha256 = await SaveAndHashAsync(tempPath, file);
 
-                var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByMD5(fileMD5);
+                var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByFileSHA256(sha256);
                 if (mediaStorageEntity != null && mediaStorageEntity.Status == 1)
                 {
                     // 文件已存在且可用，增加引用计数
@@ -270,7 +329,7 @@ namespace HY.ApiService.Services
 
                         mediaStorageEntity = new MediaStorageEntity
                         {
-                            File_MD5 = fileMD5,
+                            File_SHA256 = sha256,
                             File_Path = _filePathWithoutBucket,
                             File_Size = file.Length,
                             Mime_Type = file.ContentType,
@@ -351,20 +410,20 @@ namespace HY.ApiService.Services
                 File.Delete(tempPath);
             }
 
-            return new UploadResult(e == null, e?.Message, fileId);
+            return new (e == null, e?.Message, fileId);
         }
 
-        public async Task<UploadResult> UploadImageToCOS(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadImageToCOS(long userId, IFormFile file)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<UploadResult> UploadImageToOSS(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadImageToOSS(long userId, IFormFile file)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<UploadResult> UploadImageToS3(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadImageToS3(long userId, IFormFile file)
         {
             throw new NotImplementedException();
         }
@@ -373,7 +432,7 @@ namespace HY.ApiService.Services
 
 
 
-        public async Task<UploadResult> UploadVideoToLocal(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadVideoToLocal(long userId, IFormFile file)
         {
             var tempPath = Path.GetTempFileName();
             var filePathWithBucket = string.Empty;
@@ -392,10 +451,10 @@ namespace HY.ApiService.Services
             MediaFileEntity mediaFileEntity;
             try
             {
-                // 保存文件到临时位置并计算MD5
-                var fileMD5 = await SaveAndHashAsync(tempPath, file);
+                // 保存文件到临时位置并计算SHA256
+                var sha256 = await SaveAndHashAsync(tempPath, file);
 
-                var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByMD5(fileMD5);
+                var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByFileSHA256(sha256);
                 if (mediaStorageEntity != null && mediaStorageEntity.Status == 1)
                 {
                     // 文件已存在且可用，增加引用计数
@@ -583,7 +642,7 @@ namespace HY.ApiService.Services
 
                         mediaStorageEntity = new MediaStorageEntity
                         {
-                            File_MD5 = fileMD5,
+                            File_SHA256 = sha256,
                             File_Path = _filePathWithoutBucket,
                             File_Size = file.Length,
                             Mime_Type = file.ContentType,
@@ -664,20 +723,20 @@ namespace HY.ApiService.Services
                 File.Delete(tempPath);
             }
 
-            return new UploadResult(e == null, e?.Message, fileId);
+            return new (e == null, e?.Message, fileId);
         }
 
-        public async Task<UploadResult> UploadVideoToCOS(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadVideoToCOS(long userId, IFormFile file)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<UploadResult> UploadVideoToOSS(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadVideoToOSS(long userId, IFormFile file)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<UploadResult> UploadVideoToS3(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadVideoToS3(long userId, IFormFile file)
         {
             throw new NotImplementedException();
         }
@@ -685,8 +744,7 @@ namespace HY.ApiService.Services
 
 
 
-
-        public async Task<UploadResult> UploadHeadToLocal(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadHeadToLocal(long userId, IFormFile file)
         {
             var tempPath = Path.GetTempFileName();
             var filePathWithBucket = string.Empty;
@@ -704,10 +762,10 @@ namespace HY.ApiService.Services
             MediaFileEntity mediaFileEntity;
             try
             {
-                // 保存文件到临时位置并计算MD5
-                var fileMD5 = await SaveAndHashAsync(tempPath, file);
+                // 保存文件到临时位置并计算SHA256
+                var sha256 = await SaveAndHashAsync(tempPath, file);
 
-                var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByMD5(fileMD5);
+                var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByFileSHA256(sha256);
                 if (mediaStorageEntity != null && mediaStorageEntity.Status == 1)
                 {
                     // 文件已存在且可用，增加引用计数
@@ -859,7 +917,7 @@ namespace HY.ApiService.Services
 
                         mediaStorageEntity = new MediaStorageEntity
                         {
-                            File_MD5 = fileMD5,
+                            File_SHA256 = sha256,
                             File_Path = _filePathWithoutBucket,
                             File_Size = file.Length,
                             Mime_Type = file.ContentType,
@@ -923,20 +981,20 @@ namespace HY.ApiService.Services
                 File.Delete(tempPath);
             }
 
-            return new UploadResult(e == null, e?.Message, fileId);
+            return new (e == null, e?.Message, fileId);
         }
 
-        public async Task<UploadResult> UploadHeadToCOS(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadHeadToCOS(long userId, IFormFile file)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<UploadResult> UploadHeadToOSS(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadHeadToOSS(long userId, IFormFile file)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<UploadResult> UploadHeadToS3(long userId, IFormFile file)
+        public async Task<UploadMediaFileReturn> UploadHeadToS3(long userId, IFormFile file)
         {
             throw new NotImplementedException();
         }
@@ -945,100 +1003,57 @@ namespace HY.ApiService.Services
 
 
 
-        public async Task<(StorageType storageType, string path, string contentType, string? fileDownloadName)> GetMediaStorageByFileId(string fileId)
+        public async Task<GetMediaStorageReturn> GetMediaStorageByFileId(string fileId)
         {
-            if (fileId == null) throw new ArgumentNullException(nameof(fileId));
+            if (string.IsNullOrWhiteSpace(fileId)) return new(false, "File ID is required");
 
             var mediaFileEntity = await _mediaFileRepository.GetFileByFileId(fileId);
-
-            if (mediaFileEntity == null) throw new FileNotFoundException("file not found");
+            if (mediaFileEntity == null) return new(false, "File not found");
 
             var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageById(mediaFileEntity.Storage_Id);
+            if (mediaStorageEntity == null) return new(true, IsExist: false);
+            else if (mediaStorageEntity.Status != 1) return new(true, IsExist: false);
 
-            if (mediaStorageEntity == null) throw new FileNotFoundException("storage not found");
-
-            switch (mediaStorageEntity.Storage_Type)
-            {
-                case StorageType.Local:
-                    {
-                        var path = GetFileUrl(StorageType.Local, mediaStorageEntity.Storage_Bucket, mediaStorageEntity.File_Path);
-                        var mimeType = mediaStorageEntity.Mime_Type;
-                        var fileDownloadName = Path.GetFileName(path);
-                        return (StorageType.Local, path, mimeType, fileDownloadName);
-                    }
-                case StorageType.OSS:
-                    {
-                        var path = GetFileUrl(StorageType.OSS, mediaStorageEntity.Storage_Bucket, mediaStorageEntity.File_Path);
-                        var mimeType = mediaStorageEntity.Mime_Type;
-                        var fileDownloadName = Path.GetFileName(path);
-                        return (StorageType.OSS, path, mimeType, fileDownloadName);
-                    }
-                case StorageType.COS:
-                    {
-                        var path = GetFileUrl(StorageType.COS, mediaStorageEntity.Storage_Bucket, mediaStorageEntity.File_Path);
-                        var mimeType = mediaStorageEntity.Mime_Type;
-                        var fileDownloadName = Path.GetFileName(path);
-                        return (StorageType.COS, path, mimeType, fileDownloadName);
-                    }
-                case StorageType.S3:
-                    {
-                        var path = GetFileUrl(StorageType.S3, mediaStorageEntity.Storage_Bucket, mediaStorageEntity.File_Path);
-                        var mimeType = mediaStorageEntity.Mime_Type;
-                        var fileDownloadName = Path.GetFileName(path);
-                        return (StorageType.S3, path, mimeType, fileDownloadName);
-                    }
-                default:
-                    throw new Exception("unsupported storage type");
-            }
+            var type = mediaStorageEntity.Storage_Type;
+            var path = GetFileUrl(mediaStorageEntity.Storage_Type, mediaStorageEntity.Storage_Bucket, mediaStorageEntity.File_Path);
+            var mimeType = mediaStorageEntity.Mime_Type;
+            var fileDownloadName = Path.GetFileName(path);
+            return new(true, null, true, mediaStorageEntity.Id, type, path, mimeType, fileDownloadName);
         }
 
-        public async Task<(StorageType storageType, string path, string contentType, string? fileDownloadName)> GetMediaStorageVariantByFileId(string fileId, VariantType variantType)
+        public async Task<GetMediaStorageReturn> GetMediaStorageVariantByFileId(string fileId, VariantType variantType)
         {
-            if (fileId == null) throw new ArgumentNullException(nameof(fileId));
+            if (string.IsNullOrWhiteSpace(fileId)) return new(false, "File ID is required");
 
             var mediaFileEntity = await _mediaFileRepository.GetFileByFileId(fileId);
-
-            if (mediaFileEntity == null) throw new FileNotFoundException("file not found");
+            if (mediaFileEntity == null) return new(false, "File not found");
 
             var mediaStorageVariantEntity = await _mediaStorageVariantRepository.GetMediaStorageVariantByStorageIdAndVariantType(mediaFileEntity.Storage_Id, variantType);
+            if (mediaStorageVariantEntity == null) return new(true, IsExist: false);
+            else if (mediaStorageVariantEntity.Status != 1) return new(true, IsExist: false);
 
-            if (mediaStorageVariantEntity == null) throw new FileNotFoundException("variant not found");
-
-            switch (mediaStorageVariantEntity.Storage_Type)
-            {
-                case StorageType.Local:
-                    {
-                        var path = GetFileUrl(StorageType.Local, mediaStorageVariantEntity.Storage_Bucket, mediaStorageVariantEntity.File_Path);
-                        var mimeType = mediaStorageVariantEntity.Mime_Type;
-                        var fileDownloadName = Path.GetFileName(path);
-                        return (StorageType.Local, path, mimeType, fileDownloadName);
-                    }
-                case StorageType.OSS:
-                    {
-                        var path = GetFileUrl(StorageType.OSS, mediaStorageVariantEntity.Storage_Bucket, mediaStorageVariantEntity.File_Path);
-                        var mimeType = mediaStorageVariantEntity.Mime_Type;
-                        var fileDownloadName = Path.GetFileName(path);
-                        return (StorageType.OSS, path, mimeType, fileDownloadName);
-                    }
-                    case StorageType.COS:
-                    {
-                        var path = GetFileUrl(StorageType.COS, mediaStorageVariantEntity.Storage_Bucket, mediaStorageVariantEntity.File_Path);
-                        var mimeType = mediaStorageVariantEntity.Mime_Type;
-                        var fileDownloadName = Path.GetFileName(path);
-                        return (StorageType.COS, path, mimeType, fileDownloadName);
-                    }
-                    case StorageType.S3:
-                    {
-                        var path = GetFileUrl(StorageType.S3, mediaStorageVariantEntity.Storage_Bucket, mediaStorageVariantEntity.File_Path);
-                        var mimeType = mediaStorageVariantEntity.Mime_Type;
-                        var fileDownloadName = Path.GetFileName(path);
-                        return (StorageType.S3, path, mimeType, fileDownloadName);
-                    }
-                default:
-                    throw new Exception("unsupported storage type");
-            }
+            var type = mediaStorageVariantEntity.Storage_Type;
+            var path = GetFileUrl(mediaStorageVariantEntity.Storage_Type, mediaStorageVariantEntity.Storage_Bucket, mediaStorageVariantEntity.File_Path);
+            var mimeType = mediaStorageVariantEntity.Mime_Type;
+            var fileDownloadName = Path.GetFileName(path);
+            return new(true, null, true, mediaStorageVariantEntity.Id, type, path, mimeType, fileDownloadName);
         }
 
+        public async Task<GetMediaStorageReturn> GetMediaStorageByFileSHA256(string fileSHA, long size)
+        {
+            if (string.IsNullOrWhiteSpace(fileSHA)) return new(false, "File SHA256 is required");
+
+            var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByFileSHA256(fileSHA);
+            if (mediaStorageEntity == null) return new(true, IsExist: false);
+            else if (mediaStorageEntity.File_Size != size) return new(false, "File size does not match");
+            else if (mediaStorageEntity.Status != 1) return new(true, IsExist: false);
+
+            var type = mediaStorageEntity.Storage_Type;
+            var path = GetFileUrl(mediaStorageEntity.Storage_Type, mediaStorageEntity.Storage_Bucket, mediaStorageEntity.File_Path);
+            var mimeType = mediaStorageEntity.Mime_Type;
+            var fileDownloadName = Path.GetFileName(path);
+            return new(true, null, true, mediaStorageEntity.Id, type, path, mimeType, fileDownloadName);
+        }
 
 
 
@@ -1058,11 +1073,11 @@ namespace HY.ApiService.Services
 
         private const int BufferSize = 81920; // .NET推荐
 
-        private async Task<string> SaveAndHashAsync(string savePath ,IFormFile file, CancellationToken ct = default)
+        private async Task<string> SaveAndHashAsync(string savePath, IFormFile file, CancellationToken ct = default)
         {
             if (file == null || file.Length == 0) throw new ArgumentException("file is null or empty");
 
-            using var md5 = MD5.Create();
+            using var sha256 = SHA256.Create();
             using var input = file.OpenReadStream();
             using var output = File.Create(savePath);
 
@@ -1071,13 +1086,13 @@ namespace HY.ApiService.Services
 
             while ((read = await input.ReadAsync(buffer.AsMemory(0, buffer.Length), ct)) > 0)
             {
-                await output.WriteAsync(buffer.AsMemory(0, read), ct);      // 写入文件
-                md5.TransformBlock(buffer, 0, read, null, 0);               // 计算 MD5
+                await output.WriteAsync(buffer.AsMemory(0, read), ct);          // 写入文件
+                sha256.TransformBlock(buffer, 0, read, null, 0);                // 计算 SHA256
             }
 
-            md5.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+            sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
 
-            return Convert.ToHexString(md5.Hash!).ToLowerInvariant();
+            return Convert.ToHexString(sha256.Hash!).ToLowerInvariant();
         }
 
         private async Task<long> CreateResizeImage(string inputPath, string outputPath, int? width = null, int? quality = null)

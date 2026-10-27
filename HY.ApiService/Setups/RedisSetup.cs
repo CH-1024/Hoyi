@@ -29,6 +29,7 @@ namespace HY.ApiService.Setups
             services.AddSingleton<IRedisTokenService, RedisTokenService>();
             services.AddSingleton<IRedisConnectionService, RedisConnectionService>();
             services.AddSingleton<IRedisCallService, RedisCallService>();
+            services.AddSingleton<IRedisFileService, RedisFileService>();
         }
     }
 }

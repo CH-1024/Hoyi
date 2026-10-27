@@ -832,15 +832,15 @@ namespace HY.ApiService.Services
 
         public async Task RequestContactNotify(RequestContactReturn result, int platform)
         {
-            long currentUserId = result.contactRequest.Sender_Id;
-            long contactId = result.contactRequest.Receiver_Id;
-            ContactRequestDto? contactRequest = result.contactRequest;
-            ContactDto? senderContact = result.senderContact;
-            ChatDto? senderChat = result.senderChat;
-            MessageDto? senderMessage = result.senderMessage;
-            ContactDto? receiverContact = result.receiverContact;
-            ChatDto? receiverChat = result.receiverChat;
-            MessageDto? receiverMessage = result.receiverMessage;
+            long currentUserId = result.ContactRequest.Sender_Id;
+            long contactId = result.ContactRequest.Receiver_Id;
+            ContactRequestDto? contactRequest = result.ContactRequest;
+            ContactDto? senderContact = result.SenderContact;
+            ChatDto? senderChat = result.SenderChat;
+            MessageDto? senderMessage = result.SenderMessage;
+            ContactDto? receiverContact = result.ReceiverContact;
+            ChatDto? receiverChat = result.ReceiverChat;
+            MessageDto? receiverMessage = result.ReceiverMessage;
 
             var parallelOptions = new ParallelOptions
             {
@@ -886,7 +886,7 @@ namespace HY.ApiService.Services
             // 接收成功，更新未读数
             if (hasSuccess == 1)
             {
-                await _chatService.ClearChatUnread(result.receiverMessage!.Sender_Id, result.receiverMessage!.Target_Id, ChatType.Private);
+                await _chatService.ClearChatUnread(result.ReceiverMessage!.Sender_Id, result.ReceiverMessage!.Target_Id, ChatType.Private);
             }
             #endregion
         }
@@ -905,29 +905,29 @@ namespace HY.ApiService.Services
 
             if (handle == RespondContactHandle.Revoked)
             {
-                currentUserId = result.contactRequest.Sender_Id;
-                contactId = result.contactRequest.Receiver_Id;
-                contactRequest = result.contactRequest;
+                currentUserId = result.ContactRequest.Sender_Id;
+                contactId = result.ContactRequest.Receiver_Id;
+                contactRequest = result.ContactRequest;
             }
             else if (handle == RespondContactHandle.Declined)
             {
-                currentUserId = result.contactRequest.Receiver_Id;
-                contactId = result.contactRequest.Sender_Id;
-                contactRequest = result.contactRequest;
+                currentUserId = result.ContactRequest.Receiver_Id;
+                contactId = result.ContactRequest.Sender_Id;
+                contactRequest = result.ContactRequest;
             }
             else if (handle == RespondContactHandle.Accepted)
             {
-                currentUserId = result.contactRequest.Receiver_Id;
-                contactId = result.contactRequest.Sender_Id;
-                contactRequest = result.contactRequest;
+                currentUserId = result.ContactRequest.Receiver_Id;
+                contactId = result.ContactRequest.Sender_Id;
+                contactRequest = result.ContactRequest;
 
-                senderContact = result.senderContact;
-                senderChat = result.senderChat;
-                senderMessage = result.senderMessage;
+                senderContact = result.SenderContact;
+                senderChat = result.SenderChat;
+                senderMessage = result.SenderMessage;
 
-                receiverContact = result.receiverContact;
-                receiverChat = result.receiverChat;
-                receiverMessage = result.receiverMessage;
+                receiverContact = result.ReceiverContact;
+                receiverChat = result.ReceiverChat;
+                receiverMessage = result.ReceiverMessage;
             }
 
             var parallelOptions = new ParallelOptions

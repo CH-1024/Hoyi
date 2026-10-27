@@ -1,8 +1,12 @@
-﻿using HY.ApiService.Enums;
+﻿using HY.ApiService.Controllers.Requests;
+using HY.ApiService.Enums;
+using HY.ApiService.Extensions;
 using HY.ApiService.Models;
 using HY.ApiService.Services;
+using HY.ApiService.Tools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 using OracleInternal.Secure.Network;
 using SkiaSharp;
 using System.Security.Claims;
@@ -14,14 +18,113 @@ namespace HY.ApiService.Controllers
     [Route("[controller]")]
     public class FileController : ControllerBase
     {
+        readonly IRedisFileService _redisFileService;
+
         readonly IMediaService _mediaService;
         readonly IConfiguration _configuration;
 
-        public FileController(IMediaService mediaService, IConfiguration configuration)
+        public FileController(IRedisFileService redisFileService, IMediaService mediaService, IConfiguration configuration)
         {
+            _redisFileService = redisFileService;
+
             _mediaService = mediaService;
             _configuration = configuration;
         }
+
+
+
+        [Authorize]
+        [HttpPost("challenge")]
+        public async Task<IActionResult> Challenge(string fileSHA256, long size)
+        {
+            if (string.IsNullOrWhiteSpace(fileSHA256))
+            {
+                return Ok(new Response(false, "error File SHA256"));
+            }
+            else if (size <= 0)
+            {
+                return Ok(new Response(false, "error Size"));
+            }
+            
+            if (size <= 1024 * 1024)    // 小于等于1MB的文件直接上传，不需要挑战
+            {
+                return Ok(new Response(true)
+                {
+                    Data = new Dictionary<string, object?>
+                    {
+                        { "IsExist", false }
+                    }
+                });
+            }
+
+            var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var result = await _mediaService.GetMediaStorageByFileSHA256(fileSHA256, size);
+            if (!result.IsSucc)
+            {
+                return Ok(new Response(false, result.Error));
+            }
+
+            if (result.IsExist == null)
+            {
+                throw new ArgumentException("IsExist is null");
+            }
+
+            if (!result.IsExist.Value)
+            {
+                return Ok(new Response(true)
+                {
+                    Data = new Dictionary<string, object?>
+                    {
+                        { "IsExist", false }
+                    }
+                });
+            }
+
+            var fileChallenge = await FileChallengeGenerator.GenerateAsync(result.Path!);
+
+            var challengeInfo = await _redisFileService.CreateFileChallenge(userId, result.StorageId!.Value, fileChallenge);
+
+            return Ok(new Response(true)
+            {
+                Data = new Dictionary<string, object?>
+                {
+                    { "IsExist", true },
+                    { "ChallengeId", challengeInfo.ChallengeId },
+                    { "BlockSize", fileChallenge.BlockSize },
+                    { "BlockIndexes", fileChallenge.BlockIndexes },
+                }
+            });
+        }
+
+        [Authorize]
+        [HttpPost("challenge/confirm")]
+        public async Task<IActionResult> ChallengeConfirm(ChallengeConfirmRequest challengeConfirmRequest)
+        {
+            var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            if (challengeConfirmRequest == null || string.IsNullOrWhiteSpace(challengeConfirmRequest.ChallengeId))
+            {
+                return Ok(new Response(false, "error Challenge Confirm Request"));
+            }
+
+            var storageId = await _redisFileService.ConfirmFileChallenge(userId, challengeConfirmRequest.ChallengeId, challengeConfirmRequest.BlockMd5s);
+            if (storageId == null)
+            {
+                return Ok(new Response(false, "Challenge fail"));
+            }
+
+            var result = await _mediaService.CreateMediaFile(userId, storageId.Value, challengeConfirmRequest.FileName, challengeConfirmRequest.FileType);
+
+            return Ok(new Response(result.IsSucc, result.Error)
+            {
+                Data = new Dictionary<string, object?>
+                {
+                    { "File_Id", result.FileId },
+                }
+            });
+        }
+
 
 
 
@@ -33,15 +136,15 @@ namespace HY.ApiService.Controllers
 
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            UploadResult result;
+            UploadMediaFileReturn result;
 
-            if (file == null)
+            if (file == null || file.Length == 0)
             {
-                result = new UploadResult(false, "File is required");
+                result = new (false, "File is required");
             }
             else if (type == "Local")
             {
-                 result = await _mediaService.UploadImageToLocal(userId, file);
+                result = await _mediaService.UploadImageToLocal(userId, file);
             }
             else if (type == "OSS")
             {
@@ -57,7 +160,7 @@ namespace HY.ApiService.Controllers
             }
             else
             {
-                result = new UploadResult(false, "Unsupported media storage type");
+                throw new Exception("Unsupported media storage type");
             }
 
             return Ok(new Response(result.IsSucc, result.Error)
@@ -77,11 +180,11 @@ namespace HY.ApiService.Controllers
 
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            UploadResult result;
+            UploadMediaFileReturn result;
 
-            if (file == null)
+            if (file == null || file.Length == 0)
             {
-                result = new UploadResult(false, "File is required");
+                result = new (false, "File is required");
             }
             else if (type == "Local")
             {
@@ -101,7 +204,7 @@ namespace HY.ApiService.Controllers
             }
             else
             {
-                result = new UploadResult(false, "Unsupported media storage type");
+                throw new Exception("Unsupported media storage type");
             }
 
             return Ok(new Response(result.IsSucc, result.Error)
@@ -121,11 +224,11 @@ namespace HY.ApiService.Controllers
 
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            UploadResult result;
+            UploadMediaFileReturn result;
 
-            if (file == null)
+            if (file == null || file.Length == 0)
             {
-                result = new UploadResult(false, "File is required");
+                result = new (false, "File is required");
             }
             else if (type == "Local")
             {
@@ -145,7 +248,7 @@ namespace HY.ApiService.Controllers
             }
             else
             {
-                result = new UploadResult(false, "Unsupported media storage type");
+                throw new Exception("Unsupported media storage type");
             }
 
             return Ok(new Response(result.IsSucc, result.Error)
@@ -160,53 +263,59 @@ namespace HY.ApiService.Controllers
 
 
 
-
-
-
-
         [HttpGet("image/origin/{fileId}")]
         public async Task<IActionResult> GetOriginImage(string fileId)
         {
-            var file = await _mediaService.GetMediaStorageByFileId(fileId);
-
-            return file.storageType switch
+            var result = await _mediaService.GetMediaStorageByFileId(fileId);
+            if (!result.IsSucc || result.IsExist != true)
             {
-                StorageType.Local => PhysicalFile(file.path, file.contentType, file.fileDownloadName, true),
-                StorageType.OSS => Redirect(file.path),
-                StorageType.COS => Redirect(file.path),
-                StorageType.S3 => Redirect(file.path),
+                return NotFound();
+            }
+
+            return result.StorageType switch
+            {
+                StorageType.Local => PhysicalFile(result.Path, result.ContentType, result.FileDownloadName, true),
+                StorageType.OSS => Redirect(result.Path),
+                StorageType.COS => Redirect(result.Path),
+                StorageType.S3 => Redirect(result.Path),
                 _ => NotFound()
             };
         }
-
 
         [HttpGet("image/compress/{fileId}")]
         public async Task<IActionResult> GetCompressImage(string fileId)
         {
-            var file = await _mediaService.GetMediaStorageVariantByFileId(fileId, VariantType.Compress);
-
-            return file.storageType switch
+            var result = await _mediaService.GetMediaStorageVariantByFileId(fileId, VariantType.Compress);
+            if (!result.IsSucc || result.IsExist != true)
             {
-                StorageType.Local => PhysicalFile(file.path, file.contentType, file.fileDownloadName, true),
-                StorageType.OSS => Redirect(file.path),
-                StorageType.COS => Redirect(file.path),
-                StorageType.S3 => Redirect(file.path),
+                return NotFound();
+            }
+
+            return result.StorageType switch
+            {
+                StorageType.Local => PhysicalFile(result.Path, result.ContentType, result.FileDownloadName, true),
+                StorageType.OSS => Redirect(result.Path),
+                StorageType.COS => Redirect(result.Path),
+                StorageType.S3 => Redirect(result.Path),
                 _ => NotFound()
             };
         }
 
-
         [HttpGet("image/thumb/{fileId}")]
         public async Task<IActionResult> GetThumbImage(string fileId)
         {
-            var file = await _mediaService.GetMediaStorageVariantByFileId(fileId, VariantType.Thumbnail);
-
-            return file.storageType switch
+            var result = await _mediaService.GetMediaStorageVariantByFileId(fileId, VariantType.Thumbnail);
+            if (!result.IsSucc || result.IsExist != true)
             {
-                StorageType.Local => PhysicalFile(file.path, file.contentType, file.fileDownloadName, true),
-                StorageType.OSS => Redirect(file.path),
-                StorageType.COS => Redirect(file.path),
-                StorageType.S3 => Redirect(file.path),
+                return NotFound();
+            }
+
+            return result.StorageType switch
+            {
+                StorageType.Local => PhysicalFile(result.Path, result.ContentType, result.FileDownloadName, true),
+                StorageType.OSS => Redirect(result.Path),
+                StorageType.COS => Redirect(result.Path),
+                StorageType.S3 => Redirect(result.Path),
                 _ => NotFound()
             };
         }
@@ -217,46 +326,56 @@ namespace HY.ApiService.Controllers
         [HttpGet("video/origin/{fileId}")]
         public async Task<IActionResult> GetOriginVideo(string fileId)
         {
-            var file = await _mediaService.GetMediaStorageByFileId(fileId);
-
-            return file.storageType switch
+            var result = await _mediaService.GetMediaStorageByFileId(fileId);
+            if (!result.IsSucc || result.IsExist != true)
             {
-                StorageType.Local => PhysicalFile(file.path, file.contentType, file.fileDownloadName, true),
-                StorageType.OSS => Redirect(file.path),
-                StorageType.COS => Redirect(file.path),
-                StorageType.S3 => Redirect(file.path),
+                return NotFound();
+            }
+
+            return result.StorageType switch
+            {
+                StorageType.Local => PhysicalFile(result.Path, result.ContentType, result.FileDownloadName, true),
+                StorageType.OSS => Redirect(result.Path),
+                StorageType.COS => Redirect(result.Path),
+                StorageType.S3 => Redirect(result.Path),
                 _ => NotFound()
             };
         }
-
 
         [HttpGet("video/compress/{fileId}")]
         public async Task<IActionResult> GetCompressVideo(string fileId)
         {
-            var file = await _mediaService.GetMediaStorageVariantByFileId(fileId, VariantType.LowVideo);
-
-            return file.storageType switch
+            var result = await _mediaService.GetMediaStorageVariantByFileId(fileId, VariantType.LowVideo);
+            if (!result.IsSucc || result.IsExist != true)
             {
-                StorageType.Local => PhysicalFile(file.path, file.contentType, file.fileDownloadName, true),
-                StorageType.OSS => Redirect(file.path),
-                StorageType.COS => Redirect(file.path),
-                StorageType.S3 => Redirect(file.path),
+                return NotFound();
+            }
+
+            return result.StorageType switch
+            {
+                StorageType.Local => PhysicalFile(result.Path, result.ContentType, result.FileDownloadName, true),
+                StorageType.OSS => Redirect(result.Path),
+                StorageType.COS => Redirect(result.Path),
+                StorageType.S3 => Redirect(result.Path),
                 _ => NotFound()
             };
         }
 
-
         [HttpGet("video/cover/{fileId}")]
         public async Task<IActionResult> GetCoverVideo(string fileId)
         {
-            var file = await _mediaService.GetMediaStorageVariantByFileId(fileId, VariantType.Cover);
-
-            return file.storageType switch
+            var result = await _mediaService.GetMediaStorageVariantByFileId(fileId, VariantType.Cover);
+            if (!result.IsSucc || result.IsExist != true)
             {
-                StorageType.Local => PhysicalFile(file.path, file.contentType, file.fileDownloadName, true),
-                StorageType.OSS => Redirect(file.path),
-                StorageType.COS => Redirect(file.path),
-                StorageType.S3 => Redirect(file.path),
+                return NotFound();
+            }
+
+            return result.StorageType switch
+            {
+                StorageType.Local => PhysicalFile(result.Path, result.ContentType, result.FileDownloadName, true),
+                StorageType.OSS => Redirect(result.Path),
+                StorageType.COS => Redirect(result.Path),
+                StorageType.S3 => Redirect(result.Path),
                 _ => NotFound()
             };
         }
@@ -268,16 +387,20 @@ namespace HY.ApiService.Controllers
         [HttpGet("head/{fileId}")]
         public async Task<IActionResult> GetHead(string fileId)
         {
-            var file = await _mediaService.GetMediaStorageVariantByFileId(fileId, VariantType.Thumbnail);
+            var result = await _mediaService.GetMediaStorageVariantByFileId(fileId, VariantType.Thumbnail);
+            if (!result.IsSucc || result.IsExist != true)
+            {
+                return NotFound();
+            }
 
             Response.Headers.CacheControl = "public, max-age=31536000, immutable";      // 开启强缓存
 
-            return file.storageType switch
+            return result.StorageType switch
             {
-                StorageType.Local => PhysicalFile(file.path, file.contentType, file.fileDownloadName, true),
-                StorageType.OSS => Redirect(file.path),
-                StorageType.COS => Redirect(file.path),
-                StorageType.S3 => Redirect(file.path),
+                StorageType.Local => PhysicalFile(result.Path, result.ContentType, result.FileDownloadName, true),
+                StorageType.OSS => Redirect(result.Path),
+                StorageType.COS => Redirect(result.Path),
+                StorageType.S3 => Redirect(result.Path),
                 _ => NotFound()
             };
         }

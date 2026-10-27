@@ -60,6 +60,8 @@ namespace HY.MAUI.Communication
 
 
         // File
+        public static string Challenge => $"{HttpBase}/file/challenge/";
+        public static string ChallengeConfirm => $"{HttpBase}/file/challenge/confirm/";
         public static string UploadImage => $"{HttpBase}/file/upload/image/";
         public static string UploadVideo => $"{HttpBase}/file/upload/video/";
         public static string UploadHead => $"{HttpBase}/file/upload/head/";

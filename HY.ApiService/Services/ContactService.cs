@@ -10,21 +10,25 @@ using System.Net.Sockets;
 
 namespace HY.ApiService.Services
 {
-    public record RequestContactReturn(ContactRequestDto contactRequest, ContactDto? senderContact, ContactDto? receiverContact, ChatDto? senderChat, ChatDto? receiverChat, MessageDto? senderMessage, MessageDto? receiverMessage);
-    public record RespondContactReturn(ContactRequestDto contactRequest, ContactDto? senderContact, ContactDto? receiverContact, ChatDto? senderChat, ChatDto? receiverChat, MessageDto? senderMessage, MessageDto? receiverMessage);
+    public record ContactReturn(bool IsSucc, string? Error = null, ContactDto? Contact = null);
+    public record ContactsReturn(bool IsSucc, string? Error = null, List<ContactDto>? Contacts = null);
+    public record ContactRequestsReturn(bool IsSucc, string? Error = null, List<ContactRequestDto>? ContactRequests = null);
+
+    public record RequestContactReturn(bool IsSucc, string? Error = null, ContactRequestDto? ContactRequest = null, ContactDto? SenderContact = null, ContactDto? ReceiverContact = null, ChatDto? SenderChat = null, ChatDto? ReceiverChat = null, MessageDto? SenderMessage = null, MessageDto? ReceiverMessage = null);
+    public record RespondContactReturn(bool IsSucc, string? Error = null, ContactRequestDto? ContactRequest = null, ContactDto? SenderContact = null, ContactDto? ReceiverContact = null, ChatDto? SenderChat = null, ChatDto? ReceiverChat = null, MessageDto? SenderMessage = null, MessageDto? ReceiverMessage = null);
 
     public interface IContactService
     {
-        Task<ContactResult> GetAllContactRequestsByUserId(long userId);
+        Task<ContactRequestsReturn> GetAllContactRequestsByUserId(long userId);
 
-        Task<ContactResult> GetAllContactsByUserId(long userId);
-        Task<ContactResult> GetContactByUserId(long currentUserId, long targetId);
-        Task<ContactResult> GetContactByHYidOrPhone(long currentUserId, string identity);
+        Task<ContactsReturn> GetAllContactsByUserId(long userId);
+        Task<ContactReturn> GetContactByUserId(long currentUserId, long targetId);
+        Task<ContactReturn> GetContactByHYidOrPhone(long currentUserId, string identity);
 
-        Task<RequestContactReturn?> RequestContact(long userId, long contactId, int source, string? message);
-        Task<RespondContactReturn?> RespondContact(long userId, long contactRequestId, RespondContactHandle handle);
+        Task<RequestContactReturn> RequestContact(long userId, long contactId, int source, string? message);
+        Task<RespondContactReturn> RespondContact(long userId, long contactRequestId, RespondContactHandle handle);
         
-        Task<ContactResult> DeleteContact(long userId, long targetId);
+        Task<ContactReturn> DeleteContact(long userId, long targetId);
     }
 
 
@@ -53,7 +57,7 @@ namespace HY.ApiService.Services
         }
 
 
-        public async Task<ContactResult> GetAllContactRequestsByUserId(long currentUserId)
+        public async Task<ContactRequestsReturn> GetAllContactRequestsByUserId(long currentUserId)
         {
             var contactRequestEntities = await _contactRequestRepository.GetContactRequestsByUserId(currentUserId);
 
@@ -80,10 +84,10 @@ namespace HY.ApiService.Services
                 }
             }
 
-            return new ContactResult(true, contactRequests: contactRequestDtos);
+            return new(true, ContactRequests: contactRequestDtos);
         }
 
-        public async Task<ContactResult> GetAllContactsByUserId(long currentUserId)
+        public async Task<ContactsReturn> GetAllContactsByUserId(long currentUserId)
         {
             var contactEntities = await _contactRepository.GetContactsByUserId(currentUserId);
 
@@ -114,13 +118,16 @@ namespace HY.ApiService.Services
                 }
             }
 
-            return new ContactResult(true, contacts: contactDtos);
+            return new(true, Contacts: contactDtos);
         }
 
-        public async Task<ContactResult> GetContactByUserId(long currentUserId, long targetId)
+        public async Task<ContactReturn> GetContactByUserId(long currentUserId, long targetId)
         {
+            var user = await _userRepository.GetUserById(currentUserId);
+            if (user == null) return new(false, "当前用户不存在");
+
             var target = await _userRepository.GetUserById(targetId);
-            if (target == null) return new ContactResult(false, "用户不存在");
+            if (target == null) return new (false, "用户不存在");
 
             ContactDto? contactDto = null;
 
@@ -128,7 +135,7 @@ namespace HY.ApiService.Services
             if (contactEntity == null)
             {
                 contactDto = CreatNoneRelationContact(target.Id, target.Nickname, target.Avatar, target.Region);
-                return new ContactResult(true, null, contactDto);
+                return new (true, null, contactDto);
             }
             else
             {
@@ -143,12 +150,15 @@ namespace HY.ApiService.Services
                 var contactRequestEntity = await _contactRequestRepository.GetContactRequestById(contactEntity.Contact_Request_Id);
                 contactDto.Relation_Request_Status = contactRequestEntity.Relation_Request_Status;
 
-                return new ContactResult(true, null, contactDto);
+                return new (true, null, contactDto);
             }
         }
 
-        public async Task<ContactResult> GetContactByHYidOrPhone(long currentUserId, string identity)
+        public async Task<ContactReturn> GetContactByHYidOrPhone(long currentUserId, string identity)
         {
+            var user = await _userRepository.GetUserById(currentUserId);
+            if (user == null) return new(false, "当前用户不存在");
+
             UserEntity? target = null;
 
             if (identity.IsPhone())
@@ -160,7 +170,7 @@ namespace HY.ApiService.Services
                 target = await _userRepository.GetUserByHYid(identity);
             }
 
-            if (target == null) return new ContactResult(false, "用户不存在");
+            if (target == null) return new (false, "用户不存在");
 
             ContactDto? contactDto = null;
 
@@ -168,7 +178,7 @@ namespace HY.ApiService.Services
             if (contactEntity == null)
             {
                 contactDto = CreatNoneRelationContact(target.Id, target.Nickname, target.Avatar, target.Region);
-                return new ContactResult(true, null, contactDto);
+                return new (true, null, contactDto);
             }
             else
             {
@@ -183,24 +193,23 @@ namespace HY.ApiService.Services
                 var contactRequestEntity = await _contactRequestRepository.GetContactRequestById(contactEntity.Contact_Request_Id);
                 contactDto.Relation_Request_Status = contactRequestEntity.Relation_Request_Status;
 
-                return new ContactResult(true, null, contactDto);
+                return new (true, null, contactDto);
             }
         }
 
 
-        public async Task<RequestContactReturn?> RequestContact(long senderId, long contactId, int source, string? message)
+        public async Task<RequestContactReturn> RequestContact(long senderId, long contactId, int source, string? message)
         {
             if (senderId == contactId)
             {
-                // 不能给自己发
-                return null;
+                return new(false, "不能给自己发送好友请求");
             }
 
             var sender = await _userRepository.GetUserById(senderId);
-            if (sender == null) return null;
+            if (sender == null) return new(false, "当前用户不存在");
 
             var receiver = await _userRepository.GetUserById(contactId);
-            if (receiver == null) return null;
+            if (receiver == null) return new(false, "用户不存在");
 
 
             var senderContact = await _contactRepository.GetUserContactByUserId(senderId, receiver.Id);
@@ -208,27 +217,25 @@ namespace HY.ApiService.Services
 
             if (senderContact?.Relation_Status == RelationStatus.Friend && receiverContact?.Relation_Status == RelationStatus.Friend)
             {
-                // 已经是好友了
-                return null;
+                return new(false, "你们已经是好友了");
             }
             else if (receiverContact?.Relation_Status == RelationStatus.Blocked)
             {
-                // 已经被对方拉黑了
-                return null;
+                return new(false, "对方已经将你加入黑名单");
+
             }
 
             var senderContactRequest = await _contactRequestRepository.GetPendingContactRequestByUserId(senderId, receiver.Id);
             if(senderContactRequest != null)
             {
-                // 已经有未处理的好友请求了
-                return null;
+                return new(false, "你已经发送了好友请求");
             }
 
             var receiverContactRequest = await _contactRequestRepository.GetPendingContactRequestByUserId(receiver.Id, senderId);
             if (receiverContactRequest != null)
             {
-                // 对方已经有未处理的好友请求了(避免交叉请求)
-                return null;
+                // (避免交叉请求)
+                return new(false, "对方已经发送好友请求");
             }
 
 
@@ -365,7 +372,7 @@ namespace HY.ApiService.Services
             });
 
             // ---------- 事务结束 ----------
-            if (!result.IsSuccess) return null;
+            if (!result.IsSuccess) return new(false, result.ErrorMessage);
 
             var contactRequestDto = contactRequestEntity.Adapt<ContactRequestDto>();
             contactRequestDto.Sender_Avatar = sender.Avatar;
@@ -373,21 +380,21 @@ namespace HY.ApiService.Services
             contactRequestDto.Receiver_Avatar = receiver.Avatar;
             contactRequestDto.Receiver_Nickname = receiver.Nickname;
 
-            return new(contactRequestDto, senderContactDto, receiverContactDto, senderChatDto, receiverChatDto, senderSysMsgDto, receiverSysMsgDto);
+            return new(true, null, contactRequestDto, senderContactDto, receiverContactDto, senderChatDto, receiverChatDto, senderSysMsgDto, receiverSysMsgDto);
         }
 
-        public async Task<RespondContactReturn?> RespondContact(long userId, long contactRequestId, RespondContactHandle handle)
+        public async Task<RespondContactReturn> RespondContact(long userId, long contactRequestId, RespondContactHandle handle)
         {
             var contactRequestEntity = await _contactRequestRepository.GetContactRequestById(contactRequestId);
             if (contactRequestEntity?.Relation_Request_Status != RelationRequestStatus.Pending)
             {
-                return null;
+                return new(false, "好友请求已处理");
             }
 
             var userEntities = await _userRepository.GetUsersByIds([contactRequestEntity.Sender_Id, contactRequestEntity.Receiver_Id]);
             if (userEntities.Count != 2)
             {
-                return null;
+                return new(false, "获取用户信息失败");
             }
 
             var sender = userEntities.First(u => u.Id == contactRequestEntity.Sender_Id);
@@ -401,10 +408,7 @@ namespace HY.ApiService.Services
                 contactRequestEntity.Handled_At = DateTime.UtcNow;
 
                 var bol = await _contactRequestRepository.UpdateContactRequest(contactRequestEntity);
-                if (!bol)
-                {
-                    return null;
-                }
+                if (!bol) return new(false, "更新好友请求状态失败");
 
                 var contactRequestDto = contactRequestEntity.Adapt<ContactRequestDto>();
                 contactRequestDto.Sender_Nickname = sender.Nickname;
@@ -412,7 +416,7 @@ namespace HY.ApiService.Services
                 contactRequestDto.Receiver_Nickname = receiver.Nickname;
                 contactRequestDto.Receiver_Avatar = receiver.Avatar;
 
-                return new(contactRequestDto, null, null, null, null, null, null);
+                return new(true, null, contactRequestDto, null, null, null, null, null, null);
             }
             // 拒绝好友请求
             else if (handle == RespondContactHandle.Declined && contactRequestEntity.Receiver_Id == userId && contactRequestEntity.Relation_Request_Status == RelationRequestStatus.Pending)
@@ -422,10 +426,7 @@ namespace HY.ApiService.Services
                 contactRequestEntity.Handled_At = DateTime.UtcNow;
 
                 var bol = await _contactRequestRepository.UpdateContactRequest(contactRequestEntity);
-                if (!bol)
-                {
-                    return null;
-                }
+                if (!bol) return new(false, "更新好友请求状态失败");
 
                 var contactRequestDto = contactRequestEntity.Adapt<ContactRequestDto>();
                 contactRequestDto.Sender_Nickname = sender.Nickname;
@@ -433,7 +434,7 @@ namespace HY.ApiService.Services
                 contactRequestDto.Receiver_Nickname = receiver.Nickname;
                 contactRequestDto.Receiver_Avatar = receiver.Avatar;
 
-                return new(contactRequestDto, null, null, null, null, null, null);
+                return new(true, null, contactRequestDto, null, null, null, null, null, null);
             }
             // 同意好友请求
             else if (handle == RespondContactHandle.Accepted && contactRequestEntity.Receiver_Id == userId && contactRequestEntity.Relation_Request_Status == RelationRequestStatus.Pending)
@@ -634,10 +635,7 @@ namespace HY.ApiService.Services
                 });
 
                 // ---------- 事务结束 ----------
-                if (!result.IsSuccess)
-                {
-                    return null;
-                }
+                if (!result.IsSuccess) return new(false, result.ErrorMessage);
 
                 var contactRequestDto = contactRequestEntity.Adapt<ContactRequestDto>();
                 contactRequestDto.Sender_Nickname = sender.Nickname;
@@ -645,21 +643,21 @@ namespace HY.ApiService.Services
                 contactRequestDto.Receiver_Nickname = receiver.Nickname;
                 contactRequestDto.Receiver_Avatar = receiver.Avatar;
 
-                return new(contactRequestDto, senderContactDto, receiverContactDto, senderChatDto, receiverChatDto, senderSysMsgDto, receiverSysMsgDto);
+                return new(true, null, contactRequestDto, senderContactDto, receiverContactDto, senderChatDto, receiverChatDto, senderSysMsgDto, receiverSysMsgDto);
             }
             else
             {
-                return null;
+                return new(false, "获取好友请求信息失败");
             }
         }
 
 
-        public async Task<ContactResult> DeleteContact(long userId, long targetId)
+        public async Task<ContactReturn> DeleteContact(long userId, long targetId)
         {
             var contactEntity = await _contactRepository.GetUserContactByUserId(userId, targetId);
             if (contactEntity == null)
             {
-                return new ContactResult(false, "联系人关系不存在");
+                return new (false, "联系人关系不存在");
             }
 
             // 开启事务
@@ -684,10 +682,10 @@ namespace HY.ApiService.Services
             // ---------- 事务结束 ----------
             if (!result.IsSuccess)
             {
-                return new ContactResult(false, result.ErrorMessage);
+                return new (false, result.ErrorMessage);
             }
 
-            return new ContactResult(true);
+            return new (true);
         }
 
 

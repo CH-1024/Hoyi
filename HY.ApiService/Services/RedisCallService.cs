@@ -130,7 +130,7 @@ namespace HY.ApiService.Services
 
         public async Task<CallInfo?> CreateCall(CallType callType, long callerId, int callerPlatform, long calleeId)
         {
-            var sec = _configuration.GetSection("Call")?.GetValue<double>("Expire") ?? 30;
+            var sec = _configuration.GetSection("Expire")?.GetValue<double>("Call") ?? 30;
 
             var callDto = new CallInfo
             {

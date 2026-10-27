@@ -60,7 +60,7 @@ namespace HY.MAUI.Communication.Auth
 
                 if (refreshResp == null || !refreshResp.IsSucc) return false;
 
-                var token = refreshResp.GetValue<TokenResult>("Tokens");
+                var token = refreshResp.GetValue<TokenModel>("Tokens");
 
                 if (token == null) return false;
 
