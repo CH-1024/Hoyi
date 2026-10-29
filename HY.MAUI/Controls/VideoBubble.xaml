@@ -69,7 +69,7 @@
 
             </Grid.Triggers>
 
-            <!-- 发送进度 -->
+            <!--撤回/删除 提示-->
             <ActivityIndicator Grid.Column="2" IsVisible="False" IsRunning="True" MinimumHeightRequest="0" MinimumWidthRequest="0" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center" Margin="0">
 
                 <ActivityIndicator.Triggers>
@@ -83,25 +83,14 @@
                         <Setter Property="IsVisible" Value="True"/>
                     </DataTrigger>
 
+                    <DataTrigger TargetType="ActivityIndicator" Binding="{Binding Message_Status}" Value="Deleting">
+                        <Setter Property="Color" Value="Red"/>
+                        <Setter Property="IsVisible" Value="True"/>
+                    </DataTrigger>
+                    
                 </ActivityIndicator.Triggers>
 
             </ActivityIndicator>
-
-            <controls:CircularProgressBar Grid.Column="2" IsVisible="False" MaxProgress="100" Progress="{Binding UploadProgress}" StrokeThickness="2" ProgressColor="LightGray" MinimumHeightRequest="0" MinimumWidthRequest="0" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center" Margin="0">
-
-                <controls:CircularProgressBar.Triggers>
-
-                    <DataTrigger TargetType="controls:CircularProgressBar" Binding="{Binding IsSelf}" Value="True">
-                        <Setter Property="Grid.Column" Value="0"/>
-                    </DataTrigger>
-
-                    <DataTrigger TargetType="controls:CircularProgressBar" Binding="{Binding Message_Status}" Value="Sending">
-                        <Setter Property="IsVisible" Value="True"/>
-                    </DataTrigger>
-
-                </controls:CircularProgressBar.Triggers>
-
-            </controls:CircularProgressBar>
 
             <!-- 重试按钮 -->
             <Button Grid.Column="2" Text="↻" IsVisible="False" TextColor="DarkGray" FontSize="Medium" BackgroundColor="Transparent" MinimumHeightRequest="0" MinimumWidthRequest="0" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" Padding="0">
@@ -119,6 +108,19 @@
                 </Button.Triggers>
 
             </Button>
+
+            <!-- 发送进度 -->
+            <controls:CircularProgressBar Grid.Column="1" IsVisible="False" MaxProgress="100" Progress="{Binding UploadProgress}" StrokeThickness="4" ProgressColor="LightGray" TextColor="LightGray" FontSize="13" MinimumHeightRequest="0" MinimumWidthRequest="0" WidthRequest="55" HeightRequest="55" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" Padding="5" ZIndex="1">
+
+                <controls:CircularProgressBar.Triggers>
+
+                    <DataTrigger TargetType="controls:CircularProgressBar" Binding="{Binding Message_Status}" Value="Sending">
+                        <Setter Property="IsVisible" Value="True"/>
+                    </DataTrigger>
+
+                </controls:CircularProgressBar.Triggers>
+
+            </controls:CircularProgressBar>
 
             <!-- 气泡 -->
             <Border Grid.Column="1" BackgroundColor="{StaticResource Gray800}" StrokeThickness="0" Padding="0" WidthRequest="100" HeightRequest="150">
