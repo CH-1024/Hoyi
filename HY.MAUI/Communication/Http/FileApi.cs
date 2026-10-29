@@ -21,12 +21,14 @@ namespace HY.MAUI.Communication.Http
 
         public async Task<Response?> UploadHead(FileResult? fileResult, CancellationToken token = default)
         {
-            if (fileResult == null) return null;
+            if (fileResult == null) return new Response(false, "文件不存在");
 
             await using var stream = await fileResult.OpenReadAsync();
 
             // 文件大小（字节）
             long size = stream.Length;
+
+            if (size > 1 * 1024 * 1024) return new Response(false, "文件大小超过1 MiB的限制");
 
             // 计算 SHA256 Hash
             string fileSHA = Convert.ToHexString(await SHA256.HashDataAsync(stream, token));
@@ -68,14 +70,16 @@ namespace HY.MAUI.Communication.Http
             }
         }
 
-        public async Task<Response?> UploadImage(FileResult? fileResult, CancellationToken token = default)
+        public async Task<Response?> UploadImage(Guid taskId, FileResult? fileResult, CancellationToken token = default)
         {
-            if (fileResult == null) return null;
+            if (fileResult == null) return new Response(false, "文件不存在");
 
             await using var stream = await fileResult.OpenReadAsync();
 
             // 文件大小（字节）
             long size = stream.Length;
+
+            if (size > 10 * 1024 * 1024) return new Response(false, "文件大小超过10 MiB的限制");
 
             // 计算 SHA256 Hash
             string fileSHA = Convert.ToHexString(await SHA256.HashDataAsync(stream, token));
@@ -111,20 +115,26 @@ namespace HY.MAUI.Communication.Http
                 streamContent.Headers.ContentType = new MediaTypeHeaderValue(fileResult.ContentType ?? "application/octet-stream");
 
                 using var content = new MultipartFormDataContent();
+
+                content.Headers.Add("File-Size", size.ToString());
+                content.Headers.Add("File-UploadId", taskId.ToString());
+
                 content.Add(streamContent, "file", fileResult.FileName);
 
                 return await PostAsync(ApiUrl.UploadImage, content, token);
             }
         }
 
-        public async Task<Response?> UploadVideo(FileResult? fileResult, CancellationToken token = default)
+        public async Task<Response?> UploadVideo(Guid taskId, FileResult? fileResult, CancellationToken token = default)
         {
-            if (fileResult == null) return null;
+            if (fileResult == null) return new Response(false, "文件不存在");
 
             await using var stream = await fileResult.OpenReadAsync();
 
             // 文件大小（字节）
             long size = stream.Length;
+
+            //if (size > 200 * 1024 * 1024) return new Response(false, "文件大小超过200 MiB的限制");
 
             // 计算 SHA256 Hash
             string fileSHA = Convert.ToHexString(await SHA256.HashDataAsync(stream, token));
@@ -160,6 +170,10 @@ namespace HY.MAUI.Communication.Http
                 streamContent.Headers.ContentType = new MediaTypeHeaderValue(fileResult.ContentType ?? "application/octet-stream");
 
                 using var content = new MultipartFormDataContent();
+
+                content.Headers.Add("File-Size", size.ToString());
+                content.Headers.Add("File-UploadId", taskId.ToString());
+
                 content.Add(streamContent, "file", fileResult.FileName);
 
                 return await PostAsync(ApiUrl.UploadVideo, content, token);

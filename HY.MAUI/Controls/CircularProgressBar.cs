@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace HY.MAUI.Controls
 {
@@ -13,56 +13,29 @@ namespace HY.MAUI.Controls
 
         #region BindableProperty
 
-        public static readonly BindableProperty ProgressProperty =
-            BindableProperty.Create(
-                nameof(Progress),
-                typeof(double),
-                typeof(CircularProgressBar),
-                0d,
-                propertyChanged: (b, o, n) =>
-                {
-                    ((CircularProgressBar)b).Invalidate();
-                });
+        /// <summary>
+        /// 满进度值，默认 1，也可以设置为 100。
+        /// </summary>
+        public static readonly BindableProperty MaxProgressProperty = BindableProperty.Create(nameof(MaxProgress), typeof(double), typeof(CircularProgressBar), 1d, propertyChanged: OnPropertyChanged);
+
+        public double MaxProgress
+        {
+            get => (double)GetValue(MaxProgressProperty);
+            set => SetValue(MaxProgressProperty, value);
+        }
 
         /// <summary>
-        /// 0~1
+        /// 当前进度，范围 0 ~ MaxProgress。
         /// </summary>
+        public static readonly BindableProperty ProgressProperty = BindableProperty.Create(nameof(Progress), typeof(double), typeof(CircularProgressBar), 0d, propertyChanged: OnPropertyChanged);
+
         public double Progress
         {
             get => (double)GetValue(ProgressProperty);
             set => SetValue(ProgressProperty, value);
         }
 
-        public static readonly BindableProperty ShowTrackProperty =
-            BindableProperty.Create(
-                nameof(ShowTrack),
-                typeof(bool),
-                typeof(CircularProgressBar),
-                true,
-                propertyChanged: (b, o, n) =>
-                {
-                    ((CircularProgressBar)b).Invalidate();
-                });
-
-        /// <summary>
-        /// 显示背景轨迹
-        /// </summary>
-        public bool ShowTrack
-        {
-            get => (bool)GetValue(ShowTrackProperty);
-            set => SetValue(ShowTrackProperty, value);
-        }
-
-        public static readonly BindableProperty ProgressColorProperty =
-            BindableProperty.Create(
-                nameof(ProgressColor),
-                typeof(Color),
-                typeof(CircularProgressBar),
-                Colors.DodgerBlue,
-                propertyChanged: (b, o, n) =>
-                {
-                    ((CircularProgressBar)b).Invalidate();
-                });
+        public static readonly BindableProperty ProgressColorProperty = BindableProperty.Create(nameof(ProgressColor), typeof(Color), typeof(CircularProgressBar), Colors.DodgerBlue, propertyChanged: OnPropertyChanged);
 
         public Color ProgressColor
         {
@@ -70,33 +43,7 @@ namespace HY.MAUI.Controls
             set => SetValue(ProgressColorProperty, value);
         }
 
-        public static readonly BindableProperty TrackColorProperty =
-            BindableProperty.Create(
-                nameof(TrackColor),
-                typeof(Color),
-                typeof(CircularProgressBar),
-                Colors.LightGray,
-                propertyChanged: (b, o, n) =>
-                {
-                    ((CircularProgressBar)b).Invalidate();
-                });
-
-        public Color TrackColor
-        {
-            get => (Color)GetValue(TrackColorProperty);
-            set => SetValue(TrackColorProperty, value);
-        }
-
-        public static readonly BindableProperty StrokeThicknessProperty =
-            BindableProperty.Create(
-                nameof(StrokeThickness),
-                typeof(float),
-                typeof(CircularProgressBar),
-                8f,
-                propertyChanged: (b, o, n) =>
-                {
-                    ((CircularProgressBar)b).Invalidate();
-                });
+        public static readonly BindableProperty StrokeThicknessProperty = BindableProperty.Create(nameof(StrokeThickness), typeof(float), typeof(CircularProgressBar), 4f, propertyChanged: OnPropertyChanged);
 
         public float StrokeThickness
         {
@@ -106,58 +53,68 @@ namespace HY.MAUI.Controls
 
         #endregion
 
+        private static void OnPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            ((CircularProgressBar)bindable).Invalidate();
+        }
+
         public void Draw(ICanvas canvas, RectF dirtyRect)
         {
-            float stroke = StrokeThickness;
+            double max = MaxProgress;
+            double progress = Progress;
+            float thickness = StrokeThickness;
 
-            float size = Math.Min(dirtyRect.Width, dirtyRect.Height) - stroke;
-            float x = (dirtyRect.Width - size) / 2;
-            float y = (dirtyRect.Height - size) / 2;
-
-            var rect = new RectF(x, y, size, size);
-
-            float cx = rect.Center.X;
-            float cy = rect.Center.Y;
-            float radius = rect.Width / 2;
-
-            canvas.StrokeSize = stroke;
-
-            // ===== 背景圆 =====
-            if (ShowTrack)
+            if (!double.IsFinite(max) || !double.IsFinite(progress) || max <= 0 || thickness <= 0)
             {
-                canvas.StrokeColor = TrackColor;
-                canvas.StrokeLineCap = LineCap.Butt;
-
-                var trackPath = new PathF();
-                trackPath.AppendCircle(cx, cy, radius);
-
-                canvas.DrawPath(trackPath);
+                return;
             }
 
-            // ===== 进度 =====
-            double progress = Math.Clamp(Progress, 0, 1);
+            // 计算进度比例，保证范围为 0 ~ 1
+            float ratio = (float)Math.Clamp(progress / max, 0d, 1d);
 
-            if (progress <= 0)
-                return;
+            if (ratio <= 0) return;
+
+            float size = Math.Min(dirtyRect.Width, dirtyRect.Height);
+
+            if (size <= thickness) return;
+
+            float centerX = dirtyRect.Center.X;
+            float centerY = dirtyRect.Center.Y;
+            float radius = (size - thickness) / 2f;
 
             canvas.StrokeColor = ProgressColor;
+            canvas.StrokeSize = thickness;
             canvas.StrokeLineCap = LineCap.Round;
 
-            float startAngle = -90f;
-            float sweepAngle = (float)(360 * progress);
+            // 满进度直接绘制完整圆环
+            if (ratio >= 1f)
+            {
+                canvas.DrawCircle(centerX, centerY, radius);
+                return;
+            }
 
-            var progressPath = new PathF();
+            // 从顶部开始，按顺时针方向逐点绘制
+            float sweepAngle = ratio * 360f;
 
-            progressPath.AddArc(
-                rect.X,
-                rect.Y,
-                rect.Width,
-                rect.Height,
-                startAngle,
-                startAngle + sweepAngle,
-                false);
+            // 每隔约 2 度生成一个点
+            int segments = Math.Max(2, (int)Math.Ceiling(sweepAngle / 2f));
 
-            canvas.DrawPath(progressPath);
+            var path = new PathF();
+
+            for (int i = 0; i <= segments; i++)
+            {
+                float angle = sweepAngle * i / segments;
+                float radians = angle * (MathF.PI / 180f);
+
+                // 0° 在顶部，90° 在右侧，180° 在底部
+                float x = centerX + radius * MathF.Sin(radians);
+                float y = centerY - radius * MathF.Cos(radians);
+
+                if (i == 0) path.MoveTo(x, y);
+                else path.LineTo(x, y);
+            }
+
+            canvas.DrawPath(path);
         }
     }
 }

@@ -226,6 +226,7 @@ namespace HY.MAUI.Communication.SignalR
 
             _connection?.On<string>("UpdateHead", OnUpdateHead);
             _connection?.On<UpdateUserRequest>("UpdateProfile", OnUpdateProfile);
+            _connection?.On<Guid, double>("UploadProgress", OnUploadProgress);
 
             _connection?.On<string>("ForceLogout", OnForceLogout);
         }
@@ -321,6 +322,7 @@ namespace HY.MAUI.Communication.SignalR
         #region HubMethods
 
         public event Func<MessageDto, Task<bool>> OnReceiveMessage_ChatHub;
+        public event Action<Guid, double> OnUploadProgress_ChatHub;
 
         private void OnUserOnline(long userId)
         {
@@ -521,6 +523,11 @@ namespace HY.MAUI.Communication.SignalR
             _globalCache.UpdateCurrentUser(currentUser);
 
             await _loginService.SetCurrentUser(currentUser);
+        }
+
+        private void OnUploadProgress(Guid guid, double progress)
+        {
+            UI.Run(() => OnUploadProgress_ChatHub?.Invoke(guid, progress));
         }
 
         private async void OnForceLogout(string message)

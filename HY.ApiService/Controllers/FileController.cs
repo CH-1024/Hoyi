@@ -7,8 +7,12 @@ using HY.ApiService.Tools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Net.Http.Headers;
 using OracleInternal.Secure.Network;
 using SkiaSharp;
+using System.Buffers;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
@@ -18,13 +22,15 @@ namespace HY.ApiService.Controllers
     [Route("[controller]")]
     public class FileController : ControllerBase
     {
+        readonly IChatNotificationService _chatNotificationService;
         readonly IRedisFileService _redisFileService;
 
         readonly IMediaService _mediaService;
         readonly IConfiguration _configuration;
 
-        public FileController(IRedisFileService redisFileService, IMediaService mediaService, IConfiguration configuration)
+        public FileController(IChatNotificationService chatNotificationService, IRedisFileService redisFileService, IMediaService mediaService, IConfiguration configuration)
         {
+            _chatNotificationService = chatNotificationService;
             _redisFileService = redisFileService;
 
             _mediaService = mediaService;
@@ -45,7 +51,7 @@ namespace HY.ApiService.Controllers
             {
                 return Ok(new Response(false, "error Size"));
             }
-            
+
             if (size <= 1024 * 1024)    // 小于等于1MB的文件直接上传，不需要挑战
             {
                 return Ok(new Response(true)
@@ -129,39 +135,61 @@ namespace HY.ApiService.Controllers
 
 
         [Authorize]
-        [HttpPost("upload/image")]
-        public async Task<IActionResult> UploadImage(IFormFile file)
+        [HttpPost("upload/head")]
+        [RequestSizeLimit(1 * 1024 * 1024)]
+        public async Task<IActionResult> UploadHead(IFormFile file)
         {
-            var type = _configuration.GetSection("MediaStorage:Type").Value ?? throw new Exception("MediaStorage:Type is not configured");
-
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            UploadMediaFileReturn result;
+            const long maxFileSize = 1 * 1024 * 1024; // 1 MiB
 
             if (file == null || file.Length == 0)
+                return Ok(new Response(false, "File is required"));
+            else if (file.Length > maxFileSize)
+                return Ok(new Response(false, $"File size exceeds the limit of {maxFileSize} bytes"));
+
+            var result = await _mediaService.UploadHead(userId, file);
+
+            return Ok(new Response(result.IsSucc, result.Error)
             {
-                result = new (false, "File is required");
-            }
-            else if (type == "Local")
+                Data = new Dictionary<string, object?>
+                {
+                    { "File_Id", result.FileId },
+                }
+            });
+        }
+
+        [Authorize]
+        [HttpPost("upload/image")]
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        public async Task<IActionResult> UploadImage()
+        {
+            var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            const long maxFileSize = 10 * 1024 * 1024; // 10 MiB
+
+            if (!long.TryParse(Request.Headers["File-Size"], out long totalBytes) || totalBytes <= 0)
+                return Ok(new Response(false, "Invalid file size"));
+
+            if (!Guid.TryParse(Request.Headers["File-UploadId"], out Guid uploadId) || uploadId == Guid.Empty)
+                return Ok(new Response(false, "Invalid upload ID"));
+
+
+            var maxFileBytes = _configuration.GetValue<long?>("Kestrel:Limits:MaxRequestBodySize") ?? throw new Exception("MediaStorage:Type is not configured");
+            if (totalBytes > maxFileBytes)
             {
-                result = await _mediaService.UploadImageToLocal(userId, file);
+                return Ok(new Response(false, $"上传文件超过允许的大小限制，最大允许 {maxFileBytes} 字节"));
             }
-            else if (type == "OSS")
-            {
-                result = await _mediaService.UploadImageToOSS(userId, file);
-            }
-            else if (type == "COS")
-            {
-                result = await _mediaService.UploadImageToCOS(userId, file);
-            }
-            else if (type == "S3")
-            {
-                result = await _mediaService.UploadImageToS3(userId, file);
-            }
-            else
-            {
-                throw new Exception("Unsupported media storage type");
-            }
+
+            // 接收文件并保存到临时文件，同时计算 SHA256
+            var file = await SaveToTempAsync(totalBytes, uploadId);
+
+            if (file == null || file.Length == 0)
+                return Ok(new Response(false, "File is required"));
+            else if (file.Length > maxFileSize)
+                return Ok(new Response(false, $"File size exceeds the limit of {maxFileSize} bytes"));
+
+            var result = await _mediaService.UploadImage(userId, file);
 
             return Ok(new Response(result.IsSucc, result.Error)
             {
@@ -174,82 +202,31 @@ namespace HY.ApiService.Controllers
 
         [Authorize]
         [HttpPost("upload/video")]
-        public async Task<IActionResult> UploadVideo(IFormFile file)
+        public async Task<IActionResult> UploadVideo()
         {
-            var type = _configuration.GetSection("MediaStorage:Type").Value ?? throw new Exception("MediaStorage:Type is not configured");
-
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            UploadMediaFileReturn result;
+
+            if (!long.TryParse(Request.Headers["File-Size"], out long totalBytes) || totalBytes <= 0)
+                return Ok(new Response(false, "Invalid file size"));
+
+            if (!Guid.TryParse(Request.Headers["File-UploadId"], out Guid uploadId) || uploadId == Guid.Empty)
+                return Ok(new Response(false, "Invalid upload ID"));
+
+
+            var maxFileBytes = _configuration.GetValue<long?>("Kestrel:Limits:MaxRequestBodySize") ?? throw new Exception("MediaStorage:Type is not configured");
+            if (totalBytes > maxFileBytes)
+            {
+                return Ok(new Response(false, $"上传文件超过允许的大小限制，最大允许 {maxFileBytes} 字节"));
+            }
+
+            // 接收文件并保存到临时文件，同时计算 SHA256
+            var file = await SaveToTempAsync(totalBytes, uploadId);
 
             if (file == null || file.Length == 0)
-            {
-                result = new (false, "File is required");
-            }
-            else if (type == "Local")
-            {
-                result = await _mediaService.UploadVideoToLocal(userId, file);
-            }
-            else if (type == "OSS")
-            {
-                result = await _mediaService.UploadVideoToOSS(userId, file);
-            }
-            else if (type == "COS")
-            {
-                result = await _mediaService.UploadVideoToCOS(userId, file);
-            }
-            else if (type == "S3")
-            {
-                result = await _mediaService.UploadVideoToS3(userId, file);
-            }
-            else
-            {
-                throw new Exception("Unsupported media storage type");
-            }
+                return Ok(new Response(false, "File is required"));
 
-            return Ok(new Response(result.IsSucc, result.Error)
-            {
-                Data = new Dictionary<string, object?>
-                {
-                    { "File_Id", result.FileId },
-                }
-            });
-        }
-
-        [Authorize]
-        [HttpPost("upload/head")]
-        public async Task<IActionResult> UploadHead(IFormFile file)
-        {
-            var type = _configuration.GetSection("MediaStorage:Type").Value ?? throw new Exception("MediaStorage:Type is not configured");
-
-            var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-
-            UploadMediaFileReturn result;
-
-            if (file == null || file.Length == 0)
-            {
-                result = new (false, "File is required");
-            }
-            else if (type == "Local")
-            {
-                result = await _mediaService.UploadHeadToLocal(userId, file);
-            }
-            else if (type == "OSS")
-            {
-                result = await _mediaService.UploadHeadToOSS(userId, file);
-            }
-            else if (type == "COS")
-            {
-                result = await _mediaService.UploadHeadToCOS(userId, file);
-            }
-            else if (type == "S3")
-            {
-                result = await _mediaService.UploadHeadToS3(userId, file);
-            }
-            else
-            {
-                throw new Exception("Unsupported media storage type");
-            }
+            var result = await _mediaService.UploadVideo(userId, file);
 
             return Ok(new Response(result.IsSucc, result.Error)
             {
@@ -383,7 +360,6 @@ namespace HY.ApiService.Controllers
 
 
 
-
         [HttpGet("head/{fileId}")]
         public async Task<IActionResult> GetHead(string fileId)
         {
@@ -403,6 +379,194 @@ namespace HY.ApiService.Controllers
                 StorageType.S3 => Redirect(result.Path),
                 _ => NotFound()
             };
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// 从 multipart/form-data 请求中流式读取文件，
+        /// 保存到系统临时文件，并计算 SHA256。
+        /// </summary>
+        private async Task<UploadedFile> SaveToTempAsync(long totalBytes, Guid uploadId, string fieldName = "file", CancellationToken cancellationToken = default)
+        {
+            var request = Request;
+            var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var platform = int.Parse(User.FindFirst("DevicePlatform")!.Value);
+
+            #region MyRegion
+            ArgumentNullException.ThrowIfNull(request);
+
+            // 检查 Content-Type
+            if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaType) || mediaType is null || !string.Equals(mediaType.MediaType.Value, "multipart/form-data", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException("请求格式必须为 multipart/form-data");
+            }
+
+            // 获取 multipart boundary
+            var boundary = HeaderUtilities.RemoveQuotes(mediaType.Boundary).Value;
+
+            if (string.IsNullOrWhiteSpace(boundary))
+            {
+                throw new InvalidDataException("缺少 multipart boundary");
+            }
+
+            var reader = new MultipartReader(boundary, request.Body)
+            {
+                BodyLengthLimit = _configuration.GetValue<long?>("Kestrel:Limits:MaxRequestBodySize") ?? throw new Exception("Kestrel:Limits:MaxRequestBodySize is not configured")
+            };
+            #endregion
+
+            string? tempFile = null;
+            UploadedFile? result = null;
+            bool completed = false;
+
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(128 * 1024);
+
+            try
+            {
+                MultipartSection? section;
+
+                while ((section = await reader.ReadNextSectionAsync(cancellationToken)) is not null)
+                {
+                    #region MyRegion
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (!ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var disposition) || disposition is null)
+                    {
+                        await section.Body.CopyToAsync(Stream.Null, cancellationToken);
+
+                        continue;
+                    }
+
+                    var name = HeaderUtilities.RemoveQuotes(disposition.Name).Value;
+
+                    var fileName = HeaderUtilities.RemoveQuotes(disposition.FileNameStar).Value;
+
+                    if (string.IsNullOrWhiteSpace(fileName))
+                    {
+                        fileName = HeaderUtilities.RemoveQuotes(disposition.FileName).Value;
+                    }
+
+                    // 只处理指定的文件字段
+                    if (!string.Equals(name, fieldName, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(fileName))
+                    {
+                        await section.Body.CopyToAsync(Stream.Null, cancellationToken);
+
+                        continue;
+                    }
+
+                    // 一次请求只允许上传一个文件
+                    if (result is not null)
+                    {
+                        throw new InvalidDataException("一次请求只能上传一个文件");
+                    }
+                    #endregion
+
+                    // 仅保留文件名，不使用客户端提供的路径
+                    fileName = Path.GetFileName(fileName.Replace('\\', '/'));
+
+                    // 创建系统临时文件
+                    tempFile = Path.GetTempFileName();
+
+                    string contentType = section.ContentType ?? "application/octet-stream";
+
+                    long length = 0;
+                    string sha256;
+
+                    using (var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
+                    {
+                        await using (var output = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 128 * 1024, options: FileOptions.Asynchronous | FileOptions.SequentialScan))
+                        {
+                            int read;
+
+                            long lastReportedBytes = 0;
+                            var lastReportedAt = Stopwatch.StartNew();
+
+                            while ((read = await section.Body.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken)) > 0)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+
+                                var data = buffer.AsMemory(0, read);
+
+                                // 写入临时文件
+                                await output.WriteAsync(data, cancellationToken);
+
+                                hash.AppendData(data.Span);
+                                length += read;
+
+                                bool shouldReport = length - lastReportedBytes >= 1024 * 1024 || lastReportedAt.ElapsedMilliseconds >= 300;
+                                if (shouldReport)
+                                {
+                                    var progress = Math.Clamp((double)length / totalBytes * 100, 0, 100);
+                                    await _chatNotificationService.UploadProgressNotify(userId, platform, uploadId, progress, cancellationToken);
+
+                                    lastReportedBytes = length;
+                                    lastReportedAt.Restart();
+                                }
+                            }
+
+                            await output.FlushAsync(cancellationToken);
+                        }
+
+                        // 输出 64 位十六进制 SHA256
+                        sha256 = Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+                    }
+
+                    result = new UploadedFile
+                    {
+                        TempPath = tempFile,
+                        FileName = fileName,
+                        ContentType = contentType,
+                        Length = length,
+                        Sha256 = sha256
+                    };
+                }
+
+                if (result is null)
+                {
+                    throw new InvalidDataException($"未找到名为 {fieldName} 的文件");
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                completed = true;
+                return result;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+
+                // 接收失败、发生异常或取消时删除未完成的临时文件
+                if (!completed && tempFile is not null)
+                {
+                    try
+                    {
+                        if (System.IO.File.Exists(tempFile))
+                        {
+                            System.IO.File.Delete(tempFile);
+                        }
+                    }
+                    catch (IOException)
+                    {
+                        // 删除失败时，可由后台清理任务处理残留文件
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        // 当前进程没有删除权限
+                    }
+                }
+            }
         }
 
     }

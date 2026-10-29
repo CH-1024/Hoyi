@@ -20,6 +20,13 @@ namespace HY.MAUI.Models.MsgVM
             }
         }
 
+        private double uploadProgress;
+        public double UploadProgress
+        {
+            get { return uploadProgress; }
+            set { SetProperty(ref uploadProgress, value); }
+        }
+
         public string? Original_Image_Url => ApiUrl.Get_Origin_Image(File_Id);
         public string? Compressed_Image_Url => ApiUrl.Get_Compress_Image(File_Id);
         public string? Thumbnail_Image_Url => ApiUrl.Get_Thumb_Image(File_Id);

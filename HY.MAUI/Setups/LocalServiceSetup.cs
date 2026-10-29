@@ -1,5 +1,5 @@
-﻿using HY.MAUI.Communication.SendQueue;
-using HY.MAUI.Interfaces;
+﻿using HY.MAUI.Interfaces;
+using HY.MAUI.SendQueue;
 using HY.MAUI.Services;
 using HY.MAUI.Stores;
 using Microsoft.Maui.Handlers;

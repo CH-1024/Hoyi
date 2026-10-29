@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HY.MAUI.Communication.SendQueue
+namespace HY.MAUI.SendQueue
 {
     public class SendMessageTask
     {
-        public string TaskId { get; } = Guid.NewGuid().ToString();
+        public Guid TaskId { get; } = Guid.NewGuid();
 
         public MessageVM Message { get; set; }
 
@@ -25,6 +25,6 @@ namespace HY.MAUI.Communication.SendQueue
 
         public double Progress { get; set; }
 
-        public Exception Error { get; set; }
+        public Exception? Error { get; set; }
     }
 }

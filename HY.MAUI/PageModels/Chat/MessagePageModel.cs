@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HY.MAUI.Communication.Http;
-using HY.MAUI.Communication.SendQueue;
 using HY.MAUI.Communication.SignalR;
 using HY.MAUI.Communication.SignalR.Requests;
 using HY.MAUI.Dtos;
@@ -14,6 +13,7 @@ using HY.MAUI.Models.MsgVM;
 using HY.MAUI.PageModels.Chat.MessageCommands;
 using HY.MAUI.Pages.Chat;
 using HY.MAUI.Pages.Contact;
+using HY.MAUI.SendQueue;
 using HY.MAUI.Stores;
 using HY.MAUI.Tools;
 using Microsoft.Maui.ApplicationModel.Communication;
@@ -473,7 +473,11 @@ namespace HY.MAUI.PageModels.Chat
             await HandleMessage(task.Message);
 
             // 再入队
-            await _messageSendService.EnqueueAsync(task);
+            var isEnqueued = _messageSendService.Enqueue(task);
+            if (!isEnqueued)
+            {
+                textVM.Message_Status = MessageStatus.Failed;
+            }
 
             // 清空输入框
             InputText = "";
@@ -497,7 +501,11 @@ namespace HY.MAUI.PageModels.Chat
                 await HandleMessage(task.Message);
 
                 // 再入队
-                await _messageSendService.EnqueueAsync(task);
+                var isEnqueued = _messageSendService.Enqueue(task);
+                if (!isEnqueued)
+                {
+                    imageVM.Message_Status = MessageStatus.Failed;
+                }
             }
         }
 
@@ -519,7 +527,11 @@ namespace HY.MAUI.PageModels.Chat
                 await HandleMessage(task.Message);
 
                 // 再入队
-                await _messageSendService.EnqueueAsync(task);
+                var isEnqueued = _messageSendService.Enqueue(task);
+                if (!isEnqueued)
+                {
+                    videoVM.Message_Status = MessageStatus.Failed;
+                }
             }
         }
 

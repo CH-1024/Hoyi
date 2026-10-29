@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options =>
 {
     // 在Kestrel中配置请求体大小限制
-    options.Limits.MaxRequestBodySize = null;       // unlimited
+    options.Limits.MaxRequestBodySize = builder.Configuration.GetValue<long?>("Kestrel:Limits:MaxRequestBodySize");
 });
 
 // 创建 Startup 实例并配置服务

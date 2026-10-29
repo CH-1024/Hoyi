@@ -1,6 +1,6 @@
-﻿using HY.MAUI.Communication.SendQueue;
-using HY.MAUI.Interfaces;
+﻿using HY.MAUI.Interfaces;
 using HY.MAUI.Pages.Login;
+using HY.MAUI.SendQueue;
 using HY.MAUI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;

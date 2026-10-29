@@ -1,4 +1,5 @@
-﻿using HY.ApiService.Controllers.Requests;
+﻿using HY.ApiService.Controllers;
+using HY.ApiService.Controllers.Requests;
 using HY.ApiService.Dtos;
 using HY.ApiService.Enums;
 using HY.ApiService.Hubs;
@@ -39,6 +40,8 @@ namespace HY.ApiService.Services
 
         Task UpdateHeadNotify(long userId, string url, int platform);
         Task UpdateProfileNotify(long userId, UpdateUserRequest updateUserRequest, int platform);
+
+        Task UploadProgressNotify(long userId, int platform, Guid uploadId, double progress, CancellationToken cancellationToken);
     }
 
 
@@ -1046,6 +1049,25 @@ namespace HY.ApiService.Services
             });
             #endregion
         }
+
+
+        public async Task UploadProgressNotify(long currentUserId, int platform, Guid uploadId, double progress, CancellationToken cancellationToken)
+        {
+            var connectionId = await _redisConnectionService.GetConnectionIdAsync(currentUserId, platform);
+            if (!string.IsNullOrEmpty(connectionId))
+            {
+                try
+                {
+                    await _chatHub.Clients.Client(connectionId).SendAsync("UploadProgress", uploadId, progress, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    // 记录日志
+                    // _logger.LogError(ex, "上传进度通知失败，ConnectionId: {ConnectionId}", connectionId);
+                }
+            }
+        }
+
 
     }
 }

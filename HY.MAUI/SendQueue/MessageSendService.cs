@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HY.MAUI.Communication.SendQueue
+namespace HY.MAUI.SendQueue
 {
     public class MessageSendService
     {
@@ -13,9 +13,9 @@ namespace HY.MAUI.Communication.SendQueue
             _sendQueue = sendQueue;
         }
 
-        public async Task EnqueueAsync(SendMessageTask task)
+        public bool Enqueue(SendMessageTask task)
         {
-            await _sendQueue.Writer.WriteAsync(task);
+            return _sendQueue.AddTask(task);
         }
     }
 }

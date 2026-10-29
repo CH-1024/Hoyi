@@ -27,20 +27,9 @@ namespace HY.ApiService.Services
     {
         Task<CreateMediaFileReturn> CreateMediaFile(long userId, long storageId, string fileName, FileType fileType);
 
-        Task<UploadMediaFileReturn> UploadImageToLocal(long userId, IFormFile file);
-        Task<UploadMediaFileReturn> UploadImageToCOS(long userId, IFormFile file);
-        Task<UploadMediaFileReturn> UploadImageToOSS(long userId, IFormFile file);
-        Task<UploadMediaFileReturn> UploadImageToS3(long userId, IFormFile file);
-
-        Task<UploadMediaFileReturn> UploadVideoToLocal(long userId, IFormFile file);
-        Task<UploadMediaFileReturn> UploadVideoToCOS(long userId, IFormFile file);
-        Task<UploadMediaFileReturn> UploadVideoToOSS(long userId, IFormFile file);
-        Task<UploadMediaFileReturn> UploadVideoToS3(long userId, IFormFile file);
-
-        Task<UploadMediaFileReturn> UploadHeadToLocal(long userId, IFormFile file);
-        Task<UploadMediaFileReturn> UploadHeadToCOS(long userId, IFormFile file);
-        Task<UploadMediaFileReturn> UploadHeadToOSS(long userId, IFormFile file);
-        Task<UploadMediaFileReturn> UploadHeadToS3(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadHead(long userId, IFormFile file);
+        Task<UploadMediaFileReturn> UploadImage(long userId, UploadedFile file);
+        Task<UploadMediaFileReturn> UploadVideo(long userId, UploadedFile file);
 
         Task<GetMediaStorageReturn> GetMediaStorageByFileId(string fileId);
         Task<GetMediaStorageReturn> GetMediaStorageVariantByFileId(string fileId, VariantType variantType);
@@ -118,10 +107,392 @@ namespace HY.ApiService.Services
 
 
 
+        public async Task<UploadMediaFileReturn> UploadHead(long userId, IFormFile file)
+        {
+            var type = _configuration.GetSection("MediaStorage:Type").Value ?? throw new Exception("MediaStorage:Type is not configured");
 
-        public async Task<UploadMediaFileReturn> UploadImageToLocal(long userId, IFormFile file)
+            UploadMediaFileReturn result;
+
+            try
+            {
+                if (type == "Local")
+                {
+                    result = await UploadHeadToLocal(userId, file);
+                }
+                else
+                {
+                    result = new(false, "Unsupported media storage type");
+                }
+            }
+            finally
+            {
+
+            }
+
+            return result;
+        }
+
+        public async Task<UploadMediaFileReturn> UploadImage(long userId, UploadedFile file)
+        {
+            var type = _configuration.GetSection("MediaStorage:Type").Value ?? throw new Exception("MediaStorage:Type is not configured");
+
+            UploadMediaFileReturn result;
+
+            try
+            {
+                if (type == "Local")
+                {
+                    result = await UploadImageToLocal(userId, file);
+                }
+                else
+                {
+                    result = new(false, "Unsupported media storage type");
+                }
+            }
+            finally
+            {
+                // 删除临时文件
+                if (File.Exists(file.TempPath))
+                {
+                    File.Delete(file.TempPath);
+                }
+            }
+
+            return result;
+        }
+
+        public async Task<UploadMediaFileReturn> UploadVideo(long userId, UploadedFile file)
+        {
+            var type = _configuration.GetSection("MediaStorage:Type").Value ?? throw new Exception("MediaStorage:Type is not configured");
+
+            UploadMediaFileReturn result;
+
+            try
+            {
+                if (type == "Local")
+                {
+                    result = await UploadVideoToLocal(userId, file);
+                }
+                else
+                {
+                    result = new(false, "Unsupported media storage type");
+                }
+            }
+            finally
+            {
+                // 删除临时文件
+                if (File.Exists(file.TempPath))
+                {
+                    File.Delete(file.TempPath);
+                }
+            }
+
+            return result;
+        }
+
+
+
+        public async Task<GetMediaStorageReturn> GetMediaStorageByFileId(string fileId)
+        {
+            if (string.IsNullOrWhiteSpace(fileId)) return new(false, "File ID is required");
+
+            var mediaFileEntity = await _mediaFileRepository.GetFileByFileId(fileId);
+            if (mediaFileEntity == null) return new(false, "File not found");
+
+            var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageById(mediaFileEntity.Storage_Id);
+            if (mediaStorageEntity == null) return new(true, IsExist: false);
+            else if (mediaStorageEntity.Status != 1) return new(true, IsExist: false);
+
+            var type = mediaStorageEntity.Storage_Type;
+            var path = GetFileUrl(mediaStorageEntity.Storage_Type, mediaStorageEntity.Storage_Bucket, mediaStorageEntity.File_Path);
+            var mimeType = mediaStorageEntity.Mime_Type;
+            var fileDownloadName = Path.GetFileName(path);
+            return new(true, null, true, mediaStorageEntity.Id, type, path, mimeType, fileDownloadName);
+        }
+
+        public async Task<GetMediaStorageReturn> GetMediaStorageVariantByFileId(string fileId, VariantType variantType)
+        {
+            if (string.IsNullOrWhiteSpace(fileId)) return new(false, "File ID is required");
+
+            var mediaFileEntity = await _mediaFileRepository.GetFileByFileId(fileId);
+            if (mediaFileEntity == null) return new(false, "File not found");
+
+            var mediaStorageVariantEntity = await _mediaStorageVariantRepository.GetMediaStorageVariantByStorageIdAndVariantType(mediaFileEntity.Storage_Id, variantType);
+            if (mediaStorageVariantEntity == null) return new(true, IsExist: false);
+            else if (mediaStorageVariantEntity.Status != 1) return new(true, IsExist: false);
+
+            var type = mediaStorageVariantEntity.Storage_Type;
+            var path = GetFileUrl(mediaStorageVariantEntity.Storage_Type, mediaStorageVariantEntity.Storage_Bucket, mediaStorageVariantEntity.File_Path);
+            var mimeType = mediaStorageVariantEntity.Mime_Type;
+            var fileDownloadName = Path.GetFileName(path);
+            return new(true, null, true, mediaStorageVariantEntity.Id, type, path, mimeType, fileDownloadName);
+        }
+
+        public async Task<GetMediaStorageReturn> GetMediaStorageByFileSHA256(string fileSHA, long size)
+        {
+            if (string.IsNullOrWhiteSpace(fileSHA)) return new(false, "File SHA256 is required");
+
+            var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByFileSHA256(fileSHA);
+            if (mediaStorageEntity == null) return new(true, IsExist: false);
+            else if (mediaStorageEntity.File_Size != size) return new(false, "File size does not match");
+            else if (mediaStorageEntity.Status != 1) return new(true, IsExist: false);
+
+            var type = mediaStorageEntity.Storage_Type;
+            var path = GetFileUrl(mediaStorageEntity.Storage_Type, mediaStorageEntity.Storage_Bucket, mediaStorageEntity.File_Path);
+            var mimeType = mediaStorageEntity.Mime_Type;
+            var fileDownloadName = Path.GetFileName(path);
+            return new(true, null, true, mediaStorageEntity.Id, type, path, mimeType, fileDownloadName);
+        }
+
+
+
+
+
+
+
+        private async Task<UploadMediaFileReturn> UploadHeadToLocal(long userId, IFormFile file)
         {
             var tempPath = Path.GetTempFileName();
+            var filePathWithBucket = string.Empty;
+            var thumbFilePathWithBucket = string.Empty;
+            Exception? e = null;
+            string? fileId = null;
+
+            var ext = Path.GetExtension(file.FileName) ?? ".jpg";
+            var utcNow = DateTime.UtcNow;
+
+            var bucket = _configuration.GetSection("MediaStorage:Local:Bucket").Value ?? throw new Exception("MediaStorage:Local:Bucket is not configured");
+            var path = _configuration.GetSection("MediaStorage:Local:Path").Value ?? throw new Exception("MediaStorage:Local:Path is not configured");
+            var basePath = Path.Combine(path, utcNow.ToString("yyyy"), utcNow.ToString("MM"), utcNow.ToString("dd"));
+
+            MediaFileEntity mediaFileEntity;
+            try
+            {
+                // 保存文件到临时位置并计算SHA256
+                var sha256 = await SaveAndHashAsync(tempPath, file);
+
+                var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByFileSHA256(sha256);
+                if (mediaStorageEntity != null && mediaStorageEntity.Status == 1)
+                {
+                    // 文件已存在且可用，增加引用计数
+
+                    // 开启事务
+                    var result = await _db.Ado.UseTranAsync(async () =>
+                    {
+                        mediaStorageEntity.Ref_Count++;
+                        var bol = await _mediaStorageRepository.UpdateMediaStorageRefCount(mediaStorageEntity.Id, mediaStorageEntity.Ref_Count);
+                        if (!bol) throw new Exception("更新引用计数失败");
+
+                        mediaFileEntity = new MediaFileEntity
+                        {
+                            File_Id = Guid.NewGuid().ToString("N"),
+                            Storage_Id = mediaStorageEntity.Id,
+                            User_Id = userId,
+                            File_Type = FileType.Image,
+                            Original_Name = Path.GetFileName(file.FileName),
+                            Width = null,
+                            Height = null,
+                            Duration = null,
+                            Status = 1,
+                            Created_At = DateTime.UtcNow,
+                        };
+                        var id = await _mediaFileRepository.CreateMediaFile(mediaFileEntity);
+                        if (id <= 0) throw new Exception("创建文件记录失败");
+
+                        fileId = mediaFileEntity.File_Id;
+                    });
+
+                    // ---------- 事务结束 ----------
+                    if (!result.IsSuccess) throw new Exception($"增加引用计数失败：{result.ErrorMessage}");
+                }
+                else if (mediaStorageEntity != null && mediaStorageEntity.Status == 0)
+                {
+                    // 文件已存在但已删除，恢复文件并更新数据库记录
+
+
+                    #region 将临时文件移动到目标位置
+
+                    var fileName = $"{Guid.NewGuid():N}{ext}";
+
+                    var filePathWithoutBucket = Path.Combine(basePath, "image", fileName);
+                    filePathWithBucket = Path.Combine(bucket, filePathWithoutBucket);
+
+                    var dir1 = Path.GetDirectoryName(filePathWithBucket);
+                    if (!Directory.Exists(dir1)) Directory.CreateDirectory(dir1!);
+
+                    File.Move(tempPath, filePathWithBucket);
+
+                    #endregion
+
+
+                    #region 获取目标头像
+
+                    var thumbFileName = $"{Guid.NewGuid():N}{ext}";
+
+                    var thumbFilePathWithoutBucket = Path.Combine(basePath, "thumb", thumbFileName);
+                    thumbFilePathWithBucket = Path.Combine(bucket, thumbFilePathWithoutBucket);
+
+                    var dir2 = Path.GetDirectoryName(thumbFilePathWithBucket);
+                    if (!Directory.Exists(dir2)) Directory.CreateDirectory(dir2!);
+
+                    var thumbLength = await CreateResizeImage(filePathWithBucket, thumbFilePathWithBucket, 128, 80);
+
+                    #endregion
+
+                    // 开启事务
+                    var result = await _db.Ado.UseTranAsync(async () =>
+                    {
+                        // 统一 Windows 和 Linux 的数据库存储格式
+                        var _filePathWithoutBucket = filePathWithoutBucket.Replace("\\", "/");
+                        var _thumbFilePathWithoutBucket = thumbFilePathWithoutBucket.Replace("\\", "/");
+
+                        mediaStorageEntity.File_Path = _filePathWithoutBucket;
+                        mediaStorageEntity.Storage_Bucket = bucket;
+                        mediaStorageEntity.Storage_Type = StorageType.Local;
+                        mediaStorageEntity.Ref_Count = 1;
+                        mediaStorageEntity.Status = 1;
+                        var bol1 = await _mediaStorageRepository.UpdateMediaStorage(mediaStorageEntity);
+                        if (!bol1) throw new Exception("恢复文件记录失败");
+
+                        var bol2 = await _mediaStorageVariantRepository.UpdateMediaStorageVariant(mediaStorageEntity.Id, VariantType.Thumbnail, _thumbFilePathWithoutBucket, file.ContentType, bucket, StorageType.Local, 1);
+                        if (!bol2) throw new Exception("更新缩略图记录失败");
+
+                        mediaFileEntity = new MediaFileEntity
+                        {
+                            File_Id = Guid.NewGuid().ToString("N"),
+                            Storage_Id = mediaStorageEntity.Id,
+                            User_Id = userId,
+                            File_Type = FileType.Image,
+                            Original_Name = Path.GetFileName(file.FileName),
+                            Width = null,
+                            Height = null,
+                            Duration = null,
+                            Status = 1,
+                            Created_At = DateTime.UtcNow,
+                        };
+                        var id = await _mediaFileRepository.CreateMediaFile(mediaFileEntity);
+                        if (id <= 0) throw new Exception("创建文件记录失败");
+
+                        fileId = mediaFileEntity.File_Id;
+                    });
+
+                    // ---------- 事务结束 ----------
+                    if (!result.IsSuccess) throw new Exception($"更新数据库记录失败：{result.ErrorMessage}");
+                }
+                else
+                {
+                    // 文件不存在，移动文件到目标位置并创建数据库记录
+
+
+                    #region 将临时文件移动到目标位置
+
+                    var fileName = $"{Guid.NewGuid():N}{ext}";
+
+                    var filePathWithoutBucket = Path.Combine(basePath, "image", fileName);
+                    filePathWithBucket = Path.Combine(bucket, filePathWithoutBucket);
+
+                    var dir1 = Path.GetDirectoryName(filePathWithBucket);
+                    if (!Directory.Exists(dir1)) Directory.CreateDirectory(dir1!);
+
+                    File.Move(tempPath, filePathWithBucket);
+
+                    #endregion
+
+
+                    #region 获取目标头像
+
+                    var thumbFileName = $"{Guid.NewGuid():N}{ext}";
+
+                    var thumbFilePathWithoutBucket = Path.Combine(basePath, "thumb", thumbFileName);
+                    thumbFilePathWithBucket = Path.Combine(bucket, thumbFilePathWithoutBucket);
+
+                    var dir2 = Path.GetDirectoryName(thumbFilePathWithBucket);
+                    if (!Directory.Exists(dir2)) Directory.CreateDirectory(dir2!);
+
+                    var thumbLength = await CreateResizeImage(filePathWithBucket, thumbFilePathWithBucket, 128, 80);
+
+                    #endregion
+
+
+                    // 开启事务
+                    var result = await _db.Ado.UseTranAsync(async () =>
+                    {
+                        // 统一 Windows 和 Linux 的数据库存储格式
+                        var _filePathWithoutBucket = filePathWithoutBucket.Replace("\\", "/");
+                        var _thumbFilePathWithoutBucket = thumbFilePathWithoutBucket.Replace("\\", "/");
+
+                        mediaStorageEntity = new MediaStorageEntity
+                        {
+                            File_SHA256 = sha256,
+                            File_Path = _filePathWithoutBucket,
+                            File_Size = file.Length,
+                            Mime_Type = file.ContentType,
+                            Storage_Bucket = bucket,
+                            Storage_Type = StorageType.Local,
+                            Ref_Count = 1,
+                            Variant_Mask = (int)VariantType.Thumbnail,
+                            Status = 1,
+                            Created_At = DateTime.UtcNow,
+                        };
+                        var id1 = await _mediaStorageRepository.CreateMediaStorage(mediaStorageEntity);
+                        if (id1 <= 0) throw new Exception("创建文件记录失败");
+
+                        var thumb_mediaStorageVariantEntity = new MediaStorageVariantEntity
+                        {
+                            Storage_Id = mediaStorageEntity.Id,
+                            Variant_Type = VariantType.Thumbnail,
+                            File_Path = _thumbFilePathWithoutBucket,
+                            File_Size = thumbLength,
+                            Mime_Type = file.ContentType,
+                            Storage_Bucket = bucket,
+                            Storage_Type = StorageType.Local,
+                            Status = 1,
+                            Created_At = DateTime.UtcNow,
+                        };
+                        var id2 = await _mediaStorageVariantRepository.CreateMediaStorageVariant(thumb_mediaStorageVariantEntity);
+                        if (id2 <= 0) throw new Exception("创建缩略图记录失败");
+
+                        mediaFileEntity = new MediaFileEntity
+                        {
+                            File_Id = Guid.NewGuid().ToString("N"),
+                            Storage_Id = mediaStorageEntity.Id,
+                            User_Id = userId,
+                            File_Type = FileType.Image,
+                            Original_Name = Path.GetFileName(file.FileName),
+                            Width = null,
+                            Height = null,
+                            Duration = null,
+                            Status = 1,
+                            Created_At = DateTime.UtcNow,
+                        };
+                        var id = await _mediaFileRepository.CreateMediaFile(mediaFileEntity);
+                        if (id <= 0) throw new Exception("创建文件记录失败");
+
+                        fileId = mediaFileEntity.File_Id;
+                    });
+
+                    // ---------- 事务结束 ----------
+                    if (!result.IsSuccess) throw new Exception($"创建数据库记录失败：{result.ErrorMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                e = ex;
+
+                if (!string.IsNullOrEmpty(filePathWithBucket)) File.Delete(filePathWithBucket);
+                if (!string.IsNullOrEmpty(thumbFilePathWithBucket)) File.Delete(thumbFilePathWithBucket);
+            }
+            finally
+            {
+                File.Delete(tempPath);
+            }
+
+            return new(e == null, e?.Message, fileId);
+        }
+
+        private async Task<UploadMediaFileReturn> UploadImageToLocal(long userId, UploadedFile file)
+        {
+            var tempPath = file.TempPath;
             var filePathWithBucket = string.Empty;
             var thumbFilePathWithBucket = string.Empty;
             var compressFilePathWithBucket = string.Empty;
@@ -139,7 +510,7 @@ namespace HY.ApiService.Services
             try
             {
                 // 保存文件到临时位置并计算SHA256
-                var sha256 = await SaveAndHashAsync(tempPath, file);
+                var sha256 = file.Sha256;
 
                 var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByFileSHA256(sha256);
                 if (mediaStorageEntity != null && mediaStorageEntity.Status == 1)
@@ -395,7 +766,6 @@ namespace HY.ApiService.Services
                     // ---------- 事务结束 ----------
                     if (!result.IsSuccess) throw new Exception($"创建数据库记录失败：{result.ErrorMessage}");
                 }
-
             }
             catch (Exception ex)
             {
@@ -413,28 +783,9 @@ namespace HY.ApiService.Services
             return new (e == null, e?.Message, fileId);
         }
 
-        public async Task<UploadMediaFileReturn> UploadImageToCOS(long userId, IFormFile file)
+        private async Task<UploadMediaFileReturn> UploadVideoToLocal(long userId, UploadedFile file)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<UploadMediaFileReturn> UploadImageToOSS(long userId, IFormFile file)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<UploadMediaFileReturn> UploadImageToS3(long userId, IFormFile file)
-        {
-            throw new NotImplementedException();
-        }
-
-
-
-
-
-        public async Task<UploadMediaFileReturn> UploadVideoToLocal(long userId, IFormFile file)
-        {
-            var tempPath = Path.GetTempFileName();
+            var tempPath = file.TempPath;
             var filePathWithBucket = string.Empty;
             var coverFilePathWithBucket = string.Empty;
             var compressFilePathWithBucket = string.Empty;
@@ -452,7 +803,7 @@ namespace HY.ApiService.Services
             try
             {
                 // 保存文件到临时位置并计算SHA256
-                var sha256 = await SaveAndHashAsync(tempPath, file);
+                var sha256 = file.Sha256;
 
                 var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByFileSHA256(sha256);
                 if (mediaStorageEntity != null && mediaStorageEntity.Status == 1)
@@ -708,7 +1059,6 @@ namespace HY.ApiService.Services
                     // ---------- 事务结束 ----------
                     if (!result.IsSuccess) throw new Exception($"创建数据库记录失败：{result.ErrorMessage}");
                 }
-
             }
             catch (Exception ex)
             {
@@ -725,337 +1075,6 @@ namespace HY.ApiService.Services
 
             return new (e == null, e?.Message, fileId);
         }
-
-        public async Task<UploadMediaFileReturn> UploadVideoToCOS(long userId, IFormFile file)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<UploadMediaFileReturn> UploadVideoToOSS(long userId, IFormFile file)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<UploadMediaFileReturn> UploadVideoToS3(long userId, IFormFile file)
-        {
-            throw new NotImplementedException();
-        }
-
-
-
-
-        public async Task<UploadMediaFileReturn> UploadHeadToLocal(long userId, IFormFile file)
-        {
-            var tempPath = Path.GetTempFileName();
-            var filePathWithBucket = string.Empty;
-            var thumbFilePathWithBucket = string.Empty;
-            Exception? e = null;
-            string? fileId = null;
-
-            var ext = Path.GetExtension(file.FileName) ?? ".jpg";
-            var utcNow = DateTime.UtcNow;
-
-            var bucket = _configuration.GetSection("MediaStorage:Local:Bucket").Value ?? throw new Exception("MediaStorage:Local:Bucket is not configured");
-            var path = _configuration.GetSection("MediaStorage:Local:Path").Value ?? throw new Exception("MediaStorage:Local:Path is not configured");
-            var basePath = Path.Combine(path, utcNow.ToString("yyyy"), utcNow.ToString("MM"), utcNow.ToString("dd"));
-
-            MediaFileEntity mediaFileEntity;
-            try
-            {
-                // 保存文件到临时位置并计算SHA256
-                var sha256 = await SaveAndHashAsync(tempPath, file);
-
-                var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByFileSHA256(sha256);
-                if (mediaStorageEntity != null && mediaStorageEntity.Status == 1)
-                {
-                    // 文件已存在且可用，增加引用计数
-
-                    // 开启事务
-                    var result = await _db.Ado.UseTranAsync(async () =>
-                    {
-                        mediaStorageEntity.Ref_Count++;
-                        var bol = await _mediaStorageRepository.UpdateMediaStorageRefCount(mediaStorageEntity.Id, mediaStorageEntity.Ref_Count);
-                        if (!bol) throw new Exception("更新引用计数失败");
-
-                        mediaFileEntity = new MediaFileEntity
-                        {
-                            File_Id = Guid.NewGuid().ToString("N"),
-                            Storage_Id = mediaStorageEntity.Id,
-                            User_Id = userId,
-                            File_Type = FileType.Image,
-                            Original_Name = Path.GetFileName(file.FileName),
-                            Width = null,
-                            Height = null,
-                            Duration = null,
-                            Status = 1,
-                            Created_At = DateTime.UtcNow,
-                        };
-                        var id = await _mediaFileRepository.CreateMediaFile(mediaFileEntity);
-                        if (id <= 0) throw new Exception("创建文件记录失败");
-
-                        fileId = mediaFileEntity.File_Id;
-                    });
-
-                    // ---------- 事务结束 ----------
-                    if (!result.IsSuccess) throw new Exception($"增加引用计数失败：{result.ErrorMessage}");
-                }
-                else if (mediaStorageEntity != null && mediaStorageEntity.Status == 0)
-                {
-                    // 文件已存在但已删除，恢复文件并更新数据库记录
-
-
-                    #region 将临时文件移动到目标位置
-
-                    var fileName = $"{Guid.NewGuid():N}{ext}";
-
-                    var filePathWithoutBucket = Path.Combine(basePath, "image", fileName);
-                    filePathWithBucket = Path.Combine(bucket, filePathWithoutBucket);
-
-                    var dir1 = Path.GetDirectoryName(filePathWithBucket);
-                    if (!Directory.Exists(dir1)) Directory.CreateDirectory(dir1!);
-
-                    File.Move(tempPath, filePathWithBucket);
-
-                    #endregion
-
-
-                    #region 获取目标头像
-
-                    var thumbFileName = $"{Guid.NewGuid():N}{ext}";
-
-                    var thumbFilePathWithoutBucket = Path.Combine(basePath, "thumb", thumbFileName);
-                    thumbFilePathWithBucket = Path.Combine(bucket, thumbFilePathWithoutBucket);
-
-                    var dir2 = Path.GetDirectoryName(thumbFilePathWithBucket);
-                    if (!Directory.Exists(dir2)) Directory.CreateDirectory(dir2!);
-
-                    var thumbLength = await CreateResizeImage(filePathWithBucket, thumbFilePathWithBucket, 128, 80);
-
-                    #endregion
-
-                    // 开启事务
-                    var result = await _db.Ado.UseTranAsync(async () =>
-                    {
-                        // 统一 Windows 和 Linux 的数据库存储格式
-                        var _filePathWithoutBucket = filePathWithoutBucket.Replace("\\", "/");
-                        var _thumbFilePathWithoutBucket = thumbFilePathWithoutBucket.Replace("\\", "/");
-
-                        mediaStorageEntity.File_Path = _filePathWithoutBucket;
-                        mediaStorageEntity.Storage_Bucket = bucket;
-                        mediaStorageEntity.Storage_Type = StorageType.Local;
-                        mediaStorageEntity.Ref_Count = 1;
-                        mediaStorageEntity.Status = 1;
-                        var bol1 = await _mediaStorageRepository.UpdateMediaStorage(mediaStorageEntity);
-                        if (!bol1) throw new Exception("恢复文件记录失败");
-
-                        var bol2 = await _mediaStorageVariantRepository.UpdateMediaStorageVariant(mediaStorageEntity.Id, VariantType.Thumbnail, _thumbFilePathWithoutBucket, file.ContentType, bucket, StorageType.Local, 1);
-                        if (!bol2) throw new Exception("更新缩略图记录失败");
-
-                        mediaFileEntity = new MediaFileEntity
-                        {
-                            File_Id = Guid.NewGuid().ToString("N"),
-                            Storage_Id = mediaStorageEntity.Id,
-                            User_Id = userId,
-                            File_Type = FileType.Image,
-                            Original_Name = Path.GetFileName(file.FileName),
-                            Width = null,
-                            Height = null,
-                            Duration = null,
-                            Status = 1,
-                            Created_At = DateTime.UtcNow,
-                        };
-                        var id = await _mediaFileRepository.CreateMediaFile(mediaFileEntity);
-                        if (id <= 0) throw new Exception("创建文件记录失败");
-
-                        fileId = mediaFileEntity.File_Id;
-                    });
-
-                    // ---------- 事务结束 ----------
-                    if (!result.IsSuccess) throw new Exception($"更新数据库记录失败：{result.ErrorMessage}");
-                }
-                else
-                {
-                    // 文件不存在，移动文件到目标位置并创建数据库记录
-
-
-                    #region 将临时文件移动到目标位置
-
-                    var fileName = $"{Guid.NewGuid():N}{ext}";
-
-                    var filePathWithoutBucket = Path.Combine(basePath, "image", fileName);
-                    filePathWithBucket = Path.Combine(bucket, filePathWithoutBucket);
-
-                    var dir1 = Path.GetDirectoryName(filePathWithBucket);
-                    if (!Directory.Exists(dir1)) Directory.CreateDirectory(dir1!);
-
-                    File.Move(tempPath, filePathWithBucket);
-
-                    #endregion
-
-
-                    #region 获取目标头像
-
-                    var thumbFileName = $"{Guid.NewGuid():N}{ext}";
-
-                    var thumbFilePathWithoutBucket = Path.Combine(basePath, "thumb", thumbFileName);
-                    thumbFilePathWithBucket = Path.Combine(bucket, thumbFilePathWithoutBucket);
-
-                    var dir2 = Path.GetDirectoryName(thumbFilePathWithBucket);
-                    if (!Directory.Exists(dir2)) Directory.CreateDirectory(dir2!);
-
-                    var thumbLength = await CreateResizeImage(filePathWithBucket, thumbFilePathWithBucket, 128, 80);
-
-                    #endregion
-
-
-                    // 开启事务
-                    var result = await _db.Ado.UseTranAsync(async () =>
-                    {
-                        // 统一 Windows 和 Linux 的数据库存储格式
-                        var _filePathWithoutBucket = filePathWithoutBucket.Replace("\\", "/");
-                        var _thumbFilePathWithoutBucket = thumbFilePathWithoutBucket.Replace("\\", "/");
-
-                        mediaStorageEntity = new MediaStorageEntity
-                        {
-                            File_SHA256 = sha256,
-                            File_Path = _filePathWithoutBucket,
-                            File_Size = file.Length,
-                            Mime_Type = file.ContentType,
-                            Storage_Bucket = bucket,
-                            Storage_Type = StorageType.Local,
-                            Ref_Count = 1,
-                            Variant_Mask = (int)VariantType.Thumbnail,
-                            Status = 1,
-                            Created_At = DateTime.UtcNow,
-                        };
-                        var id1 = await _mediaStorageRepository.CreateMediaStorage(mediaStorageEntity);
-                        if (id1 <= 0) throw new Exception("创建文件记录失败");
-
-                        var thumb_mediaStorageVariantEntity = new MediaStorageVariantEntity
-                        {
-                            Storage_Id = mediaStorageEntity.Id,
-                            Variant_Type = VariantType.Thumbnail,
-                            File_Path = _thumbFilePathWithoutBucket,
-                            File_Size = thumbLength,
-                            Mime_Type = file.ContentType,
-                            Storage_Bucket = bucket,
-                            Storage_Type = StorageType.Local,
-                            Status = 1,
-                            Created_At = DateTime.UtcNow,
-                        };
-                        var id2 = await _mediaStorageVariantRepository.CreateMediaStorageVariant(thumb_mediaStorageVariantEntity);
-                        if (id2 <= 0) throw new Exception("创建缩略图记录失败");
-
-                        mediaFileEntity = new MediaFileEntity
-                        {
-                            File_Id = Guid.NewGuid().ToString("N"),
-                            Storage_Id = mediaStorageEntity.Id,
-                            User_Id = userId,
-                            File_Type = FileType.Image,
-                            Original_Name = Path.GetFileName(file.FileName),
-                            Width = null,
-                            Height = null,
-                            Duration = null,
-                            Status = 1,
-                            Created_At = DateTime.UtcNow,
-                        };
-                        var id = await _mediaFileRepository.CreateMediaFile(mediaFileEntity);
-                        if (id <= 0) throw new Exception("创建文件记录失败");
-
-                        fileId = mediaFileEntity.File_Id;
-                    });
-
-                    // ---------- 事务结束 ----------
-                    if (!result.IsSuccess) throw new Exception($"创建数据库记录失败：{result.ErrorMessage}");
-                }
-            }
-            catch (Exception ex)
-            {
-                e = ex;
-
-                if (!string.IsNullOrEmpty(filePathWithBucket)) File.Delete(filePathWithBucket);
-                if (!string.IsNullOrEmpty(thumbFilePathWithBucket)) File.Delete(thumbFilePathWithBucket);
-            }
-            finally
-            {
-                File.Delete(tempPath);
-            }
-
-            return new (e == null, e?.Message, fileId);
-        }
-
-        public async Task<UploadMediaFileReturn> UploadHeadToCOS(long userId, IFormFile file)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<UploadMediaFileReturn> UploadHeadToOSS(long userId, IFormFile file)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<UploadMediaFileReturn> UploadHeadToS3(long userId, IFormFile file)
-        {
-            throw new NotImplementedException();
-        }
-
-
-
-
-
-        public async Task<GetMediaStorageReturn> GetMediaStorageByFileId(string fileId)
-        {
-            if (string.IsNullOrWhiteSpace(fileId)) return new(false, "File ID is required");
-
-            var mediaFileEntity = await _mediaFileRepository.GetFileByFileId(fileId);
-            if (mediaFileEntity == null) return new(false, "File not found");
-
-            var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageById(mediaFileEntity.Storage_Id);
-            if (mediaStorageEntity == null) return new(true, IsExist: false);
-            else if (mediaStorageEntity.Status != 1) return new(true, IsExist: false);
-
-            var type = mediaStorageEntity.Storage_Type;
-            var path = GetFileUrl(mediaStorageEntity.Storage_Type, mediaStorageEntity.Storage_Bucket, mediaStorageEntity.File_Path);
-            var mimeType = mediaStorageEntity.Mime_Type;
-            var fileDownloadName = Path.GetFileName(path);
-            return new(true, null, true, mediaStorageEntity.Id, type, path, mimeType, fileDownloadName);
-        }
-
-        public async Task<GetMediaStorageReturn> GetMediaStorageVariantByFileId(string fileId, VariantType variantType)
-        {
-            if (string.IsNullOrWhiteSpace(fileId)) return new(false, "File ID is required");
-
-            var mediaFileEntity = await _mediaFileRepository.GetFileByFileId(fileId);
-            if (mediaFileEntity == null) return new(false, "File not found");
-
-            var mediaStorageVariantEntity = await _mediaStorageVariantRepository.GetMediaStorageVariantByStorageIdAndVariantType(mediaFileEntity.Storage_Id, variantType);
-            if (mediaStorageVariantEntity == null) return new(true, IsExist: false);
-            else if (mediaStorageVariantEntity.Status != 1) return new(true, IsExist: false);
-
-            var type = mediaStorageVariantEntity.Storage_Type;
-            var path = GetFileUrl(mediaStorageVariantEntity.Storage_Type, mediaStorageVariantEntity.Storage_Bucket, mediaStorageVariantEntity.File_Path);
-            var mimeType = mediaStorageVariantEntity.Mime_Type;
-            var fileDownloadName = Path.GetFileName(path);
-            return new(true, null, true, mediaStorageVariantEntity.Id, type, path, mimeType, fileDownloadName);
-        }
-
-        public async Task<GetMediaStorageReturn> GetMediaStorageByFileSHA256(string fileSHA, long size)
-        {
-            if (string.IsNullOrWhiteSpace(fileSHA)) return new(false, "File SHA256 is required");
-
-            var mediaStorageEntity = await _mediaStorageRepository.GetMediaStorageByFileSHA256(fileSHA);
-            if (mediaStorageEntity == null) return new(true, IsExist: false);
-            else if (mediaStorageEntity.File_Size != size) return new(false, "File size does not match");
-            else if (mediaStorageEntity.Status != 1) return new(true, IsExist: false);
-
-            var type = mediaStorageEntity.Storage_Type;
-            var path = GetFileUrl(mediaStorageEntity.Storage_Type, mediaStorageEntity.Storage_Bucket, mediaStorageEntity.File_Path);
-            var mimeType = mediaStorageEntity.Mime_Type;
-            var fileDownloadName = Path.GetFileName(path);
-            return new(true, null, true, mediaStorageEntity.Id, type, path, mimeType, fileDownloadName);
-        }
-
-
 
 
 
