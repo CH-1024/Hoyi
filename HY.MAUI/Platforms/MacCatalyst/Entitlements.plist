@@ -27,13 +27,9 @@
             <string>$(AppIdentifierPrefix)$(CFBundleIdentifier)</string>
         </array>
         
-        <!-- 允许用户选择文件 -->
-        <key>com.apple.security.files.user-selected.read-only</key>
+        <!-- 允许用户 修改/写入 文件 -->
+        <key>com.apple.security.files.user-selected.read-write</key>
         <true/>
-
-        <!-- 允许用户 修改/写入 文件-->
-        <!--        <key>com.apple.security.files.user-selected.read-write</key>-->
-        <!--        <true/>-->
 
 <!--        <key>com.apple.security.assets.movies.read-only</key>-->
 <!--        <true/>-->

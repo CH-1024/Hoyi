@@ -55,10 +55,10 @@
 	
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#1f1f1f" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#1f1f1f" BaseSize="128,128" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -85,12 +85,12 @@
 		<PackageReference Include="CommunityToolkit.Maui.Camera" Version="6.1.0" />
 		<PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="10.0.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.13" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.13" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.14" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.120" />
 		<PackageReference Include="SIPSorcery" Version="10.0.17" />
 		<PackageReference Include="SIPSorcery.VP8" Version="10.0.17" />
-		<PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="4.153.1" />
+		<PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="4.154.0" />
 	</ItemGroup>
 
 	<ItemGroup>
