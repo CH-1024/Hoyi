@@ -78,7 +78,7 @@
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Grid ColumnDefinitions="*,auto,auto,*">
+        <Grid ColumnDefinitions="*,auto,auto,*" Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}">
             <Label Grid.Column="1" Text="{Binding Title}" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
             <Ellipse Grid.Column="2" MinimumHeightRequest="0" MinimumWidthRequest="0" WidthRequest="8" HeightRequest="8" Margin="5,0,0,0">
                 <Ellipse.Triggers>
@@ -104,7 +104,7 @@
         <ToolbarItem Text="消息免打扰" Order="Secondary" Priority="1" />
         <ToolbarItem Text="提醒" Order="Secondary" Priority="2" />
         <ToolbarItem Text="清空聊天记录" Order="Secondary" Priority="3" />
-        <ToolbarItem Text="弹出测试" Order="Secondary" Priority="4" Clicked="Button_Clicked"/>
+        <ToolbarItem Text="弹出测试" Order="Secondary" Priority="4" Clicked="Popup_Clicked"/>
     </ContentPage.ToolbarItems>
 
 

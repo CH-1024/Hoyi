@@ -24,7 +24,7 @@ public partial class MessagePage : ContentPage
         BindingContext = message;
     }
 
-    private async void Button_Clicked(object sender, EventArgs e)
+    private async void Popup_Clicked(object sender, EventArgs e)
     {
         if (editor.IsSoftInputShowing())
         {
@@ -59,6 +59,9 @@ public partial class MessagePage : ContentPage
         var pop = new AnimPopup1();
         await this.ShowPopupAsync(pop, option);
     }
+
+
+
 
     private async void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
     {

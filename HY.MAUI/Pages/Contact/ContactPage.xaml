@@ -4,12 +4,11 @@
              x:Class="HY.MAUI.Pages.Contact.ContactPage"
              x:Name="_ContactPage"
              Shell.NavBarIsVisible="{OnIdiom Phone=True, Desktop=True}"
-             Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=True}"
+             Shell.TabBarIsVisible="False"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:pm="clr-namespace:HY.MAUI.PageModels.Contact"
              xmlns:m="clr-namespace:HY.MAUI.Models"
              xmlns:controls="clr-namespace:HY.MAUI.Controls"
-             Padding="{OnIdiom Phone=0, Desktop=5}"
              x:DataType="pm:ContactPageModel">
 
     <ContentPage.Resources>
@@ -51,53 +50,61 @@
         <ToolbarItem Text="添加联系人" Order="Secondary" Priority="1" Command="{Binding SearchContactCommand}"/>
     </ContentPage.ToolbarItems>
 
-    <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}">
-        <ScrollView>
+    
+    <Grid RowDefinitions="*,Auto">
 
-            <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
+        <Grid Grid.Row="0" Padding="{OnIdiom Phone=0, Desktop=5}">
+            <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}">
+                <ScrollView>
 
-                <SearchBar x:Name="searchBar" Margin="0" Focused="SearchBar_OnFocused"/>
+                    <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
 
-                <Grid Grid.Row="1" RowDefinitions="Auto,Auto" RowSpacing="1">
-                    <!--<controls:BadgeView Grid.Row="0" IsVisible="{Binding Request_Count_Visible}" Text="{Binding Request_Count_Show}" HorizontalOptions="End" VerticalOptions="Center" BadgeColor="Red" TextColor="White" ZIndex="1"/>-->
-                    <Button Grid.Row="0" Style="{StaticResource IconBtn1}" Text="申请中" Command="{Binding RequestCommand}"/>
+                        <SearchBar x:Name="searchBar" Margin="0" Focused="SearchBar_OnFocused"/>
 
-                    <!--<controls:BadgeView Grid.Row="1" IsVisible="{Binding Respond_Count_Visible}" Text="{Binding Respond_Count_Show}" HorizontalOptions="End" VerticalOptions="Center" BadgeColor="Red" TextColor="White" ZIndex="1"/>-->
-                    <Button Grid.Row="1" Style="{StaticResource IconBtn1}" Text="待同意" Command="{Binding RespondCommand}"/>
-                </Grid>
+                        <Grid Grid.Row="1" RowDefinitions="Auto,Auto" RowSpacing="1">
+                            <!--<controls:BadgeView Grid.Row="0" IsVisible="{Binding Request_Count_Visible}" Text="{Binding Request_Count_Show}" HorizontalOptions="End" VerticalOptions="Center" BadgeColor="Red" TextColor="White" ZIndex="1"/>-->
+                            <Button Grid.Row="0" Style="{StaticResource IconBtn1}" Text="申请中" Command="{Binding RequestCommand}"/>
 
-                <Picker Grid.Row="2" Margin="0" Title="类型：" SelectedIndex="0">
-                    <Picker.Items>
-                        <x:String>好友</x:String>
-                        <x:String>群组</x:String>
-                    </Picker.Items>
-                </Picker>
+                            <!--<controls:BadgeView Grid.Row="1" IsVisible="{Binding Respond_Count_Visible}" Text="{Binding Respond_Count_Show}" HorizontalOptions="End" VerticalOptions="Center" BadgeColor="Red" TextColor="White" ZIndex="1"/>-->
+                            <Button Grid.Row="1" Style="{StaticResource IconBtn1}" Text="待同意" Command="{Binding RespondCommand}"/>
+                        </Grid>
 
-                <CollectionView Grid.Row="3" ItemsSource="{Binding ContactCollection}" SelectedItem="{Binding SelectedContact}" SelectionMode="Single" SelectionChangedCommand="{Binding SelectionChangedCommand}">
-                    <CollectionView.ItemsLayout>
-                        <LinearItemsLayout ItemSpacing="0" Orientation="Vertical"/>
-                    </CollectionView.ItemsLayout>
+                        <Picker Grid.Row="2" Margin="0" Title="类型：" SelectedIndex="0">
+                            <Picker.Items>
+                                <x:String>好友</x:String>
+                                <x:String>群组</x:String>
+                            </Picker.Items>
+                        </Picker>
 
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="m:ContactVM">
-                            <Border Padding="5" StrokeThickness="0">
+                        <CollectionView Grid.Row="3" ItemsSource="{Binding ContactCollection}" SelectedItem="{Binding SelectedContact}" SelectionMode="Single" SelectionChangedCommand="{Binding SelectionChangedCommand}">
+                            <CollectionView.ItemsLayout>
+                                <LinearItemsLayout ItemSpacing="0" Orientation="Vertical"/>
+                            </CollectionView.ItemsLayout>
 
-                                <Grid ColumnDefinitions="50,*" ColumnSpacing="5">
-                                    <toolkit:AvatarView ImageSource="{Binding Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="m:ContactVM">
+                                    <Border Padding="5" StrokeThickness="0">
 
-                                    <Label Grid.Column="1" Text="{Binding Nickname}" FontAttributes="Bold" FontSize="16" Padding="0" Margin="0" HorizontalOptions="Start" VerticalOptions="Center"/>
+                                        <Grid ColumnDefinitions="50,*" ColumnSpacing="5">
+                                            <toolkit:AvatarView ImageSource="{Binding Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
 
-                                    <BoxView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
-                                </Grid>
+                                            <Label Grid.Column="1" Text="{Binding Nickname}" FontAttributes="Bold" FontSize="16" Padding="0" Margin="0" HorizontalOptions="Start" VerticalOptions="Center"/>
 
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                                            <BoxView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
+                                        </Grid>
 
-            </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
 
-        </ScrollView>
-    </RefreshView>
+                    </Grid>
+
+                </ScrollView>
+            </RefreshView>
+        </Grid>
+
+        <controls:BottomTabBar Grid.Row="1"/>
+    </Grid>
 
 </ContentPage>

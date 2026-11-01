@@ -13,6 +13,7 @@
     xmlns:mine="clr-namespace:HY.MAUI.Pages.Mine"
     Shell.FlyoutBehavior="Flyout"
     Shell.FlyoutWidth="250"
+    Shell.TabBarIsVisible="False"
     x:DataType="local:AppShellModel">
 
     <Shell.Resources>
@@ -83,6 +84,8 @@
         <ShellContent Route="page2" Title="收藏" FlyoutIcon="dotnet_bot.png" ContentTemplate="{DataTemplate shell:NewPage2}"/>
         <ShellContent Route="page3" Title="设置" FlyoutIcon="dotnet_bot.png" ContentTemplate="{DataTemplate shell:NewPage3}"/>
     </FlyoutItem>-->
+    
+    
     <MenuItem Text="相册" IconImageSource="dotnet_bot.png" Command="{Binding ShowPageCommand}" CommandParameter="NewPage1"/>
     <MenuItem Text="收藏" IconImageSource="dotnet_bot.png" Command="{Binding ShowPageCommand}" CommandParameter="NewPage2"/>
     <MenuItem Text="设置" IconImageSource="dotnet_bot.png" Command="{Binding ShowPageCommand}" CommandParameter="SettingPage"/>

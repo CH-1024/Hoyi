@@ -4,12 +4,11 @@
              x:Class="HY.MAUI.Pages.Mine.MinePage"
              x:Name="_MinePage"
              Shell.NavBarIsVisible="{OnIdiom Phone=True, Desktop=True}"
-             Shell.TabBarIsVisible="{OnIdiom Phone=True, Desktop=True}"
+             Shell.TabBarIsVisible="False"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:pm="clr-namespace:HY.MAUI.PageModels.Mine"
              xmlns:m="clr-namespace:HY.MAUI.Models"
              xmlns:controls="clr-namespace:HY.MAUI.Controls"
-             Padding="{OnIdiom Phone=0, Desktop=5}"
              x:DataType="pm:MinePageModel">
 
     <ContentPage.Resources>
@@ -50,46 +49,52 @@
     </ContentPage.ToolbarItems>
 
 
+    <Grid RowDefinitions="*,Auto">
 
-    <Grid RowDefinitions="auto,auto,auto" RowSpacing="10" Padding="0,10,0,0" BackgroundColor="{AppThemeBinding Light=White, Dark=#1F1F1F}">
+        <Grid Grid.Row="0" Padding="{OnIdiom Phone=0, Desktop=5}">
+            <Grid RowDefinitions="auto,auto,auto" RowSpacing="10" Padding="0,10,0,0" BackgroundColor="{AppThemeBinding Light=White, Dark=#1F1F1F}">
 
-        <Grid Grid.Row="0" RowDefinitions="*,*,*" ColumnDefinitions="120,*" Padding="20">
-            <Grid.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding Source={x:Reference _MinePage}, Path=BindingContext.ProfileCommand}"/>
-            </Grid.GestureRecognizers>
+                <Grid Grid.Row="0" RowDefinitions="*,*,*" ColumnDefinitions="120,*" Padding="20">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding Source={x:Reference _MinePage}, Path=BindingContext.ProfileCommand}"/>
+                    </Grid.GestureRecognizers>
 
-            <Image Grid.RowSpan="3" Grid.Column="0" Source="{Binding CurrentUser.Avatar}" HeightRequest="100" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Aspect="AspectFit" BackgroundColor="Gray"/>
+                    <Image Grid.RowSpan="3" Grid.Column="0" Source="{Binding CurrentUser.Avatar}" HeightRequest="100" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Aspect="AspectFit" BackgroundColor="Gray"/>
 
-            <Label Grid.Row="0" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.Nickname}" FontSize="Medium"/>
+                    <Label Grid.Row="0" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.Nickname}" FontSize="Medium"/>
 
-            <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="auto,*">
-                <Label Text="状态：" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption"/>
-                <Label Grid.Column="1" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.Status}" FontSize="Caption"/>
-            </Grid>
+                    <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="auto,*">
+                        <Label Text="状态：" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption"/>
+                        <Label Grid.Column="1" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.Status}" FontSize="Caption"/>
+                    </Grid>
 
-            <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="auto,*">
-                <Label Text="HYID：" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption"/>
-                <controls:SelectableLabel Grid.Column="1" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.HYid}" FontSize="Caption"/>
+                    <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="auto,*">
+                        <Label Text="HYID：" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption"/>
+                        <controls:SelectableLabel Grid.Column="1" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.HYid}" FontSize="Caption"/>
+                    </Grid>
+                </Grid>
+
+
+                <VerticalStackLayout Grid.Row="1" Spacing="1">
+
+                    <Button Style="{StaticResource IconBtn1}" Text="收藏"/>
+                    <Button Style="{StaticResource IconBtn1}" Text="朋友圈"/>
+                    <Button Style="{StaticResource IconBtn1}" Text="表情"/>
+
+                </VerticalStackLayout>
+
+
+                <VerticalStackLayout Grid.Row="2" Spacing="1">
+
+                    <Button Style="{StaticResource IconBtn1}" Text="设置" Command="{Binding SettingCommand}"/>
+                    <Button Style="{StaticResource IconBtn1}" Text="退出登录" Command="{Binding LogoutCommand}"/>
+
+                </VerticalStackLayout>
+
             </Grid>
         </Grid>
 
-
-        <VerticalStackLayout Grid.Row="1" Spacing="1">
-
-            <Button Style="{StaticResource IconBtn1}" Text="收藏"/>
-            <Button Style="{StaticResource IconBtn1}" Text="朋友圈"/>
-            <Button Style="{StaticResource IconBtn1}" Text="表情"/>
-
-        </VerticalStackLayout>
-
-
-        <VerticalStackLayout Grid.Row="2" Spacing="1">
-
-            <Button Style="{StaticResource IconBtn1}" Text="设置" Command="{Binding SettingCommand}"/>
-            <Button Style="{StaticResource IconBtn1}" Text="退出登录" Command="{Binding LogoutCommand}"/>
-
-        </VerticalStackLayout>
-
+        <controls:BottomTabBar Grid.Row="1"/>
     </Grid>
 
 </ContentPage>
