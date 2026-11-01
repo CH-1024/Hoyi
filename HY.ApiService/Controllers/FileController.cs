@@ -15,6 +15,8 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using HY.ApiService.Authorization;
+using HY.ApiService.Authorization.Attributes;
 
 namespace HY.ApiService.Controllers
 {
@@ -387,6 +389,27 @@ namespace HY.ApiService.Controllers
 
 
 
+        /// <summary>
+        /// 权限验证测试接口
+        /// 必须同时满足 用户角色 & file.manage 权限的用户才能访问
+        /// </summary>
+        [RoleAuthorize(RoleCodes.User)]
+        [PermissionAuthorize(PermissionCodes.File.Manage)]
+        [HttpGet("permission/demo")]
+        public IActionResult PermissionDemo()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            return Ok(new Response(true, "权限验证成功")
+            {
+                Data = new Dictionary<string, object?>
+                {
+                    { "UserId", userId },
+                    { "Role", RoleCodes.User },
+                    { "Permission", PermissionCodes.File.Manage }
+                }
+            });
+        }
 
 
 

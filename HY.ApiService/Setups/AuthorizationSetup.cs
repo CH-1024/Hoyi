@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using HY.ApiService.Authorization;
+using HY.ApiService.Authorization.Handlers;
+using HY.ApiService.Authorization.Requirements;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HY.ApiService.Setups
 {
@@ -11,13 +14,24 @@ namespace HY.ApiService.Setups
         {
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+                // 系统管理员
+                options.AddPolicy("AdminOnly", policy =>
+                {
+                    policy.AddRequirements(new PermissionRequirement(PermissionCodes.SystemAdmin));
+                });
 
-                options.AddPolicy("Over18", policy => policy.RequireClaim("Age", "18", "19"));
-
-                //options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build(); // 全局要求认证
-
+                // 其他原有策略可以继续保留
             });
+
+            // 动态策略提供器
+            services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+
+            // 权限验证处理器
+            services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+            // 角色验证处理器
+            services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler>();
         }
     }
+
 }

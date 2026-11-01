@@ -1,4 +1,5 @@
-﻿using HY.ApiService.Controllers.Requests;
+﻿using HY.ApiService.Authorization;
+using HY.ApiService.Controllers.Requests;
 using HY.ApiService.Dtos;
 using HY.ApiService.Entities;
 using HY.ApiService.Enums;
@@ -28,11 +29,17 @@ namespace HY.ApiService.Services
 
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly ISqlSugarClient _db;
 
-        public UserService(IUserRepository userRepository)
+        private readonly IUserRepository _userRepository;
+        private readonly IPermissionRepository _permissionRepository;
+
+        public UserService(ISqlSugarClient db, IUserRepository userRepository, IPermissionRepository permissionRepository)
         {
+            _db = db;
+
             _userRepository = userRepository;
+            _permissionRepository = permissionRepository;
         }
 
 
@@ -42,35 +49,52 @@ namespace HY.ApiService.Services
         {
             if (await _userRepository.ExistsUsername(registerRequest.Username))
             {
-                return new (false, "用户名已存在");
+                return new(false, "用户名已存在");
             }
             else if (await _userRepository.ExistsEmail(registerRequest.Email))
             {
-                return new (false, "邮箱已存在");
+                return new(false, "邮箱已存在");
             }
             else if (await _userRepository.ExistsPhone(registerRequest.Phone))
             {
-                return new (false, "手机号已存在");
+                return new(false, "手机号已存在");
             }
 
             var hash = PBKDF2PasswordHasher.Hash(registerRequest.Password, out string salt);
             var hyid = Guid.NewGuid().ToString("N")[..16];
 
-            var userEntity = new UserEntity
-            {
-                HYid = hyid,
-                Username = registerRequest.Username,
-                Nickname = registerRequest.Nickname,
-                Avatar = null,
-                Phone = registerRequest.Phone,
-                Email = registerRequest.Email,
-                Password_Hash = hash,
-                Password_Salt = salt,
-                Status = UserStatus.Registered,
-                Created_At = DateTime.UtcNow
-            };
+            long userId = 0;
 
-            var userId = await _userRepository.CreateUser(userEntity);
+            var result = await _db.Ado.UseTranAsync(async () =>
+            {
+                // 创建用户
+                var userEntity = new UserEntity
+                {
+                    HYid = hyid,
+                    Username = registerRequest.Username,
+                    Nickname = registerRequest.Nickname,
+                    Avatar = null,
+                    Phone = registerRequest.Phone,
+                    Email = registerRequest.Email,
+                    Password_Hash = hash,
+                    Password_Salt = salt,
+                    Status = UserStatus.Registered,
+                    Created_At = DateTime.UtcNow
+                };
+                userId = await _userRepository.CreateUser(userEntity);
+
+                if (userId <= 0) throw new Exception("创建用户失败");
+
+                // 分配默认角色
+                var assigned = await _permissionRepository.AssignRoleByCodeAsync(userId, RoleCodes.Guest);
+
+                if (!assigned) throw new Exception("分配默认用户角色失败");
+            });
+
+            if (!result.IsSuccess)
+            {
+                return new(false, result.ErrorMessage);
+            }
 
             return new(userId > 0);
         }

@@ -250,4 +250,142 @@ CREATE TABLE `user`  (
   UNIQUE INDEX `username`(`username` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
+
+
+
+
+
+
+
+
+-- 1. 角色表
+CREATE TABLE IF NOT EXISTS `sys_role` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `code` VARCHAR(64) NOT NULL,
+    `name` VARCHAR(64) NOT NULL,
+    `description` VARCHAR(255) NULL,
+    `status` TINYINT NOT NULL DEFAULT 1,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_role_code` (`code`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 2. 权限表
+CREATE TABLE IF NOT EXISTS `sys_permission` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `code` VARCHAR(64) NOT NULL,
+    `name` VARCHAR(64) NOT NULL,
+    `module` VARCHAR(64) NULL,
+    `description` VARCHAR(255) NULL,
+    `status` TINYINT NOT NULL DEFAULT 1,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_permission_code` (`code`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 3. 用户角色关联表
+CREATE TABLE IF NOT EXISTS `sys_user_role` (
+    `user_id` BIGINT NOT NULL,
+    `role_id` BIGINT NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`user_id`, `role_id`),
+    KEY `idx_role_id` (`role_id`),
+    CONSTRAINT `fk_user_role_user`
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+    ON DELETE CASCADE,
+    CONSTRAINT `fk_user_role_role`
+    FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`)
+    ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 4. 角色权限关联表
+CREATE TABLE IF NOT EXISTS `sys_role_permission` (
+    `role_id` BIGINT NOT NULL,
+    `permission_id` BIGINT NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`role_id`, `permission_id`),
+    KEY `idx_permission_id` (`permission_id`),
+    CONSTRAINT `fk_role_permission_role`
+    FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`)
+    ON DELETE CASCADE,
+    CONSTRAINT `fk_role_permission_permission`
+    FOREIGN KEY (`permission_id`) REFERENCES `sys_permission` (`id`)
+    ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- ----------------------------
+-- 初始化角色
+-- ----------------------------
+
+INSERT IGNORE INTO `sys_role`
+(`code`, `name`, `description`)
+VALUES
+('guest', '来访者', '来访者角色'),
+('user', '普通用户', '普通用户角色'),
+('admin', '管理员', '管理员角色'),
+('super_admin', '超级管理员', '超级管理员角色');
+
+
+-- ----------------------------
+-- 初始化权限
+-- ----------------------------
+
+INSERT IGNORE INTO `sys_permission`
+(`code`, `name`, `module`, `description`)
+VALUES
+('file.upload', '文件上传', 'File', '允许上传文件'),
+('file.manage', '文件管理', 'File', '文件管理权限'),
+('system.admin', '系统管理', 'System', '系统管理员权限');
+
+
+-- ----------------------------
+-- 普通用户权限
+-- ----------------------------
+
+INSERT IGNORE INTO `sys_role_permission`
+(`role_id`, `permission_id`)
+SELECT r.id, p.id
+FROM sys_role r
+         JOIN sys_permission p
+WHERE r.code = 'user'
+  AND p.code = 'file.upload';
+
+
+-- ----------------------------
+-- 管理员拥有所有权限
+-- ----------------------------
+
+INSERT IGNORE INTO `sys_role_permission`
+(`role_id`, `permission_id`)
+SELECT r.id, p.id
+FROM sys_role r
+         CROSS JOIN sys_permission p
+WHERE r.code = 'admin';
+
+
+-- ----------------------------
+-- 给现有用户分配默认角色
+-- ----------------------------
+
+INSERT IGNORE INTO `sys_user_role`
+(`user_id`, `role_id`)
+SELECT u.id, r.id
+FROM `user` u
+         JOIN sys_role r ON r.code = 'user';
+
+
+-- ----------------------------
+-- 管理员分配示例
+-- 请先替换为实际管理员的 HYid
+-- 不要将所有用户都设置成管理员
+-- ----------------------------
+
+-- INSERT IGNORE INTO sys_user_role (user_id, role_id)
+-- SELECT u.id, r.id
+-- FROM `user` u
+-- JOIN sys_role r ON r.code = 'admin'
+-- WHERE u.hyid = '替换为管理员HYid';
+
+
 SET FOREIGN_KEY_CHECKS = 1;
