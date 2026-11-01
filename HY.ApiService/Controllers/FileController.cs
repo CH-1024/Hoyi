@@ -161,7 +161,7 @@ namespace HY.ApiService.Controllers
             });
         }
 
-        [Authorize]
+        [RoleAuthorize(RoleCodes.User)]
         [HttpPost("upload/image")]
         [RequestSizeLimit(10 * 1024 * 1024)]
         public async Task<IActionResult> UploadImage()
@@ -202,7 +202,7 @@ namespace HY.ApiService.Controllers
             });
         }
 
-        [Authorize]
+        [RoleAuthorize(RoleCodes.User)]
         [HttpPost("upload/video")]
         public async Task<IActionResult> UploadVideo()
         {

@@ -1,4 +1,6 @@
-﻿using HY.ApiService.Dtos;
+﻿using HY.ApiService.Authorization;
+using HY.ApiService.Authorization.Attributes;
+using HY.ApiService.Dtos;
 using HY.ApiService.Enums;
 using HY.ApiService.Hubs;
 using HY.ApiService.Hubs.Requests;
@@ -41,7 +43,7 @@ namespace HY.ApiService.Controllers
 
 
 
-        [Authorize]
+        [RoleAuthorize(RoleCodes.User)]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCall([FromBody] CreateCallRequest request)
         {
