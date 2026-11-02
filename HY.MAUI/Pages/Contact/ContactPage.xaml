@@ -18,13 +18,13 @@
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
                 <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#111111, Light=#EEEEEE}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#151515, Light=#EEEEEE}"/>
                 <Setter Property="ContentLayout" Value="Left,0"/>
                 <Setter Property="Margin" Value="0"/>
-                <Setter Property="Padding" Value="10"/>
+                <Setter Property="Padding" Value="0"/>
                 <Setter Property="BorderWidth" Value="0"/>
                 <Setter Property="CornerRadius" Value="0"/>
-                <Setter Property="FontSize" Value="Micro"/>
+                <Setter Property="FontSize" Value="16"/>
                 <Setter Property="TextColor" Value="White"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
@@ -53,21 +53,25 @@
     
     <Grid RowDefinitions="*,Auto">
 
-        <Grid Grid.Row="0" Padding="{OnIdiom Phone=0, Desktop=5}">
+        <Grid Grid.Row="0" Padding="8,0" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource SoftBlack}}">
             <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}">
                 <ScrollView>
 
                     <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
 
-                        <SearchBar x:Name="searchBar" Margin="0" Focused="SearchBar_OnFocused"/>
+                        <SearchBar x:Name="searchBar" Margin="0,10,0,0" Focused="SearchBar_OnFocused"/>
 
-                        <Grid Grid.Row="1" RowDefinitions="Auto,Auto" RowSpacing="1">
-                            <!--<controls:BadgeView Grid.Row="0" IsVisible="{Binding Request_Count_Visible}" Text="{Binding Request_Count_Show}" HorizontalOptions="End" VerticalOptions="Center" BadgeColor="Red" TextColor="White" ZIndex="1"/>-->
-                            <Button Grid.Row="0" Style="{StaticResource IconBtn1}" Text="申请中" Command="{Binding RequestCommand}"/>
+                        <BoxView Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
 
-                            <!--<controls:BadgeView Grid.Row="1" IsVisible="{Binding Respond_Count_Visible}" Text="{Binding Respond_Count_Show}" HorizontalOptions="End" VerticalOptions="Center" BadgeColor="Red" TextColor="White" ZIndex="1"/>-->
-                            <Button Grid.Row="1" Style="{StaticResource IconBtn1}" Text="待同意" Command="{Binding RespondCommand}"/>
-                        </Grid>
+                        <Border Grid.Row="1" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 10">
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="1">
+                                <!--<controls:BadgeView Grid.Row="0" IsVisible="{Binding Request_Count_Visible}" Text="{Binding Request_Count_Show}" HorizontalOptions="End" VerticalOptions="Center" BadgeColor="Red" TextColor="White" ZIndex="1"/>-->
+                                <Button Grid.Column="0" Style="{StaticResource IconBtn1}" Text="申请中" Command="{Binding RequestCommand}"/>
+
+                                <!--<controls:BadgeView Grid.Row="1" IsVisible="{Binding Respond_Count_Visible}" Text="{Binding Respond_Count_Show}" HorizontalOptions="End" VerticalOptions="Center" BadgeColor="Red" TextColor="White" ZIndex="1"/>-->
+                                <Button Grid.Column="1" Style="{StaticResource IconBtn1}" Text="待同意" Command="{Binding RespondCommand}"/>
+                            </Grid>
+                        </Border>
 
                         <Picker Grid.Row="2" Margin="0" Title="类型：" SelectedIndex="0">
                             <Picker.Items>

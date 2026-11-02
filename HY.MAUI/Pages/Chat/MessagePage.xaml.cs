@@ -98,6 +98,8 @@ public partial class MessagePage : ContentPage
 
             _expandHeight = await GetContentHeight();
 
+            _expandHeight += 20;
+            
             await ExpandWithStatus();
         }
         else
@@ -227,4 +229,16 @@ public partial class MessagePage : ContentPage
         _isAnimating = false;
     }
 
+    
+    
+    
+    
+    #region ÏÂ»¬¶¯»­
+
+    private void OnContentPanUpdated(object sender, PanUpdatedEventArgs e)
+    {
+
+    }
+
+    #endregion
 }

@@ -75,7 +75,7 @@
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="m:ContactRequestVM">
-                        <Border Padding="5" StrokeThickness="0.5">
+                        <Border Padding="5" StrokeThickness="0">
 
                             <Grid ColumnDefinitions="50,*,auto,auto,auto,auto" ColumnSpacing="0" HeightRequest="50">
 
@@ -223,6 +223,8 @@
                                         </MultiTrigger>
                                     </Button.Triggers>
                                 </Button>
+
+                                <BoxView Grid.Column="1" Grid.ColumnSpan="5" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
 
                             </Grid>
 

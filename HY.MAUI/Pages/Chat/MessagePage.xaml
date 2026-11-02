@@ -25,13 +25,13 @@
                 <Setter Property="WidthRequest" Value="30"/>
                  <Setter Property="BackgroundColor" Value="Transparent"/> 
                 <!-- <Setter Property="ContentLayout" Value="Top,0"/> -->
-                <!-- <Setter Property="Margin" Value="0"/> -->
+                <Setter Property="Margin" Value="0,0,0,5"/>
                 <Setter Property="Padding" Value="3"/>
                 <!-- <Setter Property="CornerRadius" Value="3"/> -->
                 <!-- <Setter Property="FontSize" Value="Body"/> -->
                 <!-- <Setter Property="TextColor" Value="White"/> -->
                 <!-- <Setter Property="HorizontalOptions" Value="Fill"/> -->
-                <!-- <Setter Property="VerticalOptions" Value="Fill"/> -->
+                <Setter Property="VerticalOptions" Value="End"/>
             </Style>
 
             <Style x:Key="IconBtn2" TargetType="Button">
@@ -114,7 +114,8 @@
 
         <ActivityIndicator IsRunning="True" IsVisible="{Binding RefreshCommand.IsRunning}" ZIndex="2" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,0,0,0"/>
 
-        <CollectionView x:Name="collectionView" ItemsSource="{Binding MessageCollection}" SelectionMode="None" ItemsUpdatingScrollMode="KeepScrollOffset">
+        <CollectionView x:Name="collectionView" ItemsSource="{Binding MessageCollection}" SelectionMode="None" ItemsUpdatingScrollMode="KeepScrollOffset"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource SoftBlack}}">
 
             <CollectionView.Behaviors>
                 <toolkit:EventToCommandBehavior EventName="Loaded" Command="{Binding CollectionViewLoadedCommand}" CommandParameter="{Binding Source={x:Reference collectionView}}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}"/>
@@ -194,22 +195,26 @@
 
 
         <!--底部栏-->
-        <Grid Grid.Row="1" ColumnDefinitions="auto,*,auto,auto" ColumnSpacing="5" BackgroundColor="{StaticResource Gray950}" Padding="10" MinimumHeightRequest="0">
-
+        <Grid Grid.Row="1" ColumnDefinitions="auto,*,auto,auto" ColumnSpacing="5" Padding="15" MinimumHeightRequest="0">
+            <Grid.GestureRecognizers>
+                <PanGestureRecognizer PanUpdated="OnContentPanUpdated"/>
+            </Grid.GestureRecognizers>
             <ImageButton Style="{StaticResource IconBtn1}" Source="record.png" Grid.Column="0" Clicked="Record_Btn_Clicked"/>
 
-            <controls:ChatEditor x:Name="editor" Grid.Column="1" Text="{Binding InputText}" SendCommand="{Binding SendTextCommand}" AutoSize="TextChanges" Keyboard="Chat" MaxLength="500" MaximumHeightRequest="300" BackgroundColor="{StaticResource Gray800}" TextColor="White" FontSize="Body" />
+            <controls:ChatEditor x:Name="editor" Grid.Column="1" Text="{Binding InputText}" SendCommand="{Binding SendTextCommand}" AutoSize="TextChanges" Keyboard="Chat" MaxLength="500" MaximumHeightRequest="300" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" FontSize="Body" />
 
             <ImageButton Style="{StaticResource IconBtn1}" Source="fold.png" Grid.Column="2" Clicked="Switch_Expander_Clicked"/>
 
             <ImageButton Style="{StaticResource IconBtn1}" Source="send.png" Grid.Column="3" Clicked="Send_Text_Clicked"/>
-
         </Grid>
 
 
         <!--弹出栏-->
-        <toolkit:UniformItemsLayout x:Name="expander" Grid.Row="2" Padding="0" Margin="0" HeightRequest="0" BackgroundColor="{StaticResource Gray950}" IsClippedToBounds="True">
-
+        <toolkit:UniformItemsLayout x:Name="expander" Grid.Row="2" Padding="0" Margin="0" HeightRequest="0" IsClippedToBounds="True">
+            <toolkit:UniformItemsLayout.GestureRecognizers>
+                <PanGestureRecognizer PanUpdated="OnContentPanUpdated"/>
+            </toolkit:UniformItemsLayout.GestureRecognizers>
+            
             <Button Style="{StaticResource IconBtn2}" Text="发送图片" Clicked="Send_Image_Clicked"/>
 
             <Button Style="{StaticResource IconBtn2}" Text="发送视频" Clicked="Send_Video_Clicked"/>

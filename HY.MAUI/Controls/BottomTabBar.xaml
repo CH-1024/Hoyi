@@ -4,62 +4,49 @@
              x:Class="HY.MAUI.Controls.BottomTabBar"
              Margin="0" Padding="0">
 
-    <Grid HeightRequest="78" Padding="16,7,16,10" BackgroundColor="Transparent">
+    <Grid Padding="5" BackgroundColor="Transparent">
 
         <!-- 导航栏主体 -->
         <Border x:Name="BarSurface" StrokeThickness="1" StrokeShape="RoundRectangle 20" Padding="5" VerticalOptions="Center">
 
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4">
-
                 <!-- 聊天 -->
-                <Border x:Name="ChatTab" Grid.Column="0" Background="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" Padding="8">
-
+                <Border x:Name="ChatTab" Grid.Column="0" Background="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" Padding="8,15">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="Chat_Tapped"/>
                     </Border.GestureRecognizers>
 
                     <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="7" HorizontalOptions="Center" VerticalOptions="Center">
-
-                        <Image x:Name="ChatIcon" Source="chat.png" WidthRequest="21" HeightRequest="21" Aspect="AspectFit"/>
-
-                        <Label x:Name="ChatLabel" Grid.Column="1" Text="聊天" FontSize="13" TextColor="#7B8494" VerticalOptions="Center"/>
-
+                        <Image x:Name="ChatIcon" Source="chat.png" WidthRequest="23" HeightRequest="23" Aspect="AspectFit"/>
+                        <Label x:Name="ChatLabel" Grid.Column="1" Text="聊天" FontSize="16" TextColor="#7B8494" VerticalOptions="Center"/>
                     </Grid>
                 </Border>
 
                 <!-- 好友 -->
-                <Border x:Name="ContactTab" Grid.Column="1" Background="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" Padding="8">
-
+                <Border x:Name="ContactTab" Grid.Column="1" Background="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" Padding="8,15">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="Contact_Tapped"/>
                     </Border.GestureRecognizers>
 
                     <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="7" HorizontalOptions="Center" VerticalOptions="Center">
-
-                        <Image x:Name="ContactIcon" Source="contact.png" WidthRequest="21" HeightRequest="21" Aspect="AspectFit" Opacity="0.58"/>
-
-                        <Label x:Name="ContactLabel" Grid.Column="1" Text="好友" FontSize="13" TextColor="#7B8494" VerticalOptions="Center"/>
-                        
+                        <Image x:Name="ContactIcon" Source="contact.png" WidthRequest="23" HeightRequest="23" Aspect="AspectFit" Opacity="0.58"/>
+                        <Label x:Name="ContactLabel" Grid.Column="1" Text="好友" FontSize="16" TextColor="#7B8494" VerticalOptions="Center"/>
                     </Grid>
                 </Border>
 
                 <!-- 我的 -->
-                <Border x:Name="MineTab" Grid.Column="2" Background="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" Padding="8">
-
+                <Border x:Name="MineTab" Grid.Column="2" Background="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" Padding="8,15">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="Mine_Tapped"/>
                     </Border.GestureRecognizers>
 
                     <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="7" HorizontalOptions="Center" VerticalOptions="Center">
-
-                        <Image x:Name="MineIcon" Source="user.png" WidthRequest="21" HeightRequest="21" Aspect="AspectFit" Opacity="0.58"/>
-
-                        <Label x:Name="MineLabel" Grid.Column="1" Text="我的" FontSize="13" TextColor="#7B8494" VerticalOptions="Center"/>
-                        
+                        <Image x:Name="MineIcon" Source="user.png" WidthRequest="23" HeightRequest="23" Aspect="AspectFit" Opacity="0.58"/>
+                        <Label x:Name="MineLabel" Grid.Column="1" Text="我的" FontSize="16" TextColor="#7B8494" VerticalOptions="Center"/>
                     </Grid>
                 </Border>
-
             </Grid>
+            
         </Border>
     </Grid>
 </ContentView>
