@@ -88,7 +88,9 @@ public partial class ThemeSwitch : ContentView
             // Dark 对应开关关闭（小圆点在左侧）
             ThemeSwitchControl.IsToggled = !IsDark;
 
-            ThemeSwitchControl.ThumbColor = IsDark ? Colors.Black : Colors.MediumSpringGreen;
+            ThemeSwitchControl.ThumbColor = IsDark
+                ? Color.FromArgb("#111827")
+                : Color.FromArgb("#3978F6");
 
             DarkLabel.Opacity = IsDark ? 1.0 : 0.5;
             LightLabel.Opacity = IsDark ? 0.5 : 1.0;
