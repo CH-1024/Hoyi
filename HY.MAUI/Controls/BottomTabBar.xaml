@@ -4,10 +4,10 @@
              x:Class="HY.MAUI.Controls.BottomTabBar"
              Margin="0" Padding="0">
 
-    <Grid Padding="0" BackgroundColor="Transparent">
+    <Grid Padding="8,6" BackgroundColor="Transparent">
 
         <!-- 导航栏主体 -->
-        <Border x:Name="BarSurface" BackgroundColor="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 20" Padding="5" VerticalOptions="Center">
+        <Border x:Name="BarSurface" BackgroundColor="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 18" Padding="6" VerticalOptions="Center">
 
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4">
                 <!-- 聊天 -->
@@ -18,7 +18,7 @@
 
                     <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="7" HorizontalOptions="Center" VerticalOptions="Center">
                         <Image x:Name="ChatIcon" Source="chat.png" WidthRequest="23" HeightRequest="23" Aspect="AspectFit"/>
-                        <Label x:Name="ChatLabel" Grid.Column="1" Text="聊天" FontSize="Body" TextColor="#7B8494" VerticalOptions="Center"/>
+                        <Label x:Name="ChatLabel" Grid.Column="1" Text="聊天" FontSize="Body" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondary}}" VerticalOptions="Center"/>
                     </Grid>
                 </Border>
 

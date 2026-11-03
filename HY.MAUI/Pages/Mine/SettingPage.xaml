@@ -20,13 +20,13 @@
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
                 <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#151515, Light=#EEEEEE}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface}, Dark=#252525}"/>
                 <Setter Property="ContentLayout" Value="Top,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="10"/>
                 <Setter Property="CornerRadius" Value="0"/>
                 <Setter Property="FontSize" Value="Micro"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
             </Style>
@@ -56,7 +56,7 @@
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="设置" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="设置" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <!--<ContentPage.ToolbarItems>
@@ -66,12 +66,29 @@
 
 
 
-    <VerticalStackLayout Spacing="10">
+    <ScrollView BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource OffBlack}}">
+        <VerticalStackLayout Padding="20" Spacing="16">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="外观" FontSize="22" FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}"/>
+                <Label Text="根据使用习惯调整 Hoyi 的显示方式"
+                       FontSize="13"
+                       TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}"/>
+            </VerticalStackLayout>
 
-        <Grid ColumnDefinitions="*,*" HeightRequest="40">
-            <Label Grid.Column="0" Text="主题：" VerticalOptions="Center" FontSize="Body"/>
-            <controls:ThemeSwitch Grid.Column="1" VerticalOptions="Center" />
-        </Grid>
-
-    </VerticalStackLayout>
+            <Border Padding="16"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SoftBlack}}"
+                    Stroke="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray700}}"
+                    StrokeShape="RoundRectangle 16">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="14" RowSpacing="5">
+                    <Label Text="主题模式" FontSize="16" FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}"/>
+                    <Label Grid.Row="1" Text="在浅色和深色外观之间切换"
+                           FontSize="12"
+                           TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}"/>
+                    <controls:ThemeSwitch Grid.Column="1" Grid.RowSpan="2" VerticalOptions="Center"/>
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

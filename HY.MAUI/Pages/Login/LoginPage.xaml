@@ -29,7 +29,7 @@
                 
                 
             </VerticalStackLayout>
-            <ActivityIndicator IsRunning="{Binding LoginCommand.IsRunning}" Color="White" HorizontalOptions="Center" VerticalOptions="Center" />
+            <ActivityIndicator IsRunning="{Binding LoginCommand.IsRunning}" Color="{StaticResource Primary}" HorizontalOptions="Center" VerticalOptions="Center" />
         </Grid>
     </ScrollView>
 

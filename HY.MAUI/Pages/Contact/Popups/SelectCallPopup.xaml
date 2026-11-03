@@ -18,13 +18,13 @@
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
                 <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#111111, Light=#EEEEEE}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceSecondary}, Dark=#252525}"/>
                 <Setter Property="ContentLayout" Value="Top,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="10"/>
-                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="CornerRadius" Value="12"/>
                 <Setter Property="FontSize" Value="Micro"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
             </Style>
@@ -43,7 +43,7 @@
         </BoxView>
 
         <!--真正的底部弹窗-->
-        <Border x:Name="content" Grid.Row="1" BackgroundColor="Black" StrokeThickness="0" StrokeShape="RoundRectangle 10,10,0,0" Margin="0,0,0,0" HeightRequest="{Binding Source={x:Reference popup}, Path=PopLength}" TranslationY="{Binding Source={x:Reference popup}, Path=TotalTranslateY}">
+        <Border x:Name="content" Grid.Row="1" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SoftBlack}}" Stroke="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray700}}" StrokeThickness="1" StrokeShape="RoundRectangle 18,18,0,0" Margin="0,0,0,0" HeightRequest="{Binding Source={x:Reference popup}, Path=PopLength}" TranslationY="{Binding Source={x:Reference popup}, Path=TotalTranslateY}">
             <Border.GestureRecognizers>
                 <PanGestureRecognizer PanUpdated="OnContentPanUpdated"/>
             </Border.GestureRecognizers>

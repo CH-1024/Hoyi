@@ -23,7 +23,7 @@
     </ContentPage.Behaviors>
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="搜索" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="搜索" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <!-- <ContentPage.ToolbarItems> -->
@@ -31,7 +31,7 @@
     <!-- </ContentPage.ToolbarItems> -->
 
 
-    <Grid RowDefinitions="Auto,*" RowSpacing="10">
+    <Grid RowDefinitions="Auto,*" RowSpacing="10" BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource SoftBlack}}" Padding="10,8">
         <SearchBar x:Name="searchBar" Margin="0"/>
 
         <CollectionView Grid.Row="1" ItemsSource="{Binding ContactCollection}" SelectedItem="{Binding SelectedContact}" SelectionMode="Single">
@@ -50,13 +50,13 @@
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="m:ContactVM">
-                    <Border Padding="5" StrokeThickness="0">
+                    <Border Padding="10" Margin="0,3" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SoftBlack}}" Stroke="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray700}}" StrokeThickness="1" StrokeShape="RoundRectangle 12">
                         <Grid ColumnDefinitions="50,*" ColumnSpacing="5">
-                            <toolkit:AvatarView ImageSource="{Binding Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
+                            <toolkit:AvatarView ImageSource="{Binding Avatar}" BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
 
                             <Label Grid.Column="1" Text="{Binding Nickname}" FontSize="Body" Padding="0" VerticalOptions="Start"/>
 
-                            <BoxView Grid.Column="1" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
+                            <BoxView Grid.Column="1" Color="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray800}}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
                         </Grid>
                     </Border>
                 </DataTemplate>

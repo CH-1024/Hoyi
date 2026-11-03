@@ -70,16 +70,16 @@
     <Shell.TitleView>
         <Grid ColumnDefinitions="50,*,50">
             <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
-            <Label  HeightRequest="40" Grid.Column="1" Text="{Binding Title}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}" TextColor="{StaticResource White}" FontSize="Title" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
+            <Label  HeightRequest="40" Grid.Column="1" Text="{Binding Title}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" FontSize="Title" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
             <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
 
-            <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="#292929" VerticalOptions="End"/>
+            <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray800}}" VerticalOptions="End"/>
         </Grid>
     </Shell.TitleView>-->
 
     <Shell.TitleView>
         <Grid ColumnDefinitions="*,auto,auto,*" Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}">
-            <Label Grid.Column="1" Text="{Binding Title}" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+            <Label Grid.Column="1" Text="{Binding Title}" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
             <Ellipse Grid.Column="2" MinimumHeightRequest="0" MinimumWidthRequest="0" WidthRequest="8" HeightRequest="8" Margin="5,0,0,0">
                 <Ellipse.Triggers>
 
@@ -115,7 +115,7 @@
         <ActivityIndicator IsRunning="True" IsVisible="{Binding RefreshCommand.IsRunning}" ZIndex="2" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,0,0,0"/>
 
         <CollectionView x:Name="collectionView" ItemsSource="{Binding MessageCollection}" SelectionMode="None" ItemsUpdatingScrollMode="KeepScrollOffset"
-                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource SoftBlack}}">
+                        BackgroundColor="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource SoftBlack}}">
 
             <CollectionView.Behaviors>
                 <toolkit:EventToCommandBehavior EventName="Loaded" Command="{Binding CollectionViewLoadedCommand}" CommandParameter="{Binding Source={x:Reference collectionView}}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}"/>
@@ -190,7 +190,7 @@
                 <Shadow Brush="Black" Offset="0,0" Radius="20" Opacity="1"/>
             </Border.Shadow>
 
-            <Button Text="{Binding UnreadCount,StringFormat='⇊{0}条新消息'}" Command="{Binding ShowBottomCommand}" BackgroundColor="Gray" CornerRadius="0" Padding="10" HeightRequest="40"/>
+            <Button Text="{Binding UnreadCount,StringFormat='⇊{0}条新消息'}" Command="{Binding ShowBottomCommand}" BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Gray700}}" CornerRadius="10" Padding="10" HeightRequest="40"/>
         </Border>
 
 
@@ -201,7 +201,7 @@
             </Grid.GestureRecognizers>
             <ImageButton Style="{StaticResource IconBtn1}" Source="record.png" Grid.Column="0" Clicked="Record_Btn_Clicked"/>
 
-            <controls:ChatEditor x:Name="editor" Grid.Column="1" Text="{Binding InputText}" SendCommand="{Binding SendTextCommand}" AutoSize="TextChanges" Keyboard="Chat" MaxLength="500" MaximumHeightRequest="300" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" FontSize="Body" />
+            <controls:ChatEditor x:Name="editor" Grid.Column="1" Text="{Binding InputText}" SendCommand="{Binding SendTextCommand}" AutoSize="TextChanges" Keyboard="Chat" MaxLength="500" MaximumHeightRequest="300" BackgroundColor="{AppThemeBinding Light={StaticResource InputBackground}, Dark={StaticResource Gray800}}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" FontSize="Body" />
 
             <ImageButton Style="{StaticResource IconBtn1}" Source="fold.png" Grid.Column="2" Clicked="Switch_Expander_Clicked"/>
 

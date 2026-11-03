@@ -20,13 +20,15 @@
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
                 <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#151515, Light=#EEEEEE}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface}, Dark=#252525}"/>
+                <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Divider}, Dark=#383838}"/>
+                <Setter Property="BorderWidth" Value="1"/>
                 <Setter Property="ContentLayout" Value="Top,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="10"/>
-                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="CornerRadius" Value="12"/>
                 <Setter Property="FontSize" Value="Micro"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
             </Style>
@@ -47,16 +49,16 @@
     </Shell.BackButtonBehavior>
     <Shell.TitleView>
         <Grid ColumnDefinitions="50,*,50">
-            <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _ProfilePage}, x:DataType=ContentPage}" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
-            <Label  HeightRequest="40" Grid.Column="1" Text="个人资料" TextColor="{StaticResource PrimaryDark}" FontSize="Title" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
-            <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
+            <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _ProfilePage}, x:DataType=ContentPage}" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
+            <Label  HeightRequest="40" Grid.Column="1" Text="个人资料" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" FontSize="Title" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
+            <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
 
             <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="#292929" VerticalOptions="End"/>
         </Grid>
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="个人资料" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="个人资料" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
@@ -67,7 +69,7 @@
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
 
-            <toolkit:AvatarView ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0">
+            <toolkit:AvatarView ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}" Stroke="Transparent" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0">
                 <FlyoutBase.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="下载"/>
@@ -78,29 +80,29 @@
             <!--头像 
             <Grid HorizontalOptions="Center">
 
-                <toolkit:AvatarView ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
+                <toolkit:AvatarView ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}" Stroke="Transparent" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
 
                  更换头像按钮 
                 <Button Text="✎" WidthRequest="36" HeightRequest="36" CornerRadius="18" FontSize="30" Padding="0" FontAttributes="Bold" HorizontalOptions="End" VerticalOptions="End" Command="{Binding ChangeAvatarCommand}"/>
             </Grid>-->
 
             <VerticalStackLayout>
-                <Label Text="姓名" FontSize="14" TextColor="Gray"/>
+                <Label Text="姓名" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}"/>
                 <Entry Text="{Binding RealName}" Placeholder="请输入姓名"/>
             </VerticalStackLayout>
 
             <VerticalStackLayout>
-                <Label Text="昵称" FontSize="14" TextColor="Gray"/>
+                <Label Text="昵称" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}"/>
                 <Entry Text="{Binding CurrentUser.Nickname}" Placeholder="请输入昵称"/>
             </VerticalStackLayout>
 
             <VerticalStackLayout>
-                <Label Text="手机号" FontSize="14" TextColor="Gray"/>
+                <Label Text="手机号" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}"/>
                 <Entry Text="{Binding CurrentUser.Phone}" Placeholder="请输入手机号"/>
             </VerticalStackLayout>
 
             <VerticalStackLayout>
-                <Label Text="邮箱" FontSize="14" TextColor="Gray"/>
+                <Label Text="邮箱" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}"/>
                 <Entry Text="{Binding CurrentUser.Email}" Placeholder="请输入邮箱"/>
             </VerticalStackLayout>
 

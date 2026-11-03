@@ -20,13 +20,15 @@
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
                 <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#151515, Light=#EEEEEE}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface}, Dark=#252525}"/>
+                <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Divider}, Dark=#383838}"/>
+                <Setter Property="BorderWidth" Value="1"/>
                 <Setter Property="ContentLayout" Value="Top,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="10"/>
-                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="CornerRadius" Value="12"/>
                 <Setter Property="FontSize" Value="Micro"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
             </Style>
@@ -47,16 +49,16 @@
     </Shell.BackButtonBehavior>
     <Shell.TitleView>
         <Grid ColumnDefinitions="50,*,50">
-            <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _ContactDetailPage}, x:DataType=ContentPage}" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
-            <Label  HeightRequest="40" Grid.Column="1" Text="联系人资料" TextColor="{StaticResource PrimaryDark}" FontSize="Title" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
-            <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
+            <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _ContactDetailPage}, x:DataType=ContentPage}" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
+            <Label  HeightRequest="40" Grid.Column="1" Text="联系人资料" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" FontSize="Title" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
+            <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
 
             <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="#292929" VerticalOptions="End"/>
         </Grid>
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="联系人资料" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="联系人资料" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
@@ -71,7 +73,7 @@
 
             <!-- 头像 + 昵称 -->
             <VerticalStackLayout HorizontalOptions="Center" Spacing="10">
-                <toolkit:AvatarView ImageSource="{Binding ContactInfo.Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
+                <toolkit:AvatarView ImageSource="{Binding ContactInfo.Avatar}" BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}" Stroke="Transparent" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
 
                 <Label
                     Text="{Binding ContactInfo.Nickname}"
@@ -85,23 +87,23 @@
                 <VerticalStackLayout Spacing="12">
 
                     <Grid ColumnDefinitions="50,*">
-                        <Label Text="HYID：" TextColor="Gray" FontSize="Caption"/>
-                        <controls:SelectableLabel Grid.Column="1" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption" Text="{Binding ContactInfo.Contact_HYid}"/>
+                        <Label Text="HYID：" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Caption"/>
+                        <controls:SelectableLabel Grid.Column="1" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption" Text="{Binding ContactInfo.Contact_HYid}"/>
                     </Grid>
 
                     <Grid ColumnDefinitions="50,*">
-                        <Label Text="状态：" TextColor="Gray" FontSize="Caption"/>
-                        <Label Grid.Column="1" Text="{Binding ContactInfo.Relation_Status}" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption" LineBreakMode="NoWrap"/>
+                        <Label Text="状态：" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Caption"/>
+                        <Label Grid.Column="1" Text="{Binding ContactInfo.Relation_Status}" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption" LineBreakMode="NoWrap"/>
                     </Grid>
 
                     <Grid ColumnDefinitions="50,*">
-                        <Label Text="地区：" TextColor="Gray" FontSize="Caption"/>
-                        <Label Grid.Column="1" Text="{Binding ContactInfo.Region}" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption" LineBreakMode="NoWrap"/>
+                        <Label Text="地区：" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Caption"/>
+                        <Label Grid.Column="1" Text="{Binding ContactInfo.Region}" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption" LineBreakMode="NoWrap"/>
                     </Grid>
 
                     <Grid ColumnDefinitions="50,*">
-                        <Label Text="备注：" TextColor="Gray" FontSize="Caption"/>
-                        <Label Grid.Column="1" Text="{Binding ContactInfo.Remark}" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption" LineBreakMode="NoWrap"/>
+                        <Label Text="备注：" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Caption"/>
+                        <Label Grid.Column="1" Text="{Binding ContactInfo.Remark}" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption" LineBreakMode="NoWrap"/>
                     </Grid>
 
                 </VerticalStackLayout>
@@ -143,7 +145,7 @@
              Content 
             <Label Text="CONTENT"
                    FontSize="18"
-                   BackgroundColor="Gray"
+                   BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}"
                    HorizontalTextAlignment="Center"
                    VerticalTextAlignment="Center"
                    FlexLayout.Grow="1" />
@@ -174,7 +176,7 @@
              Content 
             <Label Text="CONTENT"
                    FontSize="18"
-                   BackgroundColor="Gray"
+                   BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}"
                    HorizontalTextAlignment="Center"
                    VerticalTextAlignment="Center"
                    FlexLayout.Grow="1" />

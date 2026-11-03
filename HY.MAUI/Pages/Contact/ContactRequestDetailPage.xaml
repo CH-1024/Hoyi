@@ -20,13 +20,13 @@
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
                 <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#111111, Light=#EEEEEE}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource AccentSoft}, Dark=#252A35}"/>
                 <Setter Property="ContentLayout" Value="Top,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="10"/>
                 <Setter Property="CornerRadius" Value="0"/>
                 <Setter Property="FontSize" Value="Micro"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
             </Style>
@@ -47,16 +47,16 @@
     </Shell.BackButtonBehavior>
     <Shell.TitleView>
         <Grid ColumnDefinitions="50,*,50">
-            <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _ContactRequestDetailPage}, x:DataType=ContentPage}" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
+            <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _ContactRequestDetailPage}, x:DataType=ContentPage}" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
             <Label  HeightRequest="40" Grid.Column="1" Text="联系人资料" TextColor="{StaticResource PrimaryDark}" FontSize="Title" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
-            <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
+            <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
 
             <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="#292929" VerticalOptions="End"/>
         </Grid>
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="{Binding Title}" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="{Binding Title}" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <!--<ContentPage.ToolbarItems>
@@ -79,7 +79,7 @@
 
                             <Grid ColumnDefinitions="50,*,auto,auto,auto,auto" ColumnSpacing="0" HeightRequest="50">
 
-                                <toolkit:AvatarView Grid.Column="0" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0">
+                                <toolkit:AvatarView Grid.Column="0" BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0">
                                     <toolkit:AvatarView.Triggers>
                                         <DataTrigger TargetType="toolkit:AvatarView" Binding="{Binding IsSelf}" Value="True">
                                             <Setter Property="ImageSource" Value="{Binding Receiver_Avatar}"/>
@@ -107,7 +107,7 @@
                                             </DataTrigger>
                                         </Label.Triggers>
                                     </Label>
-                                    <Label Grid.Row="1" TextColor="Gray" FontSize="Body" Padding="0" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center">
+                                    <Label Grid.Row="1" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Body" Padding="0" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center">
                                         <Label.Triggers>
                                             <DataTrigger TargetType="Label" Binding="{Binding IsSelf}" Value="True">
                                                 <Setter Property="Text" Value="{Binding Message, StringFormat='我：{0}'}"/>
@@ -185,7 +185,7 @@
                                     </Label.Triggers>
                                 </Label>
 
-                                <Button Grid.Column="3" Command="{Binding Path=BindingContext.RespondContact_AcceptedCommand, Source={x:Reference _ContactRequestDetailPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="Black" TextColor="White" CornerRadius="3" IsVisible="False">
+                                <Button Grid.Column="3" Command="{Binding Path=BindingContext.RespondContact_AcceptedCommand, Source={x:Reference _ContactRequestDetailPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" TextColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" CornerRadius="3" IsVisible="False">
                                     <Button.Triggers>
                                         <MultiTrigger TargetType="Button">
                                             <MultiTrigger.Conditions>
@@ -198,7 +198,7 @@
                                     </Button.Triggers>
                                 </Button>
 
-                                <Button Grid.Column="4" Command="{Binding Path=BindingContext.RespondContact_DeclinedCommand, Source={x:Reference _ContactRequestDetailPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="10,0,0,0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="Black" TextColor="White" CornerRadius="3" IsVisible="False">
+                                <Button Grid.Column="4" Command="{Binding Path=BindingContext.RespondContact_DeclinedCommand, Source={x:Reference _ContactRequestDetailPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="10,0,0,0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" TextColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" CornerRadius="3" IsVisible="False">
                                     <Button.Triggers>
                                         <MultiTrigger TargetType="Button">
                                             <MultiTrigger.Conditions>
@@ -211,7 +211,7 @@
                                     </Button.Triggers>
                                 </Button>
 
-                                <Button Grid.Column="5" Command="{Binding Path=BindingContext.RespondContact_RevokedCommand, Source={x:Reference _ContactRequestDetailPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="Black" TextColor="White" CornerRadius="3" IsVisible="False">
+                                <Button Grid.Column="5" Command="{Binding Path=BindingContext.RespondContact_RevokedCommand, Source={x:Reference _ContactRequestDetailPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" TextColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" CornerRadius="3" IsVisible="False">
                                     <Button.Triggers>
                                         <MultiTrigger TargetType="Button">
                                             <MultiTrigger.Conditions>
@@ -224,7 +224,7 @@
                                     </Button.Triggers>
                                 </Button>
 
-                                <BoxView Grid.Column="1" Grid.ColumnSpan="5" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
+                                <BoxView Grid.Column="1" Grid.ColumnSpan="5" Color="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray800}}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
 
                             </Grid>
 
