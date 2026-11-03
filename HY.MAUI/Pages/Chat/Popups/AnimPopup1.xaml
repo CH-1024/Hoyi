@@ -21,13 +21,13 @@
         </BoxView>
 
         <!--真正的底部弹窗-->
-        <Border x:Name="content" Grid.Row="1" BackgroundColor="Black" StrokeThickness="0" StrokeShape="RoundRectangle 10,10,0,0" Margin="0,0,0,0" HeightRequest="{Binding Source={x:Reference popup}, Path=PopLength}" TranslationY="{Binding Source={x:Reference popup}, Path=TotalTranslateY}">
+        <Border x:Name="content" Grid.Row="1" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SoftBlack}}" Stroke="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray700}}" StrokeThickness="1" StrokeShape="RoundRectangle 18,18,0,0" Margin="0,0,0,0" HeightRequest="{Binding Source={x:Reference popup}, Path=PopLength}" TranslationY="{Binding Source={x:Reference popup}, Path=TotalTranslateY}">
             <Border.GestureRecognizers>
                 <PanGestureRecognizer PanUpdated="OnContentPanUpdated"/>
             </Border.GestureRecognizers>
 
             <VerticalStackLayout Margin="0" Padding="30" Spacing="15">
-                <Label Text="Hello, World!" />
+                <Label Text="Hello, World!" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}"/>
                 <!-- <Button Text="Done" Clicked="OnAnimateExit"/> -->
             </VerticalStackLayout>
         </Border>

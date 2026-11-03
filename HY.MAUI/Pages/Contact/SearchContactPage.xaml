@@ -27,16 +27,16 @@
     </Shell.BackButtonBehavior>
     <Shell.TitleView>
         <Grid ColumnDefinitions="50,*,50">
-            <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _SearchContactPage}, x:DataType=ContentPage}" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
+            <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _SearchContactPage}, x:DataType=ContentPage}" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
             <Label  HeightRequest="40" Grid.Column="1" Text="用户资料" TextColor="{StaticResource PrimaryDark}" FontSize="Title" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
-            <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
+            <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
 
-            <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="#292929" VerticalOptions="End"/>
+            <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray800}}" VerticalOptions="End"/>
         </Grid>
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="添加联系人" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="添加联系人" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <!--<ContentPage.ToolbarItems>
@@ -64,7 +64,7 @@
 
                             <Grid ColumnDefinitions="50,*,auto,auto,auto,auto" ColumnSpacing="0" HeightRequest="50">
 
-                                <toolkit:AvatarView Grid.Column="0" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0">
+                                <toolkit:AvatarView Grid.Column="0" BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0">
                                     <toolkit:AvatarView.Triggers>
                                         <DataTrigger TargetType="toolkit:AvatarView" Binding="{Binding IsSelf}" Value="True">
                                             <Setter Property="ImageSource" Value="{Binding Receiver_Avatar}"/>
@@ -92,7 +92,7 @@
                                             </DataTrigger>
                                         </Label.Triggers>
                                     </Label>
-                                    <Label Grid.Row="1" TextColor="Gray" FontSize="Body" Padding="0" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center">
+                                    <Label Grid.Row="1" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray400}}" FontSize="Body" Padding="0" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center">
                                         <Label.Triggers>
                                             <DataTrigger TargetType="Label" Binding="{Binding IsSelf}" Value="True">
                                                 <Setter Property="Text" Value="{Binding Message, StringFormat='我：{0}'}"/>
@@ -170,7 +170,7 @@
                                     </Label.Triggers>
                                 </Label>
 
-                                <Button Grid.Column="3" Command="{Binding Path=BindingContext.RespondContact_AcceptedCommand, Source={x:Reference _SearchContactPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="Black" TextColor="White" CornerRadius="3" IsVisible="False">
+                                <Button Grid.Column="3" Command="{Binding Path=BindingContext.RespondContact_AcceptedCommand, Source={x:Reference _SearchContactPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" TextColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" CornerRadius="3" IsVisible="False">
                                     <Button.Triggers>
                                         <MultiTrigger TargetType="Button">
                                             <MultiTrigger.Conditions>
@@ -183,7 +183,7 @@
                                     </Button.Triggers>
                                 </Button>
 
-                                <Button Grid.Column="4" Command="{Binding Path=BindingContext.RespondContact_DeclinedCommand, Source={x:Reference _SearchContactPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="10,0,0,0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="Black" TextColor="White" CornerRadius="3" IsVisible="False">
+                                <Button Grid.Column="4" Command="{Binding Path=BindingContext.RespondContact_DeclinedCommand, Source={x:Reference _SearchContactPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="10,0,0,0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" TextColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" CornerRadius="3" IsVisible="False">
                                     <Button.Triggers>
                                         <MultiTrigger TargetType="Button">
                                             <MultiTrigger.Conditions>
@@ -196,7 +196,7 @@
                                     </Button.Triggers>
                                 </Button>
 
-                                <Button Grid.Column="5" Command="{Binding Path=BindingContext.RespondContact_RevokedCommand, Source={x:Reference _SearchContactPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="Black" TextColor="White" CornerRadius="3" IsVisible="False">
+                                <Button Grid.Column="5" Command="{Binding Path=BindingContext.RespondContact_RevokedCommand, Source={x:Reference _SearchContactPage}}" CommandParameter="{Binding .}" FontSize="16" Padding="5" Margin="0" MinimumHeightRequest="0" MinimumWidthRequest="0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" TextColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" CornerRadius="3" IsVisible="False">
                                     <Button.Triggers>
                                         <MultiTrigger TargetType="Button">
                                             <MultiTrigger.Conditions>

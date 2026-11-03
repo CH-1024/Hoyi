@@ -2,6 +2,7 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="HY.MAUI.Pages.Chat.Controls.ChatBubble"
+             x:Name="_ChatBubble"
              xmlns:controls="clr-namespace:HY.MAUI.Pages.Chat.Controls"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit">
 
@@ -30,8 +31,13 @@
             x:Name="Bubble"
             Grid.Column="1"
             Padding="0"
-            BackgroundColor="Black"
+            BackgroundColor="{AppThemeBinding Light={StaticResource ChatBubbleIncoming}, Dark={StaticResource Gray800}}"
             HorizontalOptions="Start">
+            <Border.Triggers>
+                <DataTrigger TargetType="Border" Binding="{Binding IsSelf, Source={x:Reference _ChatBubble}}" Value="True">
+                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                </DataTrigger>
+            </Border.Triggers>
 
             <Border.StrokeShape>
                 <RoundRectangle x:Name="BubbleRadius" CornerRadius="5"/>
@@ -53,13 +59,19 @@
 
             <Editor
                 x:Name="MessageEditor"
-                TextColor="White"
+                TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}"
                 BackgroundColor="Transparent"
                 IsReadOnly="True"
                 AutoSize="TextChanges"
                 IsSpellCheckEnabled="False"
                 IsTextPredictionEnabled="False"
-                FontSize="14"/>
+                FontSize="14">
+                <Editor.Triggers>
+                    <DataTrigger TargetType="Editor" Binding="{Binding IsSelf, Source={x:Reference _ChatBubble}}" Value="True">
+                        <Setter Property="TextColor" Value="White"/>
+                    </DataTrigger>
+                </Editor.Triggers>
+            </Editor>
         </Border>
 
          <!--右头像--> 

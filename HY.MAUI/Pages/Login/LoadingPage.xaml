@@ -19,7 +19,7 @@
 
     <Grid RowDefinitions="0.8*,auto,80,auto,*">
         <controls:AnimatedEllipsisLabel Grid.Row="1" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Text="Loading" Interval="500" MaxDots="3" FontSize="Medium"/>
-        <toolkit:AvatarView Grid.Row="3" ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="70" HeightRequest="70" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
+        <toolkit:AvatarView Grid.Row="3" ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}" Stroke="Transparent" CornerRadius="5" WidthRequest="70" HeightRequest="70" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
     </Grid>
 
 </ContentPage>
