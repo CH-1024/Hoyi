@@ -20,7 +20,7 @@
     <Grid ColumnDefinitions="50,*,50" Margin="0,6">
 
         <!-- ================== 头像 ================== -->
-        <toolkit:AvatarView BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" Padding="0" WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Start" IsVisible="False">
+        <toolkit:AvatarView BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}" Stroke="Transparent" CornerRadius="5" Padding="0" WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Start" IsVisible="False">
 
             <!-- 绑定头像 -->
             <toolkit:AvatarView.ImageSource>
@@ -123,7 +123,7 @@
             </controls:CircularProgressBar>
 
             <!-- 气泡 -->
-            <Border Grid.Column="1" BackgroundColor="{StaticResource Gray800}" StrokeThickness="0" Padding="0" WidthRequest="100" HeightRequest="150">
+            <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Light={StaticResource ChatBubbleIncoming}, Dark={StaticResource Gray800}}" StrokeThickness="0" Padding="0" WidthRequest="100" HeightRequest="150">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Bubble_Primary_Tapped" Buttons="Primary"/>
                     <TapGestureRecognizer Tapped="Bubble_Secondary_Tapped" Buttons="Secondary"/>

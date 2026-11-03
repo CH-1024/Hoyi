@@ -21,7 +21,7 @@
     <Grid ColumnDefinitions="50,*,50" Margin="0,6">
 
         <!-- ================== 头像 ================== -->
-        <toolkit:AvatarView BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" Padding="0" WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Start" IsVisible="False">
+        <toolkit:AvatarView BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}" Stroke="Transparent" CornerRadius="5" Padding="0" WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Start" IsVisible="False">
 
             <!-- 绑定头像 -->
             <toolkit:AvatarView.ImageSource>
@@ -110,14 +110,19 @@
             </Button>
 
             <!-- 气泡 -->
-            <Border Grid.Column="1" BackgroundColor="{StaticResource Gray800}" StrokeThickness="0" Padding="8">
+            <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Light={StaticResource ChatBubbleIncoming}, Dark={StaticResource Gray800}}" StrokeThickness="0" Padding="8">
+                <Border.Triggers>
+                    <DataTrigger TargetType="Border" Binding="{Binding IsSelf}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                    </DataTrigger>
+                </Border.Triggers>
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Bubble_Secondary_Tapped" Buttons="Secondary"/>
                 </Border.GestureRecognizers>
 
                 <!-- 阴影 -->
                 <Border.Shadow>
-                    <Shadow Brush="Gray" Offset="0,1" Radius="1" Opacity="1" />
+                    <Shadow Brush="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource Black}}" Offset="0,1" Radius="4" Opacity="0.10" />
                 </Border.Shadow>
 
                 <!-- 圆角 -->
@@ -140,7 +145,13 @@
                 </Border.Triggers>
 
                 <!-- 内容 -->
-                <controls:SelectableLabel Text="{Binding Content}" TextColor="White" FontSize="Body" MinimumHeightRequest="0" Padding="0" LineBreakMode="WordWrap"/>
+                <controls:SelectableLabel Text="{Binding Content}" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" FontSize="Body" MinimumHeightRequest="0" Padding="0" LineBreakMode="WordWrap">
+                    <controls:SelectableLabel.Triggers>
+                        <DataTrigger TargetType="controls:SelectableLabel" Binding="{Binding IsSelf}" Value="True">
+                            <Setter Property="TextColor" Value="White"/>
+                        </DataTrigger>
+                    </controls:SelectableLabel.Triggers>
+                </controls:SelectableLabel>
 
             </Border>
 

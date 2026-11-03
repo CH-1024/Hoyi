@@ -26,7 +26,7 @@
     <Grid ColumnDefinitions="50,*,50" Margin="0,6">
 
         <!-- ================== 头像 ================== -->
-        <toolkit:AvatarView BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" Padding="0" WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Start" IsVisible="False">
+        <toolkit:AvatarView BackgroundColor="{AppThemeBinding Light={StaticResource AvatarBackground}, Dark={StaticResource Gray800}}" Stroke="Transparent" CornerRadius="5" Padding="0" WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Start" IsVisible="False">
 
             <!-- 绑定头像 -->
             <toolkit:AvatarView.ImageSource>
@@ -66,7 +66,7 @@
             </Grid.Triggers>
 
             <!-- 气泡 -->
-            <Border Grid.Column="1" BackgroundColor="{StaticResource Gray800}" StrokeThickness="0" Padding="8">
+            <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Light={StaticResource ChatBubbleIncoming}, Dark={StaticResource Gray800}}" StrokeThickness="0" Padding="8">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Bubble_Primary_Tapped" Buttons="Primary"/>
                     <TapGestureRecognizer Tapped="Bubble_Secondary_Tapped" Buttons="Secondary"/>
@@ -111,7 +111,7 @@
                     </Path>
 
                     <!-- 文字提示 -->
-                    <Label Grid.Column="1" TextColor="White" FontSize="Body" MinimumHeightRequest="0" Padding="0" LineBreakMode="WordWrap">
+                    <Label Grid.Column="1" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" FontSize="Body" MinimumHeightRequest="0" Padding="0" LineBreakMode="WordWrap">
                         <Label.Triggers>
 
                             <DataTrigger TargetType="Label" Binding="{Binding IsSelf}" Value="True">

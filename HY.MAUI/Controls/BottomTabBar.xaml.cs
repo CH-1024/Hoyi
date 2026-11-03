@@ -89,11 +89,9 @@ public partial class BottomTabBar : ContentView
 
     private void ApplySurfaceTheme()
     {
-        // 主体背景
-        // BarSurface.SetAppThemeColor(Border.BackgroundProperty, Color.FromArgb("#FFFFFF"), Color.FromArgb("#202127"));
-
-        // 主体边框
-        BarSurface.SetAppThemeColor( Border.StrokeProperty, Color.FromArgb("#EAEDF3"), Color.FromArgb("#383A44"));
+        // A light floating surface keeps the navigation visually separated from the page canvas.
+        BarSurface.SetAppThemeColor(Border.BackgroundProperty, Color.FromArgb("#FFFFFF"), Color.FromArgb("#202127"));
+        BarSurface.SetAppThemeColor(Border.StrokeProperty, Color.FromArgb("#E7ECF3"), Color.FromArgb("#383A44"));
     }
 
     private static void UpdateTabStyle(Border border, Image icon, Label label, bool selected)
@@ -101,7 +99,7 @@ public partial class BottomTabBar : ContentView
         border.SetAppThemeColor(
             Border.BackgroundProperty,
             selected
-                ? Color.FromArgb("#EEF3FF")
+                ? Color.FromArgb("#EAF1FF")
                 : Colors.Transparent,
             selected
                 ? Color.FromArgb("#293B59")
@@ -119,8 +117,8 @@ public partial class BottomTabBar : ContentView
         label.SetAppThemeColor(
             Label.TextColorProperty,
             selected
-                ? Color.FromArgb("#3568ED")
-                : Color.FromArgb("#7B8494"),
+                ? Color.FromArgb("#3978F6")
+                : Color.FromArgb("#64748B"),
             selected
                 ? Color.FromArgb("#91B7FF")
                 : Color.FromArgb("#AEB3C0"));

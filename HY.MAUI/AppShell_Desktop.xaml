@@ -29,7 +29,7 @@
     <Shell.FlyoutHeaderTemplate>
         <DataTemplate>
             <VerticalStackLayout HeightRequest="200">
-                <Label Text="{Binding Path=BindingContext.CurrentUser.Nickname, Source={x:Reference _Shell}, StringFormat='Hi ~ {0}'}" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Margin="0,10"/>
+                <Label Text="{Binding Path=BindingContext.CurrentUser.Nickname, Source={x:Reference _Shell}, StringFormat='Hi ~ {0}'}" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Margin="0,10"/>
                 <Image Source="{Binding Path=BindingContext.CurrentUser.Avatar, Source={x:Reference _Shell} }" Aspect="AspectFill" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center"/>
                 <BoxView WidthRequest="280" HeightRequest="1" BackgroundColor="Gray" Margin="0,30"/>
             </VerticalStackLayout>
@@ -49,7 +49,7 @@
         <DataTemplate>
             <Grid HeightRequest="50">
                 <!--<Image Aspect="AspectFill" Source="dotnet_bot.png" Opacity="0.6"/>-->
-                <Label x:DataType="sys:DateTime" Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat='{0:yyyy/MM/dd}'}" TextColor="GhostWhite" HorizontalOptions="Center" VerticalOptions="End" Margin="10"/>
+                <Label x:DataType="sys:DateTime" Text="{Binding Source={x:Static sys:DateTime.Now}, StringFormat='{0:yyyy/MM/dd}'}" TextColor="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource Gray300}}" HorizontalOptions="Center" VerticalOptions="End" Margin="10"/>
             </Grid>
         </DataTemplate>
     </Shell.FlyoutFooterTemplate>
@@ -68,10 +68,7 @@
 
 
     <!--FlyoutItems背景-->
-    <Shell.FlyoutBackgroundImageAspect>AspectFill</Shell.FlyoutBackgroundImageAspect>
-    <Shell.FlyoutBackgroundImage>
-        <FileImageSource File="splash.svg" />
-    </Shell.FlyoutBackgroundImage>
+    <!-- Theme-aware flyout surface; no fixed splash artwork. -->
 
 
     <!--浮出控件-->

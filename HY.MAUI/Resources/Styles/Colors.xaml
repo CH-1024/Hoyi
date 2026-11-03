@@ -1,22 +1,38 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
-<ResourceDictionary 
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
+    <!-- Hoyi brand -->
+    <Color x:Key="Primary">#3978F6</Color>
+    <Color x:Key="PrimaryDark">#A9C4FF</Color>
+    <Color x:Key="PrimaryDarkText">#172B50</Color>
+    <Color x:Key="Secondary">#E8F0FF</Color>
+    <Color x:Key="SecondaryDarkText">#9FBFFF</Color>
+    <Color x:Key="Tertiary">#245CCB</Color>
 
-    <Color x:Key="Primary">#512BD4</Color>
-    <Color x:Key="PrimaryDark">#ac99ea</Color>
-    <Color x:Key="PrimaryDarkText">#242424</Color>
-    <Color x:Key="Secondary">#DFD8F7</Color>
-    <Color x:Key="SecondaryDarkText">#9880e5</Color>
-    <Color x:Key="Tertiary">#2B0B98</Color>
+    <!-- Semantic colors for the light theme -->
+    <Color x:Key="AppBackground">#F4F7FC</Color>
+    <Color x:Key="Surface">#FFFFFF</Color>
+    <Color x:Key="SurfaceSecondary">#F8FAFD</Color>
+    <Color x:Key="InputBackground">#F0F3F8</Color>
+    <Color x:Key="TextPrimary">#1C2738</Color>
+    <Color x:Key="TextSecondary">#64748B</Color>
+    <Color x:Key="TextMuted">#94A0B2</Color>
+    <Color x:Key="Divider">#E7ECF3</Color>
+    <Color x:Key="AccentSoft">#EAF1FF</Color>
+    <Color x:Key="AccentBorder">#DCE7FF</Color>
+    <Color x:Key="AvatarBackground">#EDF2F8</Color>
+    <Color x:Key="ChatBubbleIncoming">#EEF2F8</Color>
+    <Color x:Key="Danger">#EF596B</Color>
+    <Color x:Key="Success">#20A779</Color>
 
-    <Color x:Key="White">White</Color>
-    <Color x:Key="Black">Black</Color>
+    <!-- Legacy palette kept for controls that still reference it -->
+    <Color x:Key="White">#FFFFFF</Color>
+    <Color x:Key="Black">#000000</Color>
     <Color x:Key="Magenta">#D600AA</Color>
     <Color x:Key="MidnightBlue">#190649</Color>
-    <Color x:Key="OffBlack">#1f1f1f</Color>
+    <Color x:Key="OffBlack">#1F1F1F</Color>
     <Color x:Key="SoftBlack">#262626</Color>
 
     <Color x:Key="Gray100">#E1E1E1</Color>
@@ -35,6 +51,9 @@
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
     <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
     <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource Surface}"/>
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackground}"/>
+    <SolidColorBrush x:Key="DividerBrush" Color="{StaticResource Divider}"/>
 
     <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}"/>
     <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}"/>

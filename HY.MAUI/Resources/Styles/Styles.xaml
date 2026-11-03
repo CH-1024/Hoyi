@@ -19,7 +19,7 @@
     </Style>
 
     <Style TargetType="BoxView">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray200}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource Gray200}}" />
     </Style>
 
     <Style TargetType="Button">
@@ -38,8 +38,8 @@
                     <VisualState x:Name="Normal" />
                     <VisualState x:Name="Disabled">
                         <VisualState.Setters>
-                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray200}}" />
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray600}}" />
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource AccentSoft}, Dark={StaticResource Gray200}}" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource Gray600}}" />
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="PointerOver" />
@@ -188,7 +188,7 @@
 
     <Style TargetType="Picker">
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource White}}" />
-        <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource Gray200}}" />
+        <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray200}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
         <Setter Property="FontSize" Value="14" />
@@ -247,7 +247,7 @@
     </Style>
 
     <Style TargetType="RefreshView">
-        <Setter Property="RefreshColor" Value="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource Gray200}}" />
+        <Setter Property="RefreshColor" Value="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource Gray200}}" />
     </Style>
 
     <Style TargetType="SearchBar">
@@ -347,7 +347,7 @@
                     </VisualState>
                     <VisualState x:Name="Off">
                         <VisualState.Setters>
-                            <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
+                            <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource Gray500}}" />
                         </VisualState.Setters>
                     </VisualState>
                 </VisualStateGroup>
@@ -402,7 +402,7 @@
 
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0"/>
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource OffBlack}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource AppBackground}, Dark={StaticResource OffBlack}}" />
         <!--<Setter Property="Shell.TabBarIsVisible" Value="False"/>-->
     </Style>
 
@@ -426,7 +426,7 @@
     </Style>
 
     <Style TargetType="TabbedPage">
-        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}" />
+        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Gray950}}" />
         <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
         <Setter Property="UnselectedTabColor" Value="{AppThemeBinding Light={StaticResource TextMuted}, Dark={StaticResource Gray950}}" />
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Divider}, Dark={StaticResource Gray200}}" />
