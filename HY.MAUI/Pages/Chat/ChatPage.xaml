@@ -39,7 +39,7 @@
                     <Grid RowDefinitions="Auto,*" RowSpacing="10">
                         <SearchBar x:Name="searchBar" Margin="0,10,0,0" Focused="SearchBar_OnFocused"/>
 
-                        <BoxView Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
+                        <BoxView IsVisible="{OnPlatform iOS=True, MacCatalyst=True,Default=False}" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
 
                         <CollectionView Grid.Row="1" ItemsSource="{Binding ChatCollection}" SelectedItem="{Binding SelectedChat}" SelectionChangedCommand="{Binding SelectionChangedCommand}" SelectionMode="Single">
                             <CollectionView.ItemsLayout>

@@ -14,6 +14,7 @@
     Shell.FlyoutBehavior="Flyout"
     Shell.FlyoutWidth="250"
     Shell.TabBarIsVisible="False"
+    FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
     x:DataType="local:AppShellModel">
 
     <Shell.Resources>
@@ -72,7 +73,7 @@
 
 
     <!--FlyoutItems背景-->
-    <Shell.FlyoutBackgroundImageAspect>AspectFill</Shell.FlyoutBackgroundImageAspect>
+    <!-- <Shell.FlyoutBackgroundImageAspect>AspectFill</Shell.FlyoutBackgroundImageAspect> -->
     <!--<Shell.FlyoutBackgroundImage>
         <FileImageSource File="splash.svg" />
     </Shell.FlyoutBackgroundImage>-->

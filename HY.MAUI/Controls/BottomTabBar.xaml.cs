@@ -90,7 +90,7 @@ public partial class BottomTabBar : ContentView
     private void ApplySurfaceTheme()
     {
         // 主体背景
-        BarSurface.SetAppThemeColor(Border.BackgroundProperty, Color.FromArgb("#FFFFFF"), Color.FromArgb("#202127"));
+        // BarSurface.SetAppThemeColor(Border.BackgroundProperty, Color.FromArgb("#FFFFFF"), Color.FromArgb("#202127"));
 
         // 主体边框
         BarSurface.SetAppThemeColor( Border.StrokeProperty, Color.FromArgb("#EAEDF3"), Color.FromArgb("#383A44"));

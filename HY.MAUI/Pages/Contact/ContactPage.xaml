@@ -17,14 +17,14 @@
             <Style x:Key="IconBtn1" TargetType="Button">
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
-                <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
+                <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=50}"/>
                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#151515, Light=#EEEEEE}"/>
                 <Setter Property="ContentLayout" Value="Left,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="0"/>
                 <Setter Property="BorderWidth" Value="0"/>
                 <Setter Property="CornerRadius" Value="0"/>
-                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="FontSize" Value="14"/>
                 <Setter Property="TextColor" Value="White"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
@@ -61,7 +61,7 @@
 
                         <SearchBar x:Name="searchBar" Margin="0,10,0,0" Focused="SearchBar_OnFocused"/>
 
-                        <BoxView Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
+                        <BoxView IsVisible="{OnPlatform iOS=True, MacCatalyst=True,Default=False}" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
 
                         <Border Grid.Row="1" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 10">
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="1">
