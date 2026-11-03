@@ -111,11 +111,6 @@
 
             <!-- 气泡 -->
             <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Light={StaticResource ChatBubbleIncoming}, Dark={StaticResource Gray800}}" StrokeThickness="0" Padding="8">
-                <Border.Triggers>
-                    <DataTrigger TargetType="Border" Binding="{Binding IsSelf}" Value="True">
-                        <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
-                    </DataTrigger>
-                </Border.Triggers>
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Bubble_Secondary_Tapped" Buttons="Secondary"/>
                 </Border.GestureRecognizers>
@@ -139,6 +134,9 @@
                 </Border.StrokeShape>
 
                 <Border.Triggers>
+                    <DataTrigger TargetType="Border" Binding="{Binding IsSelf}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                    </DataTrigger>
                     <DataTrigger TargetType="Border" Binding="{Binding Message_Status}" Value="Recalled">
                         <Setter Property="IsVisible" Value="False"/>
                     </DataTrigger>

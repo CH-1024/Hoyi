@@ -132,7 +132,7 @@
 
                 <!-- 阴影 -->
                 <Border.Shadow>
-                    <Shadow Brush="Gray" Offset="0,1" Radius="0" Opacity="1" />
+                    <Shadow Brush="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource Black}}" Offset="0,1" Radius="4" Opacity="0.10" />
                 </Border.Shadow>
 
                 <!-- 圆角 -->
@@ -149,6 +149,9 @@
                 </Border.StrokeShape>
 
                 <Border.Triggers>
+                    <DataTrigger TargetType="Border" Binding="{Binding IsSelf}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                    </DataTrigger>
                     <DataTrigger TargetType="Border" Binding="{Binding Message_Status}" Value="Recalled">
                         <Setter Property="IsVisible" Value="False"/>
                     </DataTrigger>
