@@ -17,14 +17,16 @@
             <Style x:Key="IconBtn1" TargetType="Button">
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
-                <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#151515, Light=#EEEEEE}"/>
-                <Setter Property="ContentLayout" Value="Top,0"/>
+                <Setter Property="HeightRequest" Value="50"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource Gray000}}"/>
+                <Setter Property="BorderColor" Value="{AppThemeBinding Dark={StaticResource Gray600}, Light={StaticResource Gray100}}"/>
+                <Setter Property="ContentLayout" Value="Left,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="0"/>
-                <Setter Property="CornerRadius" Value="0"/>
-                <Setter Property="FontSize" Value="16"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="BorderWidth" Value="1"/>
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
             </Style>
@@ -40,7 +42,7 @@
     </ContentPage.Behaviors>
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="我的" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="我的" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
@@ -51,43 +53,41 @@
 
     <Grid RowDefinitions="*,Auto">
 
-        <Grid Grid.Row="0" Padding="8,0" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource SoftBlack}}">
-            <Grid RowDefinitions="auto,auto,auto" RowSpacing="10" Padding="0,10,0,0">
+        <Grid Grid.Row="0" RowDefinitions="auto,auto,auto" RowSpacing="10" Padding="8,10,8,0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
 
-                <Grid Grid.Row="0" RowDefinitions="*,*,*" ColumnDefinitions="130,*" Padding="15">
-                    <Grid.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding Source={x:Reference _MinePage}, Path=BindingContext.ProfileCommand}"/>
-                    </Grid.GestureRecognizers>
+            <Grid Grid.Row="0" RowDefinitions="*,*,*" ColumnDefinitions="130,*" Padding="15">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding Source={x:Reference _MinePage}, Path=BindingContext.ProfileCommand}"/>
+                </Grid.GestureRecognizers>
 
-                    <Image Grid.RowSpan="3" Grid.Column="0" Source="{Binding CurrentUser.Avatar}" HeightRequest="110" WidthRequest="110" HorizontalOptions="Center" VerticalOptions="Center" Aspect="AspectFit" BackgroundColor="Gray"/>
+                <toolkit:AvatarView Grid.RowSpan="3" Grid.Column="0" ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="100" HeightRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
 
-                    <Label Grid.Row="0" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.Nickname}" FontSize="18"/>
+                <Label Grid.Row="0" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.Nickname}" FontSize="18"/>
 
-                    <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="auto,*">
-                        <Label Text="状态：" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption"/>
-                        <Label Grid.Column="1" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.Status}" FontSize="Caption"/>
-                    </Grid>
-
-                    <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="auto,*">
-                        <Label Text="HYID：" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption"/>
-                        <controls:SelectableLabel Grid.Column="1" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.HYid}" FontSize="Caption"/>
-                    </Grid>
+                <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="auto,*">
+                    <Label Text="状态：" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption"/>
+                    <Label Grid.Column="1" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.Status}" FontSize="Caption"/>
                 </Grid>
 
-
-                <VerticalStackLayout Grid.Row="1" Spacing="1">
-                    <Button Style="{StaticResource IconBtn1}" Text="收藏"/>
-                    <Button Style="{StaticResource IconBtn1}" Text="朋友圈"/>
-                    <Button Style="{StaticResource IconBtn1}" Text="表情"/>
-                </VerticalStackLayout>
-
-
-                <VerticalStackLayout Grid.Row="2" Spacing="1">
-                    <Button Style="{StaticResource IconBtn1}" Text="设置" Command="{Binding SettingCommand}"/>
-                    <Button Style="{StaticResource IconBtn1}" Text="退出登录" Command="{Binding LogoutCommand}"/>
-                </VerticalStackLayout>
-
+                <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="auto,*">
+                    <Label Text="HYID：" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" FontSize="Caption"/>
+                    <controls:SelectableLabel Grid.Column="1" TextColor="Gray" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.HYid}" FontSize="Caption"/>
+                </Grid>
             </Grid>
+
+
+            <VerticalStackLayout Grid.Row="1" Spacing="5">
+                <Button Style="{StaticResource IconBtn1}" Text="收藏"/>
+                <Button Style="{StaticResource IconBtn1}" Text="朋友圈"/>
+                <Button Style="{StaticResource IconBtn1}" Text="表情"/>
+            </VerticalStackLayout>
+
+
+            <VerticalStackLayout Grid.Row="2" Spacing="5">
+                <Button Style="{StaticResource IconBtn1}" Text="设置" Command="{Binding SettingCommand}"/>
+                <Button Style="{StaticResource IconBtn1}" Text="退出登录" Command="{Binding LogoutCommand}"/>
+            </VerticalStackLayout>
+
         </Grid>
 
         <controls:BottomTabBar Grid.Row="1"/>

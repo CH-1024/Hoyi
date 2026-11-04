@@ -10,4 +10,9 @@ public partial class VideoPreviewPage : ContentPage
 
         BindingContext = videoPreview;
     }
+
+    private void Video_Tapped(object sender, TappedEventArgs e)
+    {
+
+    }
 }

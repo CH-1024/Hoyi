@@ -66,7 +66,7 @@
             </Grid.Triggers>
 
             <!-- 气泡 -->
-            <Border Grid.Column="1" BackgroundColor="{StaticResource Gray800}" StrokeThickness="0" Padding="8">
+            <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource Secondary}}" StrokeThickness="0" Padding="8">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Bubble_Primary_Tapped" Buttons="Primary"/>
                     <TapGestureRecognizer Tapped="Bubble_Secondary_Tapped" Buttons="Secondary"/>
@@ -90,6 +90,12 @@
                     </RoundRectangle>
                 </Border.StrokeShape>
 
+                <Border.Triggers>
+                    <DataTrigger TargetType="Border" Binding="{Binding IsSelf}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Green1}, Light={StaticResource PrimaryDark}}"/>
+                    </DataTrigger>
+                </Border.Triggers>
+
                 <!-- 内容 -->
                 <Grid ColumnDefinitions="auto,*,auto" HorizontalOptions="Start">
 
@@ -102,7 +108,7 @@
 
                     </Grid.Triggers>
 
-                    <Path Grid.Column="0" Margin="8,0" WidthRequest="18" HeightRequest="18" Fill="#999999" Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center" Data="{StaticResource VideoIcon}" IsVisible="False">
+                    <Path Grid.Column="0" Margin="8,0" WidthRequest="18" HeightRequest="18" Stroke="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}" Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center" Data="{StaticResource VideoIcon}" IsVisible="False">
                         <Path.Triggers>
                             <DataTrigger TargetType="Path" Binding="{Binding IsSelf}" Value="False">
                                 <Setter Property="IsVisible" Value="True"/>
@@ -111,7 +117,7 @@
                     </Path>
 
                     <!-- 文字提示 -->
-                    <Label Grid.Column="1" TextColor="White" FontSize="Body" MinimumHeightRequest="0" Padding="0" LineBreakMode="WordWrap">
+                    <Label Grid.Column="1" TextColor="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}" FontSize="Body" MinimumHeightRequest="0" Padding="0" LineBreakMode="WordWrap">
                         <Label.Triggers>
 
                             <DataTrigger TargetType="Label" Binding="{Binding IsSelf}" Value="True">
@@ -195,7 +201,7 @@
                         </Label.Triggers>
                     </Label>
 
-                    <Path Grid.Column="2" Margin="8,0" WidthRequest="18" HeightRequest="18" Fill="#999999" Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center" Data="{StaticResource VideoIcon}" IsVisible="False" ScaleX="-1">
+                    <Path Grid.Column="2" Margin="8,0" WidthRequest="18" HeightRequest="18" Stroke="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}" Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center" Data="{StaticResource VideoIcon}" IsVisible="False" ScaleX="-1">
                         <Path.Triggers>
                             <DataTrigger TargetType="Path" Binding="{Binding IsSelf}" Value="True">
                                 <Setter Property="IsVisible" Value="True"/>

@@ -17,15 +17,15 @@
             <Style x:Key="IconBtn1" TargetType="Button">
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
-                <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=50}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#151515, Light=#EEEEEE}"/>
+                <Setter Property="HeightRequest" Value="50"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Gray000}}"/>
                 <Setter Property="ContentLayout" Value="Left,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="0"/>
                 <Setter Property="BorderWidth" Value="0"/>
                 <Setter Property="CornerRadius" Value="0"/>
                 <Setter Property="FontSize" Value="14"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
             </Style>
@@ -42,7 +42,7 @@
     </ContentPage.Behaviors>
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="联系人" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="联系人" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
@@ -53,7 +53,7 @@
     
     <Grid RowDefinitions="*,Auto">
 
-        <Grid Grid.Row="0" Padding="8,0" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource SoftBlack}}">
+        <Grid Grid.Row="0" Padding="8,0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
             <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}">
                 <ScrollView>
 
@@ -87,14 +87,14 @@
 
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="m:ContactVM">
-                                    <Border Padding="5" StrokeThickness="0">
+                                    <Border Padding="8" StrokeThickness="0">
 
                                         <Grid ColumnDefinitions="50,*" ColumnSpacing="5">
                                             <toolkit:AvatarView ImageSource="{Binding Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
 
-                                            <Label Grid.Column="1" Text="{Binding Nickname}" FontAttributes="Bold" FontSize="16" Padding="0" Margin="0" HorizontalOptions="Start" VerticalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="{Binding Nickname}" TextColor="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}" FontSize="Body" Padding="0" VerticalOptions="Center"/>
 
-                                            <BoxView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
+                                            <BoxView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Color="{AppThemeBinding Dark={StaticResource Gray800}, Light={StaticResource Gray100}}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
                                         </Grid>
 
                                     </Border>

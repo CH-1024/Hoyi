@@ -19,13 +19,14 @@
             <Style x:Key="IconBtn1" TargetType="Button">
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
-                <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#151515, Light=#EEEEEE}"/>
-                <Setter Property="ContentLayout" Value="Top,0"/>
+                <Setter Property="HeightRequest" Value="50"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Gray400}}"/>
+                <Setter Property="ContentLayout" Value="Left,0"/>
                 <Setter Property="Margin" Value="0"/>
-                <Setter Property="Padding" Value="10"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="BorderWidth" Value="0"/>
                 <Setter Property="CornerRadius" Value="0"/>
-                <Setter Property="FontSize" Value="Micro"/>
+                <Setter Property="FontSize" Value="14"/>
                 <Setter Property="TextColor" Value="White"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
@@ -56,7 +57,7 @@
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="联系人资料" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="联系人资料" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
@@ -65,9 +66,8 @@
         <ToolbarItem Text="删除" Order="Secondary" Priority="2" Command="{Binding DeleteContactCommand}"/>
     </ContentPage.ToolbarItems>
 
-
     <ScrollView>
-        <VerticalStackLayout Spacing="12" Padding="20">
+        <VerticalStackLayout Spacing="12" Padding="20" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
 
             <!-- 头像 + 昵称 -->
             <VerticalStackLayout HorizontalOptions="Center" Spacing="10">
@@ -116,7 +116,6 @@
 
         </VerticalStackLayout>
     </ScrollView>
-
 
     <!--<VerticalStackLayout>
 

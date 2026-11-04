@@ -28,21 +28,6 @@ namespace HY.MAUI.Setups
 
 
 #if WINDOWS
-            Microsoft.Maui.Handlers.ScrollViewHandler.Mapper.AppendToMapping(nameof(IScrollView.Content), (handler, view) =>
-            {
-                if (handler.PlatformView?.Content is ContentPanel panel) panel.IsTabStop = true;
-            });
-#endif
-
-#if IOS || MACCATALYST
-            Microsoft.Maui.Handlers.SearchBarHandler.Mapper.AppendToMapping("CancelButtonColor", (handler, view) =>
-            {
-                handler.PlatformView.SetShowsCancelButton(false, false);
-            });
-#endif
-
-
-#if WINDOWS
             services.AddSingleton<IVideoRecorderService, Platforms.Windows.VideoRecorderService>();
 #elif ANDROID
             services.AddSingleton<IVideoRecorderService, Platforms.Android.VideoRecorderService>();

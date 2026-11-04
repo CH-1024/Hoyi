@@ -57,19 +57,12 @@
 
 
 
-    <Grid RowDefinitions="*">
+    <Grid RowDefinitions="*" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
         <Grid.GestureRecognizers>
             <TapGestureRecognizer Tapped="Image_Tapped"/>
         </Grid.GestureRecognizers>
 
-        <Border StrokeThickness="0" StrokeShape="RoundRectangle 0,0,0,0" HorizontalOptions="Center" VerticalOptions="Center" Margin="20,20,20,20" Opacity="0.9">
-            <Border.Shadow>
-                <Shadow Brush="Black" Offset="0,0" Radius="5" Opacity="1"/>
-            </Border.Shadow>
-
-            <Image Aspect="AspectFit" Source="{Binding Compressed_Image_Url}"/>
-        </Border>
-
+        <Image HorizontalOptions="Fill" VerticalOptions="Fill" BackgroundColor="Transparent" Source="{Binding Compressed_Image_Url}" Aspect="AspectFit"/>
     </Grid>
 
 </ContentPage>

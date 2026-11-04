@@ -10,6 +10,37 @@ namespace HY.MAUI.Setups
         public static void AddConfigureMauiHandlers(this MauiAppBuilder builder)
         {
 
+#if WINDOWS
+            Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("KeyboardAccessibleCollectionView", (handler, view) =>
+            {
+                handler.PlatformView.SingleSelectionFollowsFocus = false;
+            });
+
+            //Microsoft.Maui.Handlers.ContentViewHandler.Mapper.AppendToMapping(nameof(Pages.Controls.CategoryChart), (handler, view) =>
+            //{
+            // if (view is Pages.Controls.CategoryChart && handler.PlatformView is Microsoft.Maui.Platform.ContentPanel contentPanel)
+            // {
+            //  contentPanel.IsTabStop = true;
+            // }
+            //});
+#endif
+
+
+#if WINDOWS
+            Microsoft.Maui.Handlers.ScrollViewHandler.Mapper.AppendToMapping(nameof(IScrollView.Content), (handler, view) =>
+            {
+                if (handler.PlatformView?.Content is Microsoft.Maui.Platform.ContentPanel panel) panel.IsTabStop = true;
+            });
+#endif
+
+#if IOS || MACCATALYST
+            Microsoft.Maui.Handlers.SearchBarHandler.Mapper.AppendToMapping("CancelButtonColor", (handler, view) =>
+            {
+                handler.PlatformView.SetShowsCancelButton(false, false);
+            });
+#endif
+
+
 #if ANDROID
             builder.ConfigureMauiHandlers(handlers =>
             {

@@ -19,6 +19,8 @@
     <ContentPage.Resources>
         <ResourceDictionary>
 
+            <Shadow x:Key="CardShadow" Brush="Black" Offset="0,1" Radius="5" Opacity="1" />
+
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -53,7 +55,7 @@
 
 
 
-    <Grid RowDefinitions="*,*,*">
+    <Grid RowDefinitions="*,*,*" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
 
         <Grid Grid.Row="0" RowDefinitions="*,auto,*">
             <controls:AnimatedEllipsisLabel Grid.Row="1" WidthRequest="160" HorizontalOptions="Center" VerticalOptions="Center" Text="等待对方回应" Interval="600" MaxDots="3" FontSize="Medium"/>
@@ -96,7 +98,7 @@
             </ActivityIndicator>-->
 
             <!--按钮-->
-            <Button HorizontalOptions="Center" VerticalOptions="Center" Text="取消" FontSize="Medium" WidthRequest="80" HeightRequest="80" CornerRadius="40" BackgroundColor="OrangeRed" Command="{Binding CancelCommand}" Margin="0" Padding="0">
+            <Button HorizontalOptions="Center" VerticalOptions="Center" Text="取消" FontSize="Medium" Shadow="{StaticResource CardShadow}" WidthRequest="80" HeightRequest="80" CornerRadius="40" BackgroundColor="OrangeRed" Command="{Binding CancelCommand}" Margin="0" Padding="0">
                 <!--<Button.Triggers>
                     <DataTrigger TargetType="Button" Binding="{Binding Path=IsVisible, Source={x:Reference activityIndicator1}}" Value="True">
                         <Setter Property="IsEnabled" Value="False"/>

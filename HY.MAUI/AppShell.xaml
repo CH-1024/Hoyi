@@ -14,7 +14,7 @@
     Shell.FlyoutBehavior="Flyout"
     Shell.FlyoutWidth="250"
     Shell.TabBarIsVisible="False"
-    FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+    FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource OffBlack}}"
     x:DataType="local:AppShellModel">
 
     <Shell.Resources>

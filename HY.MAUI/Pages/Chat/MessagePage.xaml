@@ -23,31 +23,50 @@
                 <Setter Property="MinimumWidthRequest" Value="0"/>
                 <Setter Property="HeightRequest" Value="30"/>
                 <Setter Property="WidthRequest" Value="30"/>
-                 <Setter Property="BackgroundColor" Value="Transparent"/> 
+                <Setter Property="BackgroundColor" Value="Transparent"/>
                 <!-- <Setter Property="ContentLayout" Value="Top,0"/> -->
-                <Setter Property="Margin" Value="0,0,0,5"/>
+                <Setter Property="Margin" Value="0,0,0,2"/>
                 <Setter Property="Padding" Value="3"/>
                 <!-- <Setter Property="CornerRadius" Value="3"/> -->
                 <!-- <Setter Property="FontSize" Value="Body"/> -->
                 <!-- <Setter Property="TextColor" Value="White"/> -->
-                <!-- <Setter Property="HorizontalOptions" Value="Fill"/> -->
+                 <Setter Property="HorizontalOptions" Value="Center"/> 
                 <Setter Property="VerticalOptions" Value="End"/>
             </Style>
 
-            <Style x:Key="IconBtn2" TargetType="Button">
-                <Setter Property="MinimumHeightRequest" Value="45"/>
-                <Setter Property="MinimumWidthRequest" Value="180"/>
-                <!--<Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>-->
-                <!--<Setter Property="WidthRequest" Value="{OnIdiom Desktop=130, Phone=60}"/>-->
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#242424, Light=#EEEEEE}"/>
-                <Setter Property="ContentLayout" Value="Top,0"/>
-                <Setter Property="Margin" Value="5"/>
-                <!--<Setter Property="Padding" Value="5"/>-->
-                <Setter Property="CornerRadius" Value="3"/>
-                <Setter Property="FontSize" Value="Body"/>
-                <Setter Property="TextColor" Value="#BBBBBB"/>
+            <!--<Style x:Key="IconBtn1" TargetType="Button">
+                <Setter Property="MinimumHeightRequest" Value="0"/>
+                <Setter Property="MinimumWidthRequest" Value="0"/>
+                <Setter Property="HeightRequest" Value="50"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Gray400}}"/>
+                <Setter Property="ContentLayout" Value="Left,0"/>
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="BorderWidth" Value="0"/>
+                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="TextColor" Value="White"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
+            </Style>-->
+
+            
+            
+            <Style x:Key="IconBtn2" TargetType="Button">
+                <Setter Property="MinimumHeightRequest" Value="0"/>
+                <Setter Property="MinimumWidthRequest" Value="0"/>
+                <Setter Property="HeightRequest" Value="45"/>
+                <Setter Property="WidthRequest" Value="180"/>
+                <Setter Property="ImageSource" Value="dotnet_bot.png"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Gray000}}"/>
+                <Setter Property="ContentLayout" Value="Left,5"/>
+                <Setter Property="Margin" Value="5"/>
+                <!--<Setter Property="Padding" Value="5"/>-->
+                <Setter Property="CornerRadius" Value="5"/>
+                <Setter Property="FontSize" Value="10"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}"/>
+                <!--<Setter Property="HorizontalOptions" Value="Fill"/>-->
+                <!--<Setter Property="VerticalOptions" Value="Fill"/>-->
             </Style>
 
         </ResourceDictionary>
@@ -79,7 +98,7 @@
 
     <Shell.TitleView>
         <Grid ColumnDefinitions="*,auto,auto,*" Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}">
-            <Label Grid.Column="1" Text="{Binding Title}" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+            <Label Grid.Column="1" Text="{Binding Title}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
             <Ellipse Grid.Column="2" MinimumHeightRequest="0" MinimumWidthRequest="0" WidthRequest="8" HeightRequest="8" Margin="5,0,0,0">
                 <Ellipse.Triggers>
 
@@ -112,96 +131,97 @@
 
     <Grid RowDefinitions="*, auto, auto">
 
-        <ActivityIndicator IsRunning="True" IsVisible="{Binding RefreshCommand.IsRunning}" ZIndex="2" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,0,0,0"/>
+        <Grid BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
+            <ActivityIndicator IsRunning="True" IsVisible="{Binding RefreshCommand.IsRunning}" ZIndex="2" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,0,0,0"/>
 
-        <CollectionView x:Name="collectionView" ItemsSource="{Binding MessageCollection}" SelectionMode="None" ItemsUpdatingScrollMode="KeepScrollOffset"
-                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource SoftBlack}}">
+            <CollectionView x:Name="collectionView" ItemsSource="{Binding MessageCollection}" SelectionMode="None" ItemsUpdatingScrollMode="KeepScrollOffset">
 
-            <CollectionView.Behaviors>
-                <toolkit:EventToCommandBehavior EventName="Loaded" Command="{Binding CollectionViewLoadedCommand}" CommandParameter="{Binding Source={x:Reference collectionView}}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}"/>
-                <toolkit:EventToCommandBehavior EventName="Scrolled" Command="{Binding CollectionViewScrolledCommand}" x:TypeArguments="ItemsViewScrolledEventArgs" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}"/>
-            </CollectionView.Behaviors>
+                <CollectionView.Behaviors>
+                    <toolkit:EventToCommandBehavior EventName="Loaded" Command="{Binding CollectionViewLoadedCommand}" CommandParameter="{Binding Source={x:Reference collectionView}}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}"/>
+                    <toolkit:EventToCommandBehavior EventName="Scrolled" Command="{Binding CollectionViewScrolledCommand}" x:TypeArguments="ItemsViewScrolledEventArgs" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}"/>
+                </CollectionView.Behaviors>
 
-            <CollectionView.GestureRecognizers>
-                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-            </CollectionView.GestureRecognizers>
+                <CollectionView.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                </CollectionView.GestureRecognizers>
 
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" SnapPointsType="Mandatory" SnapPointsAlignment="End"/>
-            </CollectionView.ItemsLayout>
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" SnapPointsType="Mandatory" SnapPointsAlignment="End"/>
+                </CollectionView.ItemsLayout>
 
-            <CollectionView.ItemTemplate>
-                <controls:MessageTemplateSelector>
+                <CollectionView.ItemTemplate>
+                    <controls:MessageTemplateSelector>
 
-                    <controls:MessageTemplateSelector.TextTemplate>
-                        <DataTemplate x:DataType="msgvm:TextMessageVM">
-                            <controls:TextBubble Command="{Binding Path=BindingContext.InvocationCommand, Source={x:Reference _MessagePage}}"/>
-                        </DataTemplate>
-                    </controls:MessageTemplateSelector.TextTemplate>
+                        <controls:MessageTemplateSelector.TextTemplate>
+                            <DataTemplate x:DataType="msgvm:TextMessageVM">
+                                <controls:TextBubble Command="{Binding Path=BindingContext.InvocationCommand, Source={x:Reference _MessagePage}}"/>
+                            </DataTemplate>
+                        </controls:MessageTemplateSelector.TextTemplate>
 
-                    <controls:MessageTemplateSelector.ImageTemplate>
-                        <DataTemplate x:DataType="msgvm:ImageMessageVM">
-                            <controls:ImageBubble Command="{Binding Path=BindingContext.InvocationCommand, Source={x:Reference _MessagePage}}"/>
-                        </DataTemplate>
-                    </controls:MessageTemplateSelector.ImageTemplate>
+                        <controls:MessageTemplateSelector.ImageTemplate>
+                            <DataTemplate x:DataType="msgvm:ImageMessageVM">
+                                <controls:ImageBubble Command="{Binding Path=BindingContext.InvocationCommand, Source={x:Reference _MessagePage}}"/>
+                            </DataTemplate>
+                        </controls:MessageTemplateSelector.ImageTemplate>
 
-                    <controls:MessageTemplateSelector.FileTemplate>
-                        <DataTemplate x:DataType="msgvm:FileMessageVM">
+                        <controls:MessageTemplateSelector.FileTemplate>
+                            <DataTemplate x:DataType="msgvm:FileMessageVM">
 
-                        </DataTemplate>
-                    </controls:MessageTemplateSelector.FileTemplate>
+                            </DataTemplate>
+                        </controls:MessageTemplateSelector.FileTemplate>
 
-                    <controls:MessageTemplateSelector.VoiceTemplate>
-                        <DataTemplate x:DataType="msgvm:VoiceMessageVM">
+                        <controls:MessageTemplateSelector.VoiceTemplate>
+                            <DataTemplate x:DataType="msgvm:VoiceMessageVM">
 
-                        </DataTemplate>
-                    </controls:MessageTemplateSelector.VoiceTemplate>
+                            </DataTemplate>
+                        </controls:MessageTemplateSelector.VoiceTemplate>
 
-                    <controls:MessageTemplateSelector.VideoTemplate>
-                        <DataTemplate x:DataType="msgvm:VideoMessageVM">
-                            <controls:VideoBubble Command="{Binding Path=BindingContext.InvocationCommand, Source={x:Reference _MessagePage}}"/>
-                        </DataTemplate>
-                    </controls:MessageTemplateSelector.VideoTemplate>
+                        <controls:MessageTemplateSelector.VideoTemplate>
+                            <DataTemplate x:DataType="msgvm:VideoMessageVM">
+                                <controls:VideoBubble Command="{Binding Path=BindingContext.InvocationCommand, Source={x:Reference _MessagePage}}"/>
+                            </DataTemplate>
+                        </controls:MessageTemplateSelector.VideoTemplate>
 
-                    <controls:MessageTemplateSelector.SystemTemplate>
-                        <DataTemplate x:DataType="msgvm:SystemMessageVM">
-                            <controls:SystemBubble/>
-                        </DataTemplate>
-                    </controls:MessageTemplateSelector.SystemTemplate>
+                        <controls:MessageTemplateSelector.SystemTemplate>
+                            <DataTemplate x:DataType="msgvm:SystemMessageVM">
+                                <controls:SystemBubble/>
+                            </DataTemplate>
+                        </controls:MessageTemplateSelector.SystemTemplate>
 
-                    <controls:MessageTemplateSelector.CallVoiceTemplate>
-                        <DataTemplate x:DataType="msgvm:CallVoiceMessageVM">
-                            <controls:CallVoiceBubble Command="{Binding Path=BindingContext.InvocationCommand, Source={x:Reference _MessagePage}}"/>
-                        </DataTemplate>
-                    </controls:MessageTemplateSelector.CallVoiceTemplate>
+                        <controls:MessageTemplateSelector.CallVoiceTemplate>
+                            <DataTemplate x:DataType="msgvm:CallVoiceMessageVM">
+                                <controls:CallVoiceBubble Command="{Binding Path=BindingContext.InvocationCommand, Source={x:Reference _MessagePage}}"/>
+                            </DataTemplate>
+                        </controls:MessageTemplateSelector.CallVoiceTemplate>
 
-                    <controls:MessageTemplateSelector.CallVideoTemplate>
-                        <DataTemplate x:DataType="msgvm:CallVideoMessageVM">
-                            <controls:CallVideoBubble Command="{Binding Path=BindingContext.InvocationCommand, Source={x:Reference _MessagePage}}"/>
-                        </DataTemplate>
-                    </controls:MessageTemplateSelector.CallVideoTemplate>
+                        <controls:MessageTemplateSelector.CallVideoTemplate>
+                            <DataTemplate x:DataType="msgvm:CallVideoMessageVM">
+                                <controls:CallVideoBubble Command="{Binding Path=BindingContext.InvocationCommand, Source={x:Reference _MessagePage}}"/>
+                            </DataTemplate>
+                        </controls:MessageTemplateSelector.CallVideoTemplate>
 
-                </controls:MessageTemplateSelector>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                    </controls:MessageTemplateSelector>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
 
-        <Border IsVisible="{Binding ShowUnread}" StrokeThickness="0" StrokeShape="RoundRectangle 20,0,20,0" HorizontalOptions="End" VerticalOptions="End" Margin="20,20,0,20" Opacity="0.9">
-            <Border.Shadow>
-                <Shadow Brush="Black" Offset="0,0" Radius="20" Opacity="1"/>
-            </Border.Shadow>
+            <Border IsVisible="{Binding ShowUnread}" StrokeThickness="0" StrokeShape="RoundRectangle 20,0,20,0" HorizontalOptions="End" VerticalOptions="End" Margin="20,20,0,20" Opacity="0.9">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,0" Radius="20" Opacity="1"/>
+                </Border.Shadow>
 
-            <Button Text="{Binding UnreadCount,StringFormat='⇊{0}条新消息'}" Command="{Binding ShowBottomCommand}" BackgroundColor="Gray" CornerRadius="0" Padding="10" HeightRequest="40"/>
-        </Border>
-
+                <Button Text="{Binding UnreadCount,StringFormat='⇊{0}条新消息'}" Command="{Binding ShowBottomCommand}" BackgroundColor="{AppThemeBinding Dark={StaticResource Gray500}, Light={StaticResource Gray500}}" CornerRadius="0" Padding="10" HeightRequest="40"/>
+            </Border>
+        </Grid>
 
         <!--底部栏-->
         <Grid Grid.Row="1" ColumnDefinitions="auto,*,auto,auto" ColumnSpacing="5" Padding="15" MinimumHeightRequest="0">
             <Grid.GestureRecognizers>
                 <PanGestureRecognizer PanUpdated="OnContentPanUpdated"/>
             </Grid.GestureRecognizers>
+            
             <ImageButton Style="{StaticResource IconBtn1}" Source="record.png" Grid.Column="0" Clicked="Record_Btn_Clicked"/>
 
-            <controls:ChatEditor x:Name="editor" Grid.Column="1" Text="{Binding InputText}" SendCommand="{Binding SendTextCommand}" AutoSize="TextChanges" Keyboard="Chat" MaxLength="500" MaximumHeightRequest="300" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" FontSize="Body" />
+            <controls:ChatEditor x:Name="editor" Grid.Column="1" Text="{Binding InputText}" SendCommand="{Binding SendTextCommand}" AutoSize="TextChanges" Keyboard="Chat" MaxLength="500" MaximumHeightRequest="300" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}" TextColor="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}" FontSize="Body" />
 
             <ImageButton Style="{StaticResource IconBtn1}" Source="fold.png" Grid.Column="2" Clicked="Switch_Expander_Clicked"/>
 

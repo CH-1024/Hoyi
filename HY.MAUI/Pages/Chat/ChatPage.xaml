@@ -22,7 +22,7 @@
 
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="聊天" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="聊天" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
@@ -32,7 +32,7 @@
     
     <Grid RowDefinitions="*,Auto">
 
-        <Grid Grid.Row="0" Padding="8,0" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource SoftBlack}}">
+        <Grid Grid.Row="0" Padding="8,0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
             <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}">
                 <ScrollView>
 
@@ -56,16 +56,15 @@
                                             </SwipeItems>
                                         </SwipeView.RightItems>
 
-                                        <Border Padding="5" StrokeThickness="0">
+                                        <Border Padding="8" StrokeThickness="0">
                                             <Grid ColumnDefinitions="50,*,200" RowDefinitions="*,*" ColumnSpacing="5">
-
                                                 <toolkit:AvatarView Grid.RowSpan="2" ImageSource="{Binding Target_Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
 
                                                 <controls:BadgeView IsVisible="{Binding Unread_Count_Visible}" Text="{Binding Unread_Count_Show}" HorizontalOptions="End" VerticalOptions="Start" BadgeColor="Red" TextColor="White"/>
 
-                                                <Label Grid.Column="1" Text="{Binding Target_Name}" FontSize="Body" Padding="0" VerticalOptions="Start"/>
+                                                <Label Grid.Column="1" Text="{Binding Target_Name}" TextColor="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}" FontSize="Body" Padding="0" VerticalOptions="Start"/>
 
-                                                <Label Grid.Column="2" Text="{Binding Last_Msg_Time}" FontSize="14" TextColor="LightGray" Padding="0" HorizontalOptions="End" VerticalOptions="Start"/>
+                                                <Label Grid.Column="2" Text="{Binding Last_Msg_Time}" FontSize="14" TextColor="{AppThemeBinding Dark={StaticResource Gray400}, Light={StaticResource Gray400}}" Padding="0" Margin="0,0,5,0" HorizontalOptions="End" VerticalOptions="Start"/>
 
                                                 <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" FontSize="14" TextColor="Gray" LineBreakMode="NoWrap" Padding="0" VerticalOptions="Center">
                                                     <Label.Triggers>
@@ -93,7 +92,7 @@
                                                     </Label.Triggers>
                                                 </Label>
 
-                                                <BoxView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
+                                                <BoxView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Color="{AppThemeBinding Dark={StaticResource Gray800}, Light={StaticResource Gray100}}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
                                             </Grid>
                                         </Border>
 

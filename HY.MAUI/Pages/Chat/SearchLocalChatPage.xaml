@@ -22,7 +22,7 @@
     </ContentPage.Behaviors>
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="搜索" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="搜索" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <!-- <ContentPage.ToolbarItems> -->
@@ -30,8 +30,8 @@
     <!-- </ContentPage.ToolbarItems> -->
 
 
-    <Grid RowDefinitions="Auto,*" RowSpacing="10">
-        <SearchBar x:Name="searchBar" Margin="0"/>
+    <Grid RowDefinitions="Auto,*" RowSpacing="10" Padding="8,0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
+        <SearchBar x:Name="searchBar" Margin="0,10,0,0"/>
 
         <CollectionView Grid.Row="1" ItemsSource="{Binding ChatCollection}" SelectedItem="{Binding SelectedChat}" SelectionMode="Single">
             <CollectionView.ItemsLayout>

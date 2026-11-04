@@ -56,7 +56,7 @@
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="{Binding Title}" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="{Binding Title}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <!--<ContentPage.ToolbarItems>
@@ -65,9 +65,8 @@
         <ToolbarItem Text="删除" Order="Secondary" Priority="2" Command="{Binding DeleteContactCommand}"/>
     </ContentPage.ToolbarItems>-->
 
-
     <ScrollView>
-        <Grid>
+        <Grid BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
             <CollectionView Grid.Row="1" ItemsSource="{Binding ContactRequestCollection}" SelectionMode="None">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout ItemSpacing="0" Orientation="Vertical"/>

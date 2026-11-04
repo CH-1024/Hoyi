@@ -101,7 +101,7 @@ public partial class BottomTabBar : ContentView
         border.SetAppThemeColor(
             Border.BackgroundProperty,
             selected
-                ? Color.FromArgb("#EEF3FF")
+                ? Color.FromArgb("#A9C4FF")
                 : Colors.Transparent,
             selected
                 ? Color.FromArgb("#293B59")

@@ -54,7 +54,9 @@
         <Label Text="图片" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="Title"/>
     </Shell.TitleView>-->
 
-    <Grid RowDefinitions="auto,*,*,50,*">
+
+
+    <Grid RowDefinitions="auto,*,*,50,*" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
 
         <skia:SKCanvasView x:Name="bigCanvas" Grid.RowSpan="10" HorizontalOptions="Fill" VerticalOptions="Fill"/>
         <skia:SKCanvasView x:Name="smallCanvas" Grid.RowSpan="10" ZIndex="1" WidthRequest="150" HeightRequest="150" HorizontalOptions="Start" VerticalOptions="Start">

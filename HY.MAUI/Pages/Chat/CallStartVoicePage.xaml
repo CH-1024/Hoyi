@@ -53,7 +53,9 @@
         <Label Text="图片" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold" HorizontalTextAlignment="Center" FontSize="Title"/>
     </Shell.TitleView>-->
 
-    <Grid RowDefinitions="auto,*,*,50,*">
+
+
+    <Grid RowDefinitions="auto,*,*,50,*" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
 
         <Ellipse Grid.Row="0" Fill="{Binding StatusColor}" ZIndex="100" WidthRequest="20" HeightRequest="20" HorizontalOptions="End" VerticalOptions="Start" Margin="10"/>
 

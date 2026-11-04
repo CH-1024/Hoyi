@@ -55,5 +55,12 @@
     </ContentPage.ToolbarItems>
 
 
-    <toolkit:MediaElement HorizontalOptions="Fill" VerticalOptions="Fill" BackgroundColor="Black" Source="{Binding Original_Video_Url}" ShouldShowPlaybackControls="True" ShouldAutoPlay="True"/>
+    <Grid RowDefinitions="*" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Tapped="Video_Tapped"/>
+        </Grid.GestureRecognizers>
+
+        <toolkit:MediaElement HorizontalOptions="Fill" VerticalOptions="Fill" BackgroundColor="Transparent" Source="{Binding Original_Video_Url}" ShouldShowPlaybackControls="True" ShouldAutoPlay="True"/>
+    </Grid>
+
 </ContentPage>

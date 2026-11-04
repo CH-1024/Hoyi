@@ -55,7 +55,7 @@
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="用户资料" TextColor="{StaticResource White}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="用户资料" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
@@ -64,26 +64,27 @@
     </ContentPage.ToolbarItems>
 
 
-    <Grid RowDefinitions="auto,auto,auto" RowSpacing="10" Padding="0,10,0,0" BackgroundColor="{AppThemeBinding Light=White, Dark=#1F1F1F}">
+    <ScrollView>
+        <Grid RowDefinitions="auto,auto,auto" RowSpacing="10" Padding="8,0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
 
-        <Grid Grid.Row="0" RowDefinitions="*,*" ColumnDefinitions="120,*" Padding="20">
-            <Grid.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding Source={x:Reference _StrangerDetailPage}, Path=BindingContext.ProfileCommand}"/>
-            </Grid.GestureRecognizers>
+            <Grid Grid.Row="0" RowDefinitions="*,*" ColumnDefinitions="120,*" Padding="20">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding Source={x:Reference _StrangerDetailPage}, Path=BindingContext.ProfileCommand}"/>
+                </Grid.GestureRecognizers>
 
-            <Image Grid.RowSpan="2" Grid.Column="0" Source="{Binding StrangerInfo.Avatar}" HeightRequest="100" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Aspect="AspectFit" BackgroundColor="Gray"/>
+                <Image Grid.RowSpan="2" Grid.Column="0" Source="{Binding StrangerInfo.Avatar}" HeightRequest="100" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Aspect="AspectFit" BackgroundColor="Gray"/>
 
-            <Label Grid.Row="0" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding StrangerInfo.Nickname}" FontSize="Medium"/>
-            <Label Grid.Row="1" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding StrangerInfo.Region}" FontSize="Caption"/>
+                <Label Grid.Row="0" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding StrangerInfo.Nickname}" FontSize="Medium"/>
+                <Label Grid.Row="1" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding StrangerInfo.Region}" FontSize="Caption"/>
+            </Grid>
+
+
+            <VerticalStackLayout Grid.Row="1" Spacing="1">
+
+                <Button Style="{StaticResource IconBtn1}" Text="添加为联系人" Command="{Binding RequestContactCommand}"/>
+
+            </VerticalStackLayout>
+
         </Grid>
-
-
-        <VerticalStackLayout Grid.Row="1" Spacing="1">
-
-            <Button Style="{StaticResource IconBtn1}" Text="添加为联系人" Command="{Binding RequestContactCommand}"/>
-
-        </VerticalStackLayout>
-
-    </Grid>
-
+    </ScrollView>
 </ContentPage>
