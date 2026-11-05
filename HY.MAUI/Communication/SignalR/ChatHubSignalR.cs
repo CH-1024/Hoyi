@@ -371,6 +371,8 @@ namespace HY.MAUI.Communication.SignalR
                 chat.Last_Msg = messageVM;
                 chat.Unread_Count += messageVM.IsSelf ? 0 : 1;
                 chat.Is_Deleted = false;
+
+                _chatStore.SetTop(chat.Id);
             }
             else if (chat != null && chat.Type == ChatType.Group)
             {

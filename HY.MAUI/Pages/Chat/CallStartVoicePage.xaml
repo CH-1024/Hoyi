@@ -20,6 +20,17 @@
         <ResourceDictionary>
 
             <Shadow x:Key="CardShadow" Brush="Black" Offset="0,1" Radius="5" Opacity="1" />
+            
+            <Style x:Key="IconBtn1" TargetType="Button">
+                <Setter Property="MinimumHeightRequest" Value="0"/>
+                <Setter Property="MinimumWidthRequest" Value="0"/>
+                <Setter Property="Shadow" Value="{StaticResource CardShadow}"/>
+                <Setter Property="HeightRequest" Value="80"/>
+                <Setter Property="WidthRequest" Value="80"/>
+                <Setter Property="CornerRadius" Value="40"/>
+                <Setter Property="FontSize" Value="Body"/>
+                <Setter Property="TextColor" Value="Black"/>
+            </Style>
 
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -55,7 +66,7 @@
 
 
 
-    <Grid RowDefinitions="auto,*,*,50,*" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
+    <Grid RowDefinitions="auto,*,*,50,*">
 
         <Ellipse Grid.Row="0" Fill="{Binding StatusColor}" ZIndex="100" WidthRequest="20" HeightRequest="20" HorizontalOptions="End" VerticalOptions="Start" Margin="10"/>
 
@@ -74,9 +85,9 @@
         <Label Grid.Row="3" HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding StartTime, StringFormat='{0:hh\\:mm\\:ss}'}" FontSize="Medium" Shadow="{StaticResource CardShadow}"/>
 
         <Grid Grid.Row="4" ColumnDefinitions="*,*,*">
-            <Button Grid.Column="0" Text="静音" FontSize="Medium" Shadow="{StaticResource CardShadow}" WidthRequest="80" HeightRequest="80" CornerRadius="40" Background="White"/>
-            <Button Grid.Column="1" Text="挂断" FontSize="Medium" Shadow="{StaticResource CardShadow}" WidthRequest="80" HeightRequest="80" CornerRadius="40" Command="{Binding HangUpCommand}" Background="Red"/>
-            <Button Grid.Column="2" Text="免提" FontSize="Medium" Shadow="{StaticResource CardShadow}" WidthRequest="80" HeightRequest="80" CornerRadius="40" Command="{Binding SoundCommand}" Background="White"/>
+            <Button Style="{StaticResource IconBtn1}" Grid.Column="0" Text="静音" BackgroundColor="White"/>
+            <Button Style="{StaticResource IconBtn1}" Grid.Column="1" Text="挂断" BackgroundColor="Red" Command="{Binding HangUpCommand}"/>
+            <Button Style="{StaticResource IconBtn1}" Grid.Column="2" Text="免提" BackgroundColor="White" Command="{Binding SoundCommand}"/>
         </Grid>
 
     </Grid>

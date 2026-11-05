@@ -142,7 +142,7 @@ namespace HY.MAUI.PageModels.Chat
             // 3. 当前聊天处理消息
             _currentChat.Unread_Count = 0;
 
-            if (_lastVisibleItemIndex + 3 >= MessageCollection.Count)
+            if (_lastVisibleItemIndex == 0 || _lastVisibleItemIndex + 3 >= MessageCollection.Count)
             {
                 UnreadCount = 0;
                 ShowUnread = false;

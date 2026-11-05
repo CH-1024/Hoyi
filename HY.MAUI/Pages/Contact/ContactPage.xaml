@@ -61,7 +61,7 @@
 
                         <SearchBar x:Name="searchBar" Margin="0,10,0,0" Focused="SearchBar_OnFocused"/>
 
-                        <BoxView IsVisible="{OnPlatform iOS=True, MacCatalyst=True,Default=False}" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
+                        <BoxView IsVisible="{OnPlatform iOS=True, MacCatalyst=True,Default=False}" Color="{AppThemeBinding Dark={StaticResource Gray800}, Light={StaticResource Gray100}}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
 
                         <Border Grid.Row="1" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 10">
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="1">

@@ -33,24 +33,6 @@
                  <Setter Property="HorizontalOptions" Value="Center"/> 
                 <Setter Property="VerticalOptions" Value="End"/>
             </Style>
-
-            <!--<Style x:Key="IconBtn1" TargetType="Button">
-                <Setter Property="MinimumHeightRequest" Value="0"/>
-                <Setter Property="MinimumWidthRequest" Value="0"/>
-                <Setter Property="HeightRequest" Value="50"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Gray400}}"/>
-                <Setter Property="ContentLayout" Value="Left,0"/>
-                <Setter Property="Margin" Value="0"/>
-                <Setter Property="Padding" Value="0"/>
-                <Setter Property="BorderWidth" Value="0"/>
-                <Setter Property="CornerRadius" Value="0"/>
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="TextColor" Value="White"/>
-                <Setter Property="HorizontalOptions" Value="Fill"/>
-                <Setter Property="VerticalOptions" Value="Fill"/>
-            </Style>-->
-
-            
             
             <Style x:Key="IconBtn2" TargetType="Button">
                 <Setter Property="MinimumHeightRequest" Value="0"/>
@@ -146,7 +128,7 @@
                 </CollectionView.GestureRecognizers>
 
                 <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Vertical" SnapPointsType="Mandatory" SnapPointsAlignment="End"/>
+                    <LinearItemsLayout Orientation="Vertical" SnapPointsType="None"/>
                 </CollectionView.ItemsLayout>
 
                 <CollectionView.ItemTemplate>

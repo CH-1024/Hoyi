@@ -223,7 +223,7 @@
                                     </Button.Triggers>
                                 </Button>
 
-                                <BoxView Grid.Column="1" Grid.ColumnSpan="5" Color="{StaticResource Gray800}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
+                                <BoxView Grid.Column="1" Grid.ColumnSpan="5" Color="{AppThemeBinding Dark={StaticResource Gray800}, Light={StaticResource Gray100}}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
 
                             </Grid>
 

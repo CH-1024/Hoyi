@@ -293,7 +293,7 @@ namespace HY.MAUI.PageModels.Chat
             var canvas = surface.Canvas;
 
             // 清除画布
-            canvas.Clear(SKColors.Gray);
+            canvas.Clear(SKColors.Transparent);
 
             // 检查是否有有效帧
             if (_localFrame == null) return;
@@ -323,7 +323,7 @@ namespace HY.MAUI.PageModels.Chat
             var canvas = surface.Canvas;
 
             // 清除画布
-            canvas.Clear(SKColors.DarkGray);
+            canvas.Clear(SKColors.Transparent);
 
             // 检查是否有有效帧
             if (_remoteFrame == null) return;

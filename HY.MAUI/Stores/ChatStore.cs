@@ -79,6 +79,15 @@ namespace HY.MAUI.Stores
             }
         }
 
+        public void SetTop(long chatId)
+        {
+            var existing = Chats.FirstOrDefault(c => c.Id == chatId);
+            if (existing != null)
+            {
+                Chats.Move(Chats.IndexOf(existing), 0);
+            }
+        }
+
         public bool Remove(ChatType type, long targetId)
         {
             var chat = Chats.FirstOrDefault(c => c.Target_Id == targetId && c.Type == type);

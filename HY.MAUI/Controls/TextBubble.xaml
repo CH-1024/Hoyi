@@ -110,7 +110,7 @@
             </Button>
 
             <!-- 气泡 -->
-            <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource Secondary}}" StrokeThickness="0" Padding="8">
+            <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Secondary}}" StrokeThickness="0" Padding="8">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Bubble_Secondary_Tapped" Buttons="Secondary"/>
                 </Border.GestureRecognizers>
@@ -135,7 +135,7 @@
 
                 <Border.Triggers>
                     <DataTrigger TargetType="Border" Binding="{Binding IsSelf}" Value="True">
-                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Green1}, Light={StaticResource PrimaryDark}}"/>
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource PrimaryDark}}"/>
                     </DataTrigger>
                     <DataTrigger TargetType="Border" Binding="{Binding Message_Status}" Value="Recalled">
                         <Setter Property="IsVisible" Value="False"/>
