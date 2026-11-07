@@ -323,7 +323,7 @@ namespace HY.ApiService.Services
                     var senderChatEntity = await _chatRepository.GetChatByUserIdAndType(contactRequestEntity.Sender_Id, contactRequestEntity.Receiver_Id, ChatType.Private);
                     senderChatEntity.Last_Msg_Id = sMsgId;
                     senderChatEntity.Read_Msg_Id = 0;
-                    senderChatEntity.Unread_Count = 1;
+                    senderChatEntity.Unread_Count += 1;
                     senderChatEntity.Is_Top = false;
                     senderChatEntity.Is_Deleted = false;
                     senderChatEntity.Last_Msg_Time = senderSysMsg.Created_At;
@@ -563,7 +563,7 @@ namespace HY.ApiService.Services
                     {
                         senderChatEntity.Last_Msg_Id = sMsgId;
                         senderChatEntity.Read_Msg_Id = 0;
-                        senderChatEntity.Unread_Count = 1;
+                        senderChatEntity.Unread_Count += 1;
                         senderChatEntity.Is_Top = false;
                         senderChatEntity.Is_Deleted = false;
                         senderChatEntity.Last_Msg_Time = senderSysMsg.Created_At;
@@ -617,7 +617,7 @@ namespace HY.ApiService.Services
                     {
                         receiverChatEntity.Last_Msg_Id = rMsgId;
                         receiverChatEntity.Read_Msg_Id = 0;
-                        receiverChatEntity.Unread_Count = 1;
+                        receiverChatEntity.Unread_Count += 1;
                         receiverChatEntity.Is_Top = false;
                         receiverChatEntity.Is_Deleted = false;
                         receiverChatEntity.Last_Msg_Time = receiverSysMsg.Created_At;
