@@ -2,6 +2,8 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="HY.MAUI.Controls.BottomTabBar"
+             xmlns:maui="clr-namespace:HY.MAUI"
+             xmlns:controls="clr-namespace:HY.MAUI.Controls"
              Margin="0" Padding="0">
 
     <Grid Padding="0" BackgroundColor="Transparent">
@@ -11,19 +13,23 @@
 
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4">
                 <!-- 聊天 -->
-                <Border x:Name="ChatTab" Grid.Column="0" Background="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" Padding="{OnIdiom Phone='8,15', Desktop='8,10'}">
+                <Border x:Name="ChatTab" Grid.Column="0" BackgroundColor="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" HeightRequest="55">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="Chat_Tapped"/>
                     </Border.GestureRecognizers>
 
                     <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="7" HorizontalOptions="Center" VerticalOptions="Center">
-                        <Image x:Name="ChatIcon" Source="chat.png" WidthRequest="23" HeightRequest="23" Aspect="AspectFit"/>
+                        <Image x:Name="ChatIcon" Source="chat.png" WidthRequest="23" HeightRequest="23" Aspect="AspectFit" Opacity="0.58"/>
                         <Label x:Name="ChatLabel" Grid.Column="1" Text="聊天" FontSize="Body" TextColor="#7B8494" VerticalOptions="Center"/>
+                        <controls:BadgeView Grid.ColumnSpan="2" Margin="0,0,0,25" HorizontalOptions="Center" VerticalOptions="Center" BadgeColor="#FF453A" TextColor="White"
+                                            IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadMessageCountVisible}" 
+                                            Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadMessageCountShow}"/>
                     </Grid>
+
                 </Border>
 
                 <!-- 好友 -->
-                <Border x:Name="ContactTab" Grid.Column="1" Background="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" Padding="{OnIdiom Phone='8,15', Desktop='8,10'}">
+                <Border x:Name="ContactTab" Grid.Column="1" BackgroundColor="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" HeightRequest="55">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="Contact_Tapped"/>
                     </Border.GestureRecognizers>
@@ -31,11 +37,14 @@
                     <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="7" HorizontalOptions="Center" VerticalOptions="Center">
                         <Image x:Name="ContactIcon" Source="contact.png" WidthRequest="23" HeightRequest="23" Aspect="AspectFit" Opacity="0.58"/>
                         <Label x:Name="ContactLabel" Grid.Column="1" Text="好友" FontSize="Body" TextColor="#7B8494" VerticalOptions="Center"/>
+                        <controls:BadgeView Grid.ColumnSpan="2" Margin="0,0,0,25" HorizontalOptions="Center" VerticalOptions="Center" BadgeColor="#FF453A" TextColor="White"
+                                            IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadContactCountVisible}" 
+                                            Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadContactCountShow}"/>
                     </Grid>
                 </Border>
 
                 <!-- 我的 -->
-                <Border x:Name="MineTab" Grid.Column="2" Background="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" Padding="{OnIdiom Phone='8,15', Desktop='8,10'}">
+                <Border x:Name="MineTab" Grid.Column="2" BackgroundColor="Transparent" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 15" HeightRequest="55">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="Mine_Tapped"/>
                     </Border.GestureRecognizers>

@@ -13,8 +13,6 @@ namespace HY.MAUI
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILoginService _loginService;
-        private const int _width = 620;
-        private const int _height = 1100;
 
         public App(IServiceProvider serviceProvider, ILoginService loginService, MessageSendWorker worker)
         {
@@ -110,8 +108,15 @@ namespace HY.MAUI
             if (mauiWindow.Handler?.PlatformView is not Microsoft.UI.Xaml.Window nativeWindow)
                 return;
 
-            int width = _width;
-            int height = _height;
+            // 获取当前屏幕工作区域
+            var screen = GetPrimaryScreenWorkArea();
+
+            // 根据屏幕分辨率计算窗口尺寸
+            int screenWidth = screen.right - screen.left;
+            int screenHeight = screen.bottom - screen.top;
+
+            int width = screenWidth / 4;
+            int height = screenHeight * 3 / 4;
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow);
 
@@ -288,8 +293,8 @@ namespace HY.MAUI
             if (uiWindow.WindowScene is not UIKit.UIWindowScene windowScene)
                 return;
 
-            int width = _width;
-            int height = _height;
+            int width = 620;
+            int height = 1100;
 
             // ==========================================
             // 1. 固定窗口尺寸

@@ -7,6 +7,7 @@ using HY.MAUI.Interfaces;
 using HY.MAUI.Mapping;
 using HY.MAUI.Models;
 using HY.MAUI.Pages.Contact;
+using HY.MAUI.Services;
 using HY.MAUI.Stores;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,8 @@ namespace HY.MAUI.PageModels.Contact
     public partial class ContactRequestDetailPageModel : ObservableObject, IQueryAttributable
     {
         private readonly IGlobalCache _globalCache;
+
+        private readonly GlobalBinding _globalBinding;
 
         private readonly ContactApi _contactApi;
 
@@ -42,9 +45,10 @@ namespace HY.MAUI.PageModels.Contact
         }
 
 
-        public ContactRequestDetailPageModel(IGlobalCache globalCache, ContactApi contactApi, ChatStore chatStore, MessageStore messageStore, ContactStore contactStore, ContactRequestStore contactRequestStore)
+        public ContactRequestDetailPageModel(IGlobalCache globalCache, GlobalBinding globalBinding, ContactApi contactApi, ChatStore chatStore, MessageStore messageStore, ContactStore contactStore, ContactRequestStore contactRequestStore)
         {
             _globalCache = globalCache;
+            _globalBinding = globalBinding;
 
             _contactApi = contactApi;
 
@@ -83,6 +87,9 @@ namespace HY.MAUI.PageModels.Contact
 
             _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
 
+            // 更新全局未读消息数
+            _globalBinding.RespondContactCount = _contactRequestStore.GetRespondCount();
+
             if (contactRequestDto.Relation_Request_Status == RelationRequestStatus.Accepted)
             {
                 _contactStore.Upsert(contactDto!.ToVM());
@@ -90,6 +97,9 @@ namespace HY.MAUI.PageModels.Contact
                 _chatStore.UpsertAndSetTop(chatDto!.ToVM());
 
                 _messageStore.Add(chatDto!.Id, messageDto!.ToVM(currentUser.Id, contactDto!.Avatar, contactDto!.Nickname));
+
+                // 更新全局未读消息数
+                _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();
             }
         }
 
@@ -110,6 +120,9 @@ namespace HY.MAUI.PageModels.Contact
             //var messageDto = resp.GetValue<MessageDto>("Message");
 
             _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
+
+            // 更新全局未读消息数
+            _globalBinding.RespondContactCount = _contactRequestStore.GetRespondCount();
         }
 
         [RelayCommand]
@@ -129,6 +142,9 @@ namespace HY.MAUI.PageModels.Contact
             //var messageDto = resp.GetValue<MessageDto>("Message");
 
             _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
+
+            // 更新全局未读消息数
+            _globalBinding.RespondContactCount = _contactRequestStore.GetRespondCount();
         }
 
         [RelayCommand]

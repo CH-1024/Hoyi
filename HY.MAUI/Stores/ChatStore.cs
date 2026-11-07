@@ -33,27 +33,11 @@ namespace HY.MAUI.Stores
             return null;
         }
 
-        public void Upsert(ChatVM chat)
+        public int GetUnreadCount()
         {
-            var existing = Chats.FirstOrDefault(c => c.Id == chat.Id);
-            if (existing != null)
-            {
-                // Update existing
-                existing.Id = chat.Id;
-                existing.Type = chat.Type;
-                existing.Target_Id = chat.Target_Id;
-                existing.Target_Name = chat.Target_Name;
-                existing.Target_Avatar = chat.Target_Avatar;
-                existing.Is_Top = chat.Is_Top;
-                existing.Is_Deleted = chat.Is_Deleted;
-                existing.Unread_Count = chat.Unread_Count;
-                existing.Last_Msg = chat.Last_Msg;
-            }
-            else
-            {
-                Chats.Add(chat);
-            }
+            return Chats.Sum(c => c.Unread_Count);
         }
+
 
         public void UpsertAndSetTop(ChatVM chat)
         {
@@ -76,6 +60,28 @@ namespace HY.MAUI.Stores
             else
             {
                 Chats.Insert(0, chat);
+            }
+        }
+
+        public void Upsert(ChatVM chat)
+        {
+            var existing = Chats.FirstOrDefault(c => c.Id == chat.Id);
+            if (existing != null)
+            {
+                // Update existing
+                existing.Id = chat.Id;
+                existing.Type = chat.Type;
+                existing.Target_Id = chat.Target_Id;
+                existing.Target_Name = chat.Target_Name;
+                existing.Target_Avatar = chat.Target_Avatar;
+                existing.Is_Top = chat.Is_Top;
+                existing.Is_Deleted = chat.Is_Deleted;
+                existing.Unread_Count = chat.Unread_Count;
+                existing.Last_Msg = chat.Last_Msg;
+            }
+            else
+            {
+                Chats.Add(chat);
             }
         }
 

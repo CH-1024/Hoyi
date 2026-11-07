@@ -10,13 +10,14 @@
 
     <Border
         BackgroundColor="{Binding BadgeColor, Source={x:Reference Root}}"
-        MinimumWidthRequest="22"
-        HeightRequest="22"
+        MinimumWidthRequest="20"
+        MinimumHeightRequest="0"
+        HeightRequest="20"
         Margin="0"
         Padding="3,0">
 
         <Border.StrokeShape>
-            <RoundRectangle CornerRadius="11" StrokeThickness="0" />
+            <RoundRectangle CornerRadius="10" StrokeThickness="0" />
         </Border.StrokeShape>
 
         <Border.Shadow>
@@ -26,9 +27,9 @@
         <Label
             Text="{Binding Text, Source={x:Reference Root}}"
             TextColor="{Binding TextColor, Source={x:Reference Root}}"
-            FontSize="Micro"
-            HorizontalOptions="Center"
-            VerticalOptions="Center"
+            FontSize="13"
+            HorizontalOptions="Fill"
+            VerticalOptions="Fill"
             HorizontalTextAlignment="Center"
             VerticalTextAlignment="Center"
             Padding="0"

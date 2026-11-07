@@ -7,6 +7,7 @@ using HY.MAUI.Enums;
 using HY.MAUI.Interfaces;
 using HY.MAUI.Mapping;
 using HY.MAUI.Models;
+using HY.MAUI.Services;
 using HY.MAUI.Stores;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,8 @@ namespace HY.MAUI.PageModels.Contact
         private readonly IServiceProvider _serviceProvider;
         private readonly IGlobalCache _globalCache;
         private readonly ContactApi _contactApi;
+
+        private readonly GlobalBinding _globalBinding;
 
         private readonly ContactRequestStore _contactRequestStore;
         private readonly ContactStore _contactStore;
@@ -38,11 +41,14 @@ namespace HY.MAUI.PageModels.Contact
 
 
 
-        public StrangerDetailPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, ContactApi contactApi, ContactRequestStore contactRequestStore, ContactStore contactStore, ChatStore chatStore, MessageStore messageStore, ChatHubSignalR chatHub)
+        public StrangerDetailPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, ContactApi contactApi, GlobalBinding globalBinding,
+                                       ContactRequestStore contactRequestStore, ContactStore contactStore, ChatStore chatStore, MessageStore messageStore, ChatHubSignalR chatHub)
         {
             _serviceProvider = serviceProvider;
             _globalCache = globalCache;
             _contactApi = contactApi;
+
+            _globalBinding = globalBinding;
 
             _contactRequestStore = contactRequestStore;
             _contactStore = contactStore;
@@ -93,6 +99,9 @@ namespace HY.MAUI.PageModels.Contact
 
             _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
 
+            // 更新全局未读消息数
+            _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
+
             if (contactRequestDto.Relation_Request_Status == RelationRequestStatus.Accepted)
             {
                 _contactStore.Upsert(contactDto!.ToVM());
@@ -100,6 +109,9 @@ namespace HY.MAUI.PageModels.Contact
                 _chatStore.UpsertAndSetTop(chatDto!.ToVM());
 
                 _messageStore.Add(chatDto!.Id, messageDto!.ToVM(currentUser.Id, contactDto!.Avatar, contactDto!.Nickname));
+
+                // 更新全局未读消息数
+                _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();
 
                 await Shell.Current.GoToAsync("..", true);
                 _ = Application.Current!.Windows[0].Page!.DisplayAlertAsync("提示", "你们已经成为好友了", "确定");

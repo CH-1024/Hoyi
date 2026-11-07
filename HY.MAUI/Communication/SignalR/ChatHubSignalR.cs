@@ -10,6 +10,7 @@ using HY.MAUI.Mapping;
 using HY.MAUI.Models;
 using HY.MAUI.Models.MsgVM;
 using HY.MAUI.Pages.Login;
+using HY.MAUI.Services;
 using HY.MAUI.Stores;
 using HY.MAUI.Tools;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -30,6 +31,8 @@ namespace HY.MAUI.Communication.SignalR
         private readonly ITokenProvider _tokenProvider;
         private readonly INotificationManagerService _notificationManager;
 
+        private readonly GlobalBinding _globalBinding;
+
         private readonly ChatStore _chatStore;
         private readonly ContactStore _contactStore;
         private readonly ContactRequestStore _contactRequestStore;
@@ -40,9 +43,11 @@ namespace HY.MAUI.Communication.SignalR
 
 
         public ChatHubSignalR(IServiceProvider serviceProvider, IGlobalCache globalCache, ILoginService loginService, ITokenProvider tokenProvider,
-                              INotificationManagerService notificationManager,
+                              INotificationManagerService notificationManager, GlobalBinding globalBinding,
                               ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore)
         {
+            _globalBinding = globalBinding;
+
             _serviceProvider = serviceProvider;
             _globalCache = globalCache;
             _loginService = loginService;
@@ -351,7 +356,13 @@ namespace HY.MAUI.Communication.SignalR
         private void OnReadAll(long chatId)
         {
             var chat = _chatStore.GetChat(chatId);
-            if (chat != null) chat.Unread_Count = 0;
+            if (chat != null)
+            {
+                chat.Unread_Count = 0;
+
+                // 更新全局未读消息数
+                _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();
+            }
         }
 
         private async Task<bool> OnReceiveMessage(MessageDto messageDto)
@@ -408,11 +419,15 @@ namespace HY.MAUI.Communication.SignalR
             // 不是自己发的消息且未读
             if (!messageVM.IsSelf && !result)
             {
-#if ANDROID || IOS
-                Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(250));
-#endif
                 try
                 {
+                    // 更新全局未读消息数
+                    _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();
+
+#if ANDROID || IOS
+                    Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(250));
+#endif
+                    // 发送通知
                     _notificationManager.SendNotification(messageVM.Sender_Nickname, messageVM.Msg_Brief);
                 }
                 catch { }
@@ -465,17 +480,59 @@ namespace HY.MAUI.Communication.SignalR
 
             _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
 
+            // 更新全局未读消息数
+            _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
+
             if (contactRequestDto.Relation_Request_Status == RelationRequestStatus.Accepted)
             {
+                var messageVM = messageDto!.ToVM(currentUser.Id, contactDto?.Avatar, contactDto?.Nickname);
+
                 _contactStore.Upsert(contactDto!.ToVM());
 
                 _chatStore.UpsertAndSetTop(chatDto!.ToVM());
 
-                _messageStore.Add(chatDto!.Id, messageDto!.ToVM(currentUser.Id, contactDto?.Avatar, contactDto?.Nickname));
+                _messageStore.Add(chatDto!.Id, messageVM);
 
-                if (OnReceiveMessage_ChatHub == null) return false;
 
-                return await UI.Run(async () => await OnReceiveMessage_ChatHub.Invoke(messageDto!));
+                bool result = false;
+
+                var handlers = OnReceiveMessage_ChatHub?.GetInvocationList() ?? [];
+                if (handlers.Length > 0)
+                {
+                    result = await UI.Run(async () =>
+                    {
+                        bool handled = false;
+
+                        foreach (var handler in handlers)
+                        {
+                            if (handler is Func<MessageDto, Task<bool>> func)
+                            {
+                                handled |= await func(messageDto);
+                            }
+                        }
+
+                        return handled;
+                    });
+                }
+
+                // 不是自己发的消息且未读
+                if (!messageVM.IsSelf && !result)
+                {
+                    try
+                    {
+                        // 更新全局未读消息数
+                        _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();
+
+#if ANDROID || IOS
+                        Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(250));
+#endif
+                        // 发送通知
+                        _notificationManager.SendNotification(messageVM.Sender_Nickname, messageVM.Msg_Brief);
+                    }
+                    catch { }
+                }
+
+                return result;
             }
 
             return false;
@@ -487,6 +544,9 @@ namespace HY.MAUI.Communication.SignalR
 
             _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
 
+            // 更新全局未读消息数
+            _globalBinding.RespondContactCount = _contactRequestStore.GetRespondCount();
+
             if (contactRequestDto.Relation_Request_Status == RelationRequestStatus.Accepted)
             {
                 _contactStore.Upsert(contactDto!.ToVM());
@@ -494,6 +554,9 @@ namespace HY.MAUI.Communication.SignalR
                 _chatStore.UpsertAndSetTop(chatDto!.ToVM());
 
                 _messageStore.Add(chatDto!.Id, messageDto!.ToVM(currentUser.Id, contactDto?.Avatar, contactDto?.Nickname));
+
+                // 更新全局未读消息数
+                _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();
             }
         }
 

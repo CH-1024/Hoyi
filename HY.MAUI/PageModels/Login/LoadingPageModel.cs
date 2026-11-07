@@ -42,6 +42,8 @@ namespace HY.MAUI.PageModels.Login
         private readonly ContactRequestStore _contactRequestStore;
         private readonly MessageStore _messageStore;
 
+        private readonly GlobalBinding _globalBinding;
+
 
 
         private UserVM? currentUser;
@@ -55,7 +57,8 @@ namespace HY.MAUI.PageModels.Login
 
         public LoadingPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, ILoginService loginService, ITokenProvider tokenProvider,
                                 IAuthService authService, ChatHubSignalR chatHub, ChatApi chatApi, ContactApi contactApi, MessageApi messageApi,
-                                ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore)
+                                ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore,
+                                GlobalBinding globalBinding)
         {
             _serviceProvider = serviceProvider;
             _globalCache = globalCache;
@@ -73,6 +76,8 @@ namespace HY.MAUI.PageModels.Login
             _contactStore = contactStore;
             _contactRequestStore = contactRequestStore;
             _messageStore = messageStore;
+
+            _globalBinding = globalBinding;
         }
 
 
@@ -160,6 +165,9 @@ namespace HY.MAUI.PageModels.Login
                 {
                     _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
                 }
+
+                _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
+                _globalBinding.RespondContactCount = _contactRequestStore.GetRespondCount();
             }
         }
 
@@ -175,6 +183,8 @@ namespace HY.MAUI.PageModels.Login
                 {
                     _chatStore.Upsert(chatDto.ToVM());
                 }
+
+                _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();
             }
         }
 

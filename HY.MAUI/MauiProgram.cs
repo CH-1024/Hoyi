@@ -26,6 +26,7 @@ namespace HY.MAUI
     public static class MauiProgram
     {
         public static IServiceProvider Services { get; private set; } = null!;
+        public static GlobalBinding GlobalBindings { get; private set; } = null!;
 
         public static MauiApp CreateMauiApp()
         {
@@ -51,6 +52,7 @@ namespace HY.MAUI
             var app = builder.Build();
 
             Services = app.Services;
+            GlobalBindings = app.Services.GetRequiredService<GlobalBinding>();
 
             return app;
         }

@@ -14,6 +14,7 @@ namespace HY.MAUI.Setups
     {
         public static void AddLocalServiceSetup(this IServiceCollection services)
         {
+            services.AddSingleton<GlobalBinding>();
             services.AddSingleton<IGlobalCache, GlobalCache>();
             services.AddSingleton<ILoginService, LoginService>();
 

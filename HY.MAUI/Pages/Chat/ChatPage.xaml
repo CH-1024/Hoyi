@@ -60,7 +60,7 @@
                                             <Grid ColumnDefinitions="50,*,200" RowDefinitions="*,*" ColumnSpacing="5">
                                                 <toolkit:AvatarView Grid.RowSpan="2" ImageSource="{Binding Target_Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
 
-                                                <controls:BadgeView IsVisible="{Binding Unread_Count_Visible}" Text="{Binding Unread_Count_Show}" HorizontalOptions="End" VerticalOptions="Start" BadgeColor="Red" TextColor="White"/>
+                                                <controls:BadgeView IsVisible="{Binding Unread_Count_Visible}" Text="{Binding Unread_Count_Show}" HorizontalOptions="End" VerticalOptions="Start" BadgeColor="#FF453A" TextColor="White"/>
 
                                                 <Label Grid.Column="1" Text="{Binding Target_Name}" TextColor="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}" FontSize="Body" Padding="0" VerticalOptions="Start"/>
 

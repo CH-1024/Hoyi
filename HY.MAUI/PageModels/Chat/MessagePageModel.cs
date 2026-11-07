@@ -14,6 +14,7 @@ using HY.MAUI.PageModels.Chat.MessageCommands;
 using HY.MAUI.Pages.Chat;
 using HY.MAUI.Pages.Contact;
 using HY.MAUI.SendQueue;
+using HY.MAUI.Services;
 using HY.MAUI.Stores;
 using HY.MAUI.Tools;
 using Microsoft.Maui.ApplicationModel.Communication;
@@ -46,6 +47,8 @@ namespace HY.MAUI.PageModels.Chat
         private readonly ContactApi _contactApi;
         private readonly FileApi _fileApi;
         private readonly LoginApi _loginApi;
+
+        private readonly GlobalBinding _globalBinding;
 
         CollectionView _collectionView = null;
         ChatVM _currentChat = null;
@@ -103,7 +106,7 @@ namespace HY.MAUI.PageModels.Chat
 
         public MessagePageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, IDispatcher dispatcher, ChatHubSignalR chatHub, MessageSendService messageSendService,
                                 ChatStore chatStore, MessageStore messageStore, ContactStore contactStore,
-                                ChatApi chatApi, MessageApi messageApi, ContactApi contactApi, FileApi fileApi, LoginApi loginApi)
+                                ChatApi chatApi, MessageApi messageApi, ContactApi contactApi, FileApi fileApi, LoginApi loginApi, GlobalBinding globalBinding)
         {
             _serviceProvider = serviceProvider;
             _globalCache = globalCache;
@@ -121,6 +124,8 @@ namespace HY.MAUI.PageModels.Chat
             _contactApi = contactApi;
             _fileApi = fileApi;
             _loginApi = loginApi;
+
+            _globalBinding = globalBinding;
         }
 
 
@@ -202,7 +207,13 @@ namespace HY.MAUI.PageModels.Chat
                 {
                     var chat = _currentChat;
                     var resp = await _chatApi.ReadAll(chat.Id);
-                    if (resp?.IsSucc == true) chat.Unread_Count = 0;
+                    if (resp?.IsSucc == true)
+                    {
+                        chat.Unread_Count = 0;
+
+                        // 更新全局未读消息数
+                        _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();
+                    }
                 });
             }
         }
