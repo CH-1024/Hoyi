@@ -55,8 +55,8 @@ namespace HY.MAUI.Services
         public string RespondContactCountShow => respondContactCount > 99 ? "99+" : $"{respondContactCount}";
         public bool RespondContactCountVisible => respondContactCount > 0;
 
-        public string UnreadContactCountShow => requestContactCount + respondContactCount > 99 ? "99+" : $"{requestContactCount + respondContactCount}";
-        public bool UnreadContactCountVisible => requestContactCount + respondContactCount > 0;
+        public string UnreadContactCountShow => /*requestContactCount +*/ respondContactCount > 99 ? "99+" : $"{/*requestContactCount +*/ respondContactCount}";
+        public bool UnreadContactCountVisible => /*requestContactCount +*/ respondContactCount > 0;
 
     }
 }

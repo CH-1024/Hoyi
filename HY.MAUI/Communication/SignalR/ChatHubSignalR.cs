@@ -482,6 +482,7 @@ namespace HY.MAUI.Communication.SignalR
 
             // 更新全局未读消息数
             _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
+            _globalBinding.RespondContactCount = _contactRequestStore.GetRespondCount();
 
             if (contactRequestDto.Relation_Request_Status == RelationRequestStatus.Accepted)
             {
