@@ -78,7 +78,7 @@
         </Grid>-->
 
         <Grid Grid.Row="2" RowDefinitions="auto,auto,*">
-            <toolkit:AvatarView Grid.Row="0" ImageSource="{Binding TargetAvatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="100" HeightRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
+            <toolkit:AvatarView Grid.Row="0" ImageSource="{Binding TargetAvatar}" BackgroundColor="Black" StrokeThickness="0" CornerRadius="5" WidthRequest="100" HeightRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
             <Label Grid.Row="1" HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding TargetName}" FontSize="Medium"/>
         </Grid>
 

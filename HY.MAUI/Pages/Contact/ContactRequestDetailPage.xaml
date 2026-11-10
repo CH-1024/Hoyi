@@ -56,7 +56,7 @@
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="{Binding Title}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="{Binding Title}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
     </Shell.TitleView>
 
     <!--<ContentPage.ToolbarItems>
@@ -78,7 +78,7 @@
 
                             <Grid ColumnDefinitions="50,*,auto,auto,auto,auto" ColumnSpacing="0" HeightRequest="50">
 
-                                <toolkit:AvatarView Grid.Column="0" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0">
+                                <toolkit:AvatarView Grid.Column="0" BackgroundColor="Black" StrokeThickness="0" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0">
                                     <toolkit:AvatarView.Triggers>
                                         <DataTrigger TargetType="toolkit:AvatarView" Binding="{Binding IsSelf}" Value="True">
                                             <Setter Property="ImageSource" Value="{Binding Receiver_Avatar}"/>

@@ -42,7 +42,7 @@
     </ContentPage.Behaviors>
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="我的" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="我的" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
@@ -60,7 +60,7 @@
                     <TapGestureRecognizer Command="{Binding Source={x:Reference _MinePage}, Path=BindingContext.ProfileCommand}"/>
                 </Grid.GestureRecognizers>
 
-                <toolkit:AvatarView Grid.RowSpan="3" Grid.Column="0" ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="100" HeightRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
+                <toolkit:AvatarView Grid.RowSpan="3" Grid.Column="0" ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="Black" StrokeThickness="0" CornerRadius="5" WidthRequest="100" HeightRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
 
                 <Label Grid.Row="0" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding CurrentUser.Nickname}" FontSize="18"/>
 

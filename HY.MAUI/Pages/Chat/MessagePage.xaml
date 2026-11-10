@@ -80,7 +80,7 @@
 
     <Shell.TitleView>
         <Grid ColumnDefinitions="*,auto,auto,*" Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}">
-            <Label Grid.Column="1" Text="{Binding Title}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+            <Label Grid.Column="1" Text="{Binding Title}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
             <Ellipse Grid.Column="2" MinimumHeightRequest="0" MinimumWidthRequest="0" WidthRequest="8" HeightRequest="8" Margin="5,0,0,0">
                 <Ellipse.Triggers>
 

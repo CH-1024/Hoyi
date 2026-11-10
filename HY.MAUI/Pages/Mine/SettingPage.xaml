@@ -56,7 +56,7 @@
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="设置" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="设置" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
     </Shell.TitleView>
 
     <!--<ContentPage.ToolbarItems>

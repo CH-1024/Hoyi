@@ -115,8 +115,8 @@ namespace HY.MAUI
             int screenWidth = screen.right - screen.left;
             int screenHeight = screen.bottom - screen.top;
 
-            int width = screenWidth / 4;
-            int height = screenHeight * 3 / 4;
+            int width = (int)(screenWidth / 4 * 1.15);
+            int height = (int)(screenHeight / 2 * 1.55);
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow);
 

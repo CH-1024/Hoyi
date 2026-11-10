@@ -43,7 +43,7 @@
     </ContentPage.Behaviors>
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="联系人" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="好友" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
@@ -95,7 +95,7 @@
                                     <Border Padding="8" StrokeThickness="0">
 
                                         <Grid ColumnDefinitions="50,*" ColumnSpacing="5">
-                                            <toolkit:AvatarView ImageSource="{Binding Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
+                                            <toolkit:AvatarView ImageSource="{Binding Avatar}" BackgroundColor="Black" StrokeThickness="0" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
 
                                             <Label Grid.Column="1" Text="{Binding Nickname}" TextColor="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}" FontSize="Body" Padding="0" VerticalOptions="Center"/>
 

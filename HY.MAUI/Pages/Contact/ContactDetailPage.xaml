@@ -57,7 +57,7 @@
     </Shell.TitleView>-->
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="联系人资料" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="Body"/>
+        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="联系人资料" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
@@ -71,7 +71,7 @@
 
             <!-- 头像 + 昵称 -->
             <VerticalStackLayout HorizontalOptions="Center" Spacing="10">
-                <toolkit:AvatarView ImageSource="{Binding ContactInfo.Avatar}" BackgroundColor="Black" Stroke="Transparent" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
+                <toolkit:AvatarView ImageSource="{Binding ContactInfo.Avatar}" BackgroundColor="Black" StrokeThickness="0" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
 
                 <Label
                     Text="{Binding ContactInfo.Nickname}"
@@ -119,7 +119,7 @@
 
     <!--<VerticalStackLayout>
 
-        <toolkit:AvatarView Grid.RowSpan="2" Text="{Binding Avatar}" BackgroundColor="Black" CornerRadius="5" WidthRequest="40" HeightRequest="40" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
+        <toolkit:AvatarView Grid.RowSpan="2" Text="{Binding Avatar}" WidthRequest="40" HeightRequest="40" HorizontalOptions="Center" VerticalOptions="Center"/>
 
         <Label 
             Text="Welcome to .NET MAUI!"
