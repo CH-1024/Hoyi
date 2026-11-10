@@ -93,7 +93,7 @@ namespace HY.MAUI.PageModels.Login
                 return;
             }
 
-            if (await _tokenProvider.IsAccessTokenExpired() && !await _authService.RefreshTokenAsync())
+            if (await _tokenProvider.IsAccessTokenExpired() && !await _authService.RefreshTokenAndUserAsync())
             {
                 _loginService.Logout();
                 _tokenProvider.Clear();
@@ -102,7 +102,17 @@ namespace HY.MAUI.PageModels.Login
                 return;
             }
 
-            if (!await _chatHub.InitializeAsync())
+            // 刷新用户信息
+            if (!await LoadCurrentUser())
+            {
+                _loginService.Logout();
+                _tokenProvider.Clear();
+
+                GoBackToLoginPage();
+                return;
+            }
+
+            if (!await _chatHub.StartAsync())
             {
                 _loginService.Logout();
                 _tokenProvider.Clear();

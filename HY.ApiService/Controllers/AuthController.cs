@@ -54,8 +54,8 @@ namespace HY.ApiService.Controllers
 
 
         [AllowAnonymous]
-        [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh([FromBody] RefreshRequest param)
+        [HttpPost("refresh/token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshRequest param)
         {
             var result = await _loginService.Refresh(param);
 
@@ -64,6 +64,23 @@ namespace HY.ApiService.Controllers
                 Data = new Dictionary<string, object?>
                 {
                     //{ "User", result.user },
+                    { "Tokens", result.Token },
+                }
+            });
+        }
+
+
+        [AllowAnonymous]
+        [HttpPost("refresh/token-user")]
+        public async Task<IActionResult> RefreshTokenAndUser([FromBody] RefreshRequest param)
+        {
+            var result = await _loginService.Refresh(param);
+
+            return Ok(new Response(result.IsSucc, result.Error)
+            {
+                Data = new Dictionary<string, object?>
+                {
+                    { "User", result.User },
                     { "Tokens", result.Token },
                 }
             });

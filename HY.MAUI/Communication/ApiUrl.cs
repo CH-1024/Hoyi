@@ -32,7 +32,8 @@ namespace HY.MAUI.Communication
 
 
         // Login & Auth
-        public static string Refresh => $"{HttpBase}/auth/refresh/";
+        public static string RefreshToken => $"{HttpBase}/auth/refresh/token/";
+        public static string RefreshTokenAndUser => $"{HttpBase}/auth/refresh/token-user/";
         public static string Login => $"{HttpBase}/auth/login/";
         public static string Logout => $"{HttpBase}/auth/logout/";
 

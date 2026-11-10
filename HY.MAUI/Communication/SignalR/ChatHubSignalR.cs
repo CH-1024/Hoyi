@@ -61,7 +61,7 @@ namespace HY.MAUI.Communication.SignalR
         }
 
 
-        public async Task<bool> InitializeAsync()
+        public async Task<bool> StartAsync()
         {
             await _initLock.WaitAsync();
             try
@@ -74,27 +74,19 @@ namespace HY.MAUI.Communication.SignalR
 
                 RegisterHubMethods();
 
-                await StartAsync();
+                await _connection.StartAsync();
 
                 return true;
             }
             catch
             {
-                await DisposeAsync().AsTask();
+                await DisposeAsync();
 
                 return false;
             }
             finally
             {
                 _initLock.Release();
-            }
-        }
-
-        public async Task StartAsync()
-        {
-            if (_connection != null && _connection.State == HubConnectionState.Disconnected)
-            {
-                await _connection.StartAsync();
             }
         }
 
@@ -113,7 +105,7 @@ namespace HY.MAUI.Communication.SignalR
 
             if (_connection != null)
             {
-                await _connection.DisposeAsync().AsTask();
+                await _connection.DisposeAsync();
                 _connection = null;
             }
         }
@@ -310,7 +302,7 @@ namespace HY.MAUI.Communication.SignalR
 
         private async Task OnClosed(Exception? exception)
         {
-            await DisposeAsync().AsTask();
+            await DisposeAsync();
 
             UI.Run(() =>
             {
