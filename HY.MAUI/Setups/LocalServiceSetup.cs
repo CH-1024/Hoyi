@@ -26,6 +26,8 @@ namespace HY.MAUI.Setups
             services.AddSingleton<ContactStore>();
             services.AddSingleton<ContactRequestStore>();
             services.AddSingleton<MessageStore>();
+            services.AddSingleton<SyncCursorStore>();
+            services.AddSingleton<SyncEventSyncService>();
 
 
 #if WINDOWS

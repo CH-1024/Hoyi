@@ -1,5 +1,6 @@
 ﻿
 using HY.ApiService.Entities;
+using HY.ApiService.Enums;
 using HY.ApiService.Services;
 using SqlSugar;
 
@@ -10,6 +11,7 @@ namespace HY.ApiService.Repositories
         Task<long> CreateContact(ContactEntity contactEntity);
 
         Task<List<ContactEntity>> GetContactsByUserId(long userId);
+        Task<List<ContactEntity>> GetContactsByContactId(long contactId);
         Task<ContactEntity?> GetUserContactByUserId(long currentUserId, long contactId);
         Task<List<ContactEntity>> GetUserContactByUserIds(long currentUserId, List<long> contactIds);
 
@@ -39,6 +41,13 @@ namespace HY.ApiService.Repositories
         {
             return await _db.Queryable<ContactEntity>()
                 .Where(c => c.User_Id == userId)
+                .ToListAsync();
+        }
+
+        public async Task<List<ContactEntity>> GetContactsByContactId(long contactId)
+        {
+            return await _db.Queryable<ContactEntity>()
+                .Where(c => c.Contact_Id == contactId && c.Relation_Status == RelationStatus.Friend)
                 .ToListAsync();
         }
 

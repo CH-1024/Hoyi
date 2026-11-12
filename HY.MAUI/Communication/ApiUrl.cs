@@ -48,6 +48,11 @@ namespace HY.MAUI.Communication
         public static string RecallMessage => $"{HttpBase}/message/recall/";
         public static string DeleteMessage => $"{HttpBase}/message/delete/";
 
+        // Unified Sync
+        public static string SyncHead => $"{HttpBase}/sync/head/";
+        public static string SyncChanges => $"{HttpBase}/sync/changes/";
+        public static string SyncMessage => $"{HttpBase}/sync/message/";
+
 
         // Call
         public static string CreateCall => $"{HttpBase}/call/create/";

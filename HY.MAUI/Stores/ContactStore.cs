@@ -29,10 +29,6 @@ namespace HY.MAUI.Stores
                     Nickname = currentUser.Nickname,
                     Avatar = currentUser.Avatar,
                     Region = currentUser.Region,
-                    //Remark = _globalCache.GetCurrentUser().Remark,
-                    //Contact_Status = 1,
-                    //Relation_Request_Status = 1,
-                    //Relation_Status = 1
                 };
             }
 
@@ -44,7 +40,6 @@ namespace HY.MAUI.Stores
             var existing = Contacts.FirstOrDefault(c => c.Contact_Id == contact.Contact_Id);
             if (existing != null)
             {
-                // Update existing
                 existing.Contact_Id = contact.Contact_Id;
                 existing.Nickname = contact.Nickname;
                 existing.Avatar = contact.Avatar;
@@ -56,20 +51,48 @@ namespace HY.MAUI.Stores
             }
             else
             {
-                // Add new
                 Contacts.Add(contact);
+            }
+        }
+
+        public void ReplaceSnapshot(IEnumerable<ContactVM> contacts)
+        {
+            var incoming = contacts.ToList();
+            var ids = incoming.Select(x => x.Contact_Id).ToHashSet();
+
+            foreach (var stale in Contacts.Where(x => !ids.Contains(x.Contact_Id)).ToList())
+                Contacts.Remove(stale);
+
+            for (var i = 0; i < incoming.Count; i++)
+            {
+                var item = incoming[i];
+                var existing = Contacts.FirstOrDefault(x => x.Contact_Id == item.Contact_Id);
+                if (existing == null)
+                {
+                    Contacts.Insert(Math.Min(i, Contacts.Count), item);
+                    continue;
+                }
+
+                existing.Nickname = item.Nickname;
+                existing.Avatar = item.Avatar;
+                existing.Region = item.Region;
+                existing.Remark = item.Remark;
+                existing.Contact_Status = item.Contact_Status;
+                existing.Relation_Request_Status = item.Relation_Request_Status;
+                existing.Relation_Status = item.Relation_Status;
+
+                var oldIndex = Contacts.IndexOf(existing);
+                if (oldIndex != i)
+                    Contacts.Move(oldIndex, Math.Min(i, Contacts.Count - 1));
             }
         }
 
         public bool Remove(long contactId)
         {
-            var contact = GetContact(contactId);
-            return Contacts.Remove(contact);
+            var contact = Contacts.FirstOrDefault(x => x.Contact_Id == contactId);
+            return contact != null && Contacts.Remove(contact);
         }
 
-        public void Clear()
-        {
-            Contacts.Clear();
-        }
+        public void Clear() => Contacts.Clear();
     }
 }

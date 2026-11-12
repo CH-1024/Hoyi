@@ -1,5 +1,4 @@
-﻿using HY.MAUI.Dtos;
-using HY.MAUI.Models;
+﻿using HY.MAUI.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -31,22 +30,36 @@ namespace HY.MAUI.Stores
             return null;
         }
 
-        public void Add(long chatId, MessageVM messageVM)
+        public void Add(long chatId, MessageVM messageVM) =>
+            AddIfNotExists(chatId, messageVM);
+
+        public bool AddIfNotExists(long chatId, MessageVM messageVM)
         {
-            var chatMessages = GetMessages(chatId);
-            chatMessages.Add(messageVM);
+            var messages = GetMessages(chatId);
+            if (messageVM.Id > 0 && messages.Any(x => x.Id == messageVM.Id))
+                return false;
+
+            if (messageVM.Id <= 0 || messages.Count == 0)
+            {
+                messages.Add(messageVM);
+                return true;
+            }
+
+            var index = 0;
+            while (index < messages.Count &&
+                   (messages[index].Id <= 0 || messages[index].Id < messageVM.Id))
+                index++;
+
+            messages.Insert(index, messageVM);
+            return true;
         }
 
-        public void Insert(long chatId, MessageVM messageVM, int index = 0)
-        {
-            var chatMessages = GetMessages(chatId);
-            chatMessages.Insert(0, messageVM);
-        }
+        public void Insert(long chatId, MessageVM messageVM, int index = 0) =>
+            AddIfNotExists(chatId, messageVM);
 
-        public void Clear()
-        {
-            _messages.Clear();
-        }
+        public bool Remove(long chatId) => _messages.Remove(chatId);
+
+        public void Clear() => _messages.Clear();
 
         public void UpdateUserHead(long id, string url)
         {
@@ -55,9 +68,7 @@ namespace HY.MAUI.Stores
                 foreach (var message in chatMessages)
                 {
                     if (message.Sender_Id == id)
-                    {
                         message.Sender_Avatar = url;
-                    }
                 }
             }
         }
