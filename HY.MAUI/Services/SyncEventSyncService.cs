@@ -319,21 +319,23 @@ namespace HY.MAUI.Services
                 return false;
 
             var dtos = response.GetValue<List<ChatDto>>("Chats") ?? [];
-            var items = dtos.Select(dto =>
-            {
-                var chat = dto.ToVM();
-                if (dto.Last_Msg != null)
-                {
-                    var loadedMessage = _messageStore.GetMessage(dto.Last_Msg.Id);
-                    if (loadedMessage != null)
-                        chat.Last_Msg = loadedMessage;
-                }
-
-                return chat;
-            }).ToList();
+            var items = dtos.Select(dto => dto.ToVM()).ToList();
 
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
+                // Merge last-message references on the UI thread because MessageStore
+                // contains ObservableCollections which may be updated by live SignalR events.
+                for (var i = 0; i < items.Count; i++)
+                {
+                    var lastMessageId = dtos[i].Last_Msg?.Id;
+                    if (lastMessageId is long id)
+                    {
+                        var loadedMessage = _messageStore.GetMessage(id);
+                        if (loadedMessage != null)
+                            items[i].Last_Msg = loadedMessage;
+                    }
+                }
+
                 var currentIds = _chatStore.Chats.Select(x => x.Id).ToHashSet();
                 var incomingIds = items.Select(x => x.Id).ToHashSet();
 
