@@ -66,6 +66,31 @@ namespace HY.ApiService.Controllers
 
 
         [Authorize]
+        [HttpGet("sync")]
+        public async Task<IActionResult> SyncMessages(
+            long chatId,
+            long afterMessageId = 0,
+            int take = 100)
+        {
+            var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            if (!await _chatService.IsUserOwnerChat(userId, chatId))
+                return Ok(new Response(false, "没有权限"));
+
+            take = Math.Clamp(take, 1, 200);
+            var messages = await _messageService.GetMessagesAfter(
+                userId, chatId, afterMessageId, take);
+
+            return Ok(new Response(true)
+            {
+                Data = new Dictionary<string, object?>
+                {
+                    { "Messages", messages }
+                }
+            });
+        }
+
+        [Authorize]
         [HttpPost("send")]
         public async Task<IActionResult> SendMessage([FromBody] MessageDto messageDto)
         {

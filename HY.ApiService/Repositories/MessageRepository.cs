@@ -15,6 +15,7 @@ namespace HY.ApiService.Repositories
         Task<List<MessageEntity>> GetMessagesByIds(long currentUserId, List<long> msgIds);
         Task<List<MessageEntity>> GetPrivateChatMessages(long currentUserId, long targetUserId, long skipMessageId, int take);
         Task<List<MessageEntity>> GetGroupChatMessages(long currentUserId, long groupId, long skipMessageId, int take);
+        Task<List<MessageEntity>> GetMessagesAfter(long currentUserId, ChatType chatType, long targetId, long afterMessageId, int take);
 
         Task<bool> RecallMessage(long messageId);
     }
@@ -88,6 +89,58 @@ namespace HY.ApiService.Repositories
         }
 
 
+
+        public async Task<List<MessageEntity>> GetMessagesAfter(
+            long currentUserId,
+            ChatType chatType,
+            long targetId,
+            long afterMessageId,
+            int take)
+        {
+            var baseQuery = _db.Queryable<MessageEntity>()
+                .LeftJoin<MessageActionEntity>((m, a) =>
+                    m.Id == a.Message_Id &&
+                    a.User_Id == currentUserId &&
+                    a.Action_Type == MessageActionType.Delete)
+                .Where((m, a) => a.Message_Id == null)
+                .Where((m, a) => m.Id > afterMessageId);
+
+            if (chatType == ChatType.Private)
+            {
+                var q1 = baseQuery.Clone()
+                    .Where((m, a) =>
+                        m.Chat_Type == ChatType.Private &&
+                        m.Sender_Id == currentUserId &&
+                        m.Target_Id == targetId)
+                    .Select((m, a) => m);
+
+                var q2 = baseQuery.Clone()
+                    .Where((m, a) =>
+                        m.Chat_Type == ChatType.Private &&
+                        m.Sender_Id == targetId &&
+                        m.Target_Id == currentUserId)
+                    .Select((m, a) => m);
+
+                return await _db.UnionAll(q1, q2)
+                    .OrderBy(m => m.Id, OrderByType.Asc)
+                    .Take(take)
+                    .ToListAsync();
+            }
+
+            if (chatType == ChatType.Group)
+            {
+                return await baseQuery
+                    .Where((m, a) =>
+                        m.Chat_Type == ChatType.Group &&
+                        m.Target_Id == targetId)
+                    .OrderBy((m, a) => m.Id, OrderByType.Asc)
+                    .Take(take)
+                    .Select((m, a) => m)
+                    .ToListAsync();
+            }
+
+            return [];
+        }
 
         public async Task<bool> RecallMessage(long messageId)
         {

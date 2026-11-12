@@ -32,10 +32,10 @@ namespace HY.ApiService.Services
         private readonly IGroupRepository _groupRepository;
         private readonly IGroupMemberRepository _groupMemberRepository;
         private readonly IMessageRepository _messageRepository;
+        private readonly ISyncEventRepository _syncEventRepository;
 
 
-
-        public ChatService(ISqlSugarClient db, IChatRepository chatRepository, IUserRepository userRepository, IGroupRepository groupRepository, IGroupMemberRepository groupMemberRepository, IMessageRepository messageRepository)
+        public ChatService(ISqlSugarClient db, IChatRepository chatRepository, IUserRepository userRepository, IGroupRepository groupRepository, IGroupMemberRepository groupMemberRepository, IMessageRepository messageRepository, ISyncEventRepository syncEventRepository)
         {
             _db = db;
 
@@ -44,6 +44,7 @@ namespace HY.ApiService.Services
             _groupRepository = groupRepository;
             _groupMemberRepository = groupMemberRepository;
             _messageRepository = messageRepository;
+            _syncEventRepository = syncEventRepository;
         }
 
 
@@ -111,17 +112,42 @@ namespace HY.ApiService.Services
 
         public async Task<bool> ClearChatUnread(long chat_Id)
         {
-            return await _chatRepository.ClearChatUnread(chat_Id);
+            var chatEntity = await _chatRepository.GetChatByChatId(chat_Id);
+            if (chatEntity == null)
+                return false;
+
+            return await ClearChatUnreadWithEventAsync(chatEntity);
         }
 
         public async Task<bool> ClearChatUnread(long userId, long targetId, ChatType chatType)
         {
             var chatEntity = await _chatRepository.GetChatByUserIdAndType(userId, targetId, chatType);
-            if (chatEntity != null)
+            if (chatEntity == null)
+                return false;
+
+            return await ClearChatUnreadWithEventAsync(chatEntity);
+        }
+
+        private async Task<bool> ClearChatUnreadWithEventAsync(ChatEntity chatEntity)
+        {
+            if (chatEntity.Unread_Count <= 0)
+                return true;
+
+            var result = await _db.Ado.UseTranAsync(async () =>
             {
-                return await _chatRepository.ClearChatUnread(chatEntity.Id);
-            }
-            return false;
+                if (!await _chatRepository.ClearChatUnread(chatEntity.Id))
+                    throw new Exception("清除会话未读数失败");
+
+                var syncEvent = SyncEventFactory.Create(
+                    chatEntity.User_Id,
+                    SyncEventTypes.ChatRead,
+                    chatEntity.Id);
+
+                if (!await _syncEventRepository.InsertSyncEventsAsync([syncEvent]))
+                    throw new Exception("写入会话已读同步事件失败");
+            });
+
+            return result.IsSuccess;
         }
 
 

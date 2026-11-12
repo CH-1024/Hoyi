@@ -72,6 +72,7 @@ namespace HY.ApiService.Setups
 
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IMessageActionRepository, MessageActionRepository>();
+            services.AddScoped<ISyncEventRepository, SyncEventRepository>();
 
             services.AddScoped<IContactRepository, ContactRepository>();
             services.AddScoped<IContactRequestRepository, ContactRequestRepository>();
