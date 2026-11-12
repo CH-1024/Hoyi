@@ -4,6 +4,7 @@ using HY.ApiService.Enums;
 using HY.ApiService.Extensions;
 using HY.ApiService.Models;
 using HY.ApiService.Repositories;
+using HY.ApiService.Tools;
 using Mapster;
 using SqlSugar;
 using System.Net.Sockets;

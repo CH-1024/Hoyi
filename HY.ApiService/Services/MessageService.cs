@@ -206,13 +206,19 @@ namespace HY.ApiService.Services
                         ChatType.Group);
                 }
 
-                var syncEvents = eventChats
-                    .Select(c => SyncEventFactory.Create(
-                        c.User_Id,
+                var syncEvents = new List<SyncEventEntity>();
+                foreach (var chat in eventChats)
+                {
+                    syncEvents.Add(SyncEventFactory.Create(
+                        chat.User_Id,
                         SyncEventTypes.MessageCreated,
                         messageDto.Id,
-                        c.Id))
-                    .ToList();
+                        chat.Id));
+                    syncEvents.Add(SyncEventFactory.Create(
+                        chat.User_Id,
+                        SyncEventTypes.ChatChanged,
+                        chat.Id));
+                }
 
                 if (!await _syncEventRepository.InsertSyncEventsAsync(syncEvents))
                     throw new Exception("写入新消息同步事件失败");

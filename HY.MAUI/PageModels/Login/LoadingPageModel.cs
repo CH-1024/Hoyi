@@ -32,6 +32,7 @@ namespace HY.MAUI.PageModels.Login
         private readonly IAuthService _authService;
 
         private readonly ChatHubSignalR _chatHub;
+        private readonly SyncEventSyncService _syncEventSyncService;
 
         private readonly UserApi _userApi;
         private readonly ChatApi _chatApi;
@@ -57,7 +58,8 @@ namespace HY.MAUI.PageModels.Login
 
 
         public LoadingPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, ILoginService loginService, ITokenProvider tokenProvider,
-                                IAuthService authService, ChatHubSignalR chatHub, UserApi userApi, ChatApi chatApi, ContactApi contactApi, MessageApi messageApi,
+                                IAuthService authService, ChatHubSignalR chatHub, SyncEventSyncService syncEventSyncService,
+                                UserApi userApi, ChatApi chatApi, ContactApi contactApi, MessageApi messageApi,
                                 ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore,
                                 GlobalBinding globalBinding)
         {
@@ -68,6 +70,7 @@ namespace HY.MAUI.PageModels.Login
             _authService = authService;
 
             _chatHub = chatHub;
+            _syncEventSyncService = syncEventSyncService;
 
             _userApi = userApi;
             _chatApi = chatApi;
@@ -140,6 +143,14 @@ namespace HY.MAUI.PageModels.Login
             _chatHub.OnClosed_ChatHub += ChatHub_OnClosed_ChatHub;
             _chatHub.OnReceiveCall_ChatHub += OnReceiveCall_ChatHub;
 
+            // First-device baseline: capture the event watermark before loading snapshots.
+            if (!await _syncEventSyncService.InitializeCursorAsync())
+            {
+                await Application.Current!.Windows[0].Page!.DisplayAlertAsync(
+                    "同步初始化失败", "无法连接同步服务，请检查网络后重试。", "确定");
+                return;
+            }
+
             await LoadContact();
 
             await LoadContactRequest();
@@ -147,6 +158,15 @@ namespace HY.MAUI.PageModels.Login
             await LoadChats();
 
             await LoadMessage();
+
+            // Replay changes committed while the initial snapshots were being loaded.
+            if (!await _syncEventSyncService.SyncAsync())
+            {
+                await Application.Current!.Windows[0].Page!.DisplayAlertAsync(
+                    "数据同步未完成",
+                    "部分数据暂时无法同步，网络恢复后会自动重试。",
+                    "确定");
+            }
 
             GoToAppShell();
         }
@@ -240,18 +260,26 @@ namespace HY.MAUI.PageModels.Login
                 {
                     var messageDtos = resp.GetValue<List<MessageDto>>("Messages") ?? [];
 
-                    if (chat.Type == ChatType.Private)
+                    foreach (var messageDto in messageDtos)
                     {
-                        foreach (var messageDto in messageDtos)
-                        {
-                            var contact = _contactStore.GetContact(messageDto.Sender_Id);
-                            var messageVM = messageDto.ToVM(currentUser.Id, contact?.Avatar, contact?.Nickname);
-                            _messageStore.Insert(chat.Id, messageVM);
-                        }
+                        var contact = chat.Type == ChatType.Private
+                            ? _contactStore.GetContact(messageDto.Sender_Id)
+                            : null;
+
+                        var messageVM = messageDto.ToVM(
+                            currentUser.Id,
+                            contact?.Avatar,
+                            contact?.Nickname);
+
+                        _messageStore.AddIfNotExists(chat.Id, messageVM);
                     }
-                    else if (chat.Type == ChatType.Group)
+
+                    if (chat.Last_Msg != null)
                     {
-                        throw new NotImplementedException("群聊消息加载未实现");
+                        var lastMessage = _messageStore.GetMessages(chat.Id)
+                            .FirstOrDefault(x => x.Id == chat.Last_Msg.Id);
+                        if (lastMessage != null)
+                            chat.Last_Msg = lastMessage;
                     }
                 }
             }

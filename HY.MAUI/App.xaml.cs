@@ -1,6 +1,7 @@
 ﻿using HY.MAUI.Interfaces;
 using HY.MAUI.Pages.Login;
 using HY.MAUI.SendQueue;
+using HY.MAUI.Communication.SignalR;
 using HY.MAUI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -13,15 +14,54 @@ namespace HY.MAUI
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILoginService _loginService;
+        private readonly ChatHubSignalR _chatHub;
+        private readonly SyncEventSyncService _syncEventSyncService;
 
-        public App(IServiceProvider serviceProvider, ILoginService loginService, MessageSendWorker worker)
+        public App(
+            IServiceProvider serviceProvider,
+            ILoginService loginService,
+            MessageSendWorker worker,
+            ChatHubSignalR chatHub,
+            SyncEventSyncService syncEventSyncService)
         {
             InitializeComponent();
 
             _serviceProvider = serviceProvider;
             _loginService = loginService;
+            _chatHub = chatHub;
+            _syncEventSyncService = syncEventSyncService;
+
+            _chatHub.OnReconnected_ChatHub += OnChatHubReconnected;
 
             _ = worker.RunAsync(CancellationToken.None);
+        }
+
+        private void OnWindowResumed(object? sender, EventArgs e)
+        {
+            if (!_loginService.IsLoggedIn)
+                return;
+
+            _ = ResumeAndSyncAsync();
+        }
+
+        private async void OnChatHubReconnected(string? connectionId)
+        {
+            await _syncEventSyncService.SyncAsync();
+        }
+
+        private async Task ResumeAndSyncAsync()
+        {
+            try
+            {
+                if (_chatHub.State == Microsoft.AspNetCore.SignalR.Client.HubConnectionState.Disconnected)
+                    await _chatHub.StartAsync();
+
+                await _syncEventSyncService.SyncAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Resume sync failed: {ex}");
+            }
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
@@ -30,6 +70,7 @@ namespace HY.MAUI
             Application.Current!.UserAppTheme = AppTheme.Dark;
 
             var window = new Window();
+            window.Resumed += OnWindowResumed;
 
 #if WINDOWS
             window.Created += OnWindowCreated;

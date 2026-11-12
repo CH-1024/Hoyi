@@ -41,6 +41,9 @@ namespace HY.MAUI.Communication.SignalR
         private HubConnection? _connection = null;
         private readonly SemaphoreSlim _initLock = new(1, 1);
 
+        public HubConnectionState State =>
+            _connection?.State ?? HubConnectionState.Disconnected;
+
 
         public ChatHubSignalR(IServiceProvider serviceProvider, IGlobalCache globalCache, ILoginService loginService, ITokenProvider tokenProvider,
                               INotificationManagerService notificationManager, GlobalBinding globalBinding,
@@ -175,13 +178,7 @@ namespace HY.MAUI.Communication.SignalR
                 // 使用 TokenProvider 获取访问令牌
                 options.AccessTokenProvider = async () => await _tokenProvider.GetAccessTokenAsync();
             })
-            .WithAutomaticReconnect(
-            [
-                TimeSpan.Zero,
-                TimeSpan.FromSeconds(1),
-                TimeSpan.FromSeconds(2),
-                TimeSpan.FromSeconds(3),
-            ])
+            .WithAutomaticReconnect(new SignalRRetryPolicy())
             .Build();
             return connection;
         }
@@ -379,8 +376,15 @@ namespace HY.MAUI.Communication.SignalR
             }
             else if (chat != null && chat.Type == ChatType.Group)
             {
-                // 群聊 从群成员列表获取发送者信息
+                // 群聊发送者资料可以由群成员快照单独补充。
+                messageVM = messageDto.ToVM(currentUser.Id, null, null);
+                _messageStore.AddIfNotExists(chat.Id, messageVM);
 
+                chat.Last_Msg = messageVM;
+                chat.Unread_Count += messageVM.IsSelf ? 0 : 1;
+                chat.Is_Deleted = false;
+
+                _chatStore.SetTop(chat.Id);
             }
             else
             {
