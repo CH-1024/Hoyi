@@ -21,6 +21,7 @@ namespace HY.ApiService.Services
         Task<long> InsertMessage(MessageDto messageDto);
 
         Task<MessageDto?> GetMessageById(long currentUserId, long messageId);
+        Task<MessageDto?> GetMessageForSync(long currentUserId, long chatId, long messageId);
         Task<List<MessageDto>> GetMessagesByChatId(long chatId, long skipMessageId, int take);
         Task<List<MessageDto>> GetMessagesAfter(long currentUserId, long chatId, long afterMessageId, int take);
         Task<List<MessageDto>> GetPrivateChatMessages(long currentUserId, long targetUserId, long skipMessageId, int take);
@@ -249,6 +250,18 @@ namespace HY.ApiService.Services
             var messageDto = messageEntity.Adapt<MessageDto>();
 
             return messageDto;
+        }
+
+        public async Task<MessageDto?> GetMessageForSync(long currentUserId, long chatId, long messageId)
+        {
+            var chat = await _chatRepository.GetChatByChatId(chatId);
+            if (chat == null || chat.User_Id != currentUserId)
+                return null;
+
+            var entity = await _messageRepository.GetMessageForSync(
+                currentUserId, chat.Type, chat.Target_Id, messageId);
+
+            return entity?.Adapt<MessageDto>();
         }
 
         public async Task<List<MessageDto>> GetMessagesByChatId(long chatId, long skipMessageId, int take)

@@ -42,9 +42,10 @@ namespace HY.ApiService.Services
         private readonly IContactRepository _contactRepository;
         private readonly IContactRequestRepository _contactRequestRepository;
         private readonly IRedisConnectionService _redisConnectionService;
+        private readonly ISyncEventRepository _syncEventRepository;
 
 
-        public ContactService(ISqlSugarClient db, IChatRepository chatRepository, IMessageRepository messageRepository, IUserRepository userRepository, IContactRepository contactRepository, IContactRequestRepository contactRequestRepository, IRedisConnectionService redisConnectionService)
+        public ContactService(ISqlSugarClient db, IChatRepository chatRepository, IMessageRepository messageRepository, IUserRepository userRepository, IContactRepository contactRepository, IContactRequestRepository contactRequestRepository, IRedisConnectionService redisConnectionService, ISyncEventRepository syncEventRepository)
         {
             _db = db;
 
@@ -54,6 +55,7 @@ namespace HY.ApiService.Services
             _contactRepository = contactRepository;
             _contactRequestRepository = contactRequestRepository;
             _redisConnectionService = redisConnectionService;
+            _syncEventRepository = syncEventRepository;
         }
 
 
@@ -369,6 +371,33 @@ namespace HY.ApiService.Services
                     receiverChatDto.Last_Msg = receiverSysMsgDto;
                     #endregion
                 }
+
+                var syncEvents = new List<SyncEventEntity>
+                {
+                    SyncEventFactory.Create(senderId, SyncEventTypes.ContactRequestsChanged, contactRequestEntity.Id),
+                    SyncEventFactory.Create(receiver.Id, SyncEventTypes.ContactRequestsChanged, contactRequestEntity.Id)
+                };
+
+                if (senderContactDto != null && receiverContactDto != null)
+                {
+                    syncEvents.Add(SyncEventFactory.Create(senderId, SyncEventTypes.ContactsChanged, receiver.Id));
+                    syncEvents.Add(SyncEventFactory.Create(receiver.Id, SyncEventTypes.ContactsChanged, senderId));
+
+                    if (senderChatDto != null && senderSysMsgDto != null)
+                    {
+                        syncEvents.Add(SyncEventFactory.Create(senderId, SyncEventTypes.ChatChanged, senderChatDto.Id));
+                        syncEvents.Add(SyncEventFactory.Create(senderId, SyncEventTypes.MessageCreated, senderSysMsgDto.Id, senderChatDto.Id));
+                    }
+
+                    if (receiverChatDto != null && receiverSysMsgDto != null)
+                    {
+                        syncEvents.Add(SyncEventFactory.Create(receiver.Id, SyncEventTypes.ChatChanged, receiverChatDto.Id));
+                        syncEvents.Add(SyncEventFactory.Create(receiver.Id, SyncEventTypes.MessageCreated, receiverSysMsgDto.Id, receiverChatDto.Id));
+                    }
+                }
+
+                if (!await _syncEventRepository.InsertSyncEventsAsync(syncEvents))
+                    throw new Exception("写入好友请求同步事件失败");
             });
 
             // ---------- 事务结束 ----------
@@ -407,8 +436,22 @@ namespace HY.ApiService.Services
                 contactRequestEntity.Relation_Request_Status = RelationRequestStatus.Revoked;
                 contactRequestEntity.Handled_At = DateTime.UtcNow;
 
-                var bol = await _contactRequestRepository.UpdateContactRequest(contactRequestEntity);
-                if (!bol) return new(false, "更新好友请求状态失败");
+                var transaction = await _db.Ado.UseTranAsync(async () =>
+                {
+                    if (!await _contactRequestRepository.UpdateContactRequest(contactRequestEntity))
+                        throw new Exception("更新好友请求状态失败");
+
+                    var syncEvents = new List<SyncEventEntity>
+                    {
+                        SyncEventFactory.Create(contactRequestEntity.Sender_Id, SyncEventTypes.ContactRequestsChanged, contactRequestEntity.Id),
+                        SyncEventFactory.Create(contactRequestEntity.Receiver_Id, SyncEventTypes.ContactRequestsChanged, contactRequestEntity.Id)
+                    };
+
+                    if (!await _syncEventRepository.InsertSyncEventsAsync(syncEvents))
+                        throw new Exception("写入好友请求同步事件失败");
+                });
+                if (!transaction.IsSuccess)
+                    return new(false, transaction.ErrorMessage);
 
                 var contactRequestDto = contactRequestEntity.Adapt<ContactRequestDto>();
                 contactRequestDto.Sender_Nickname = sender.Nickname;
@@ -425,8 +468,22 @@ namespace HY.ApiService.Services
                 contactRequestEntity.Relation_Request_Status = RelationRequestStatus.Declined;
                 contactRequestEntity.Handled_At = DateTime.UtcNow;
 
-                var bol = await _contactRequestRepository.UpdateContactRequest(contactRequestEntity);
-                if (!bol) return new(false, "更新好友请求状态失败");
+                var transaction = await _db.Ado.UseTranAsync(async () =>
+                {
+                    if (!await _contactRequestRepository.UpdateContactRequest(contactRequestEntity))
+                        throw new Exception("更新好友请求状态失败");
+
+                    var syncEvents = new List<SyncEventEntity>
+                    {
+                        SyncEventFactory.Create(contactRequestEntity.Sender_Id, SyncEventTypes.ContactRequestsChanged, contactRequestEntity.Id),
+                        SyncEventFactory.Create(contactRequestEntity.Receiver_Id, SyncEventTypes.ContactRequestsChanged, contactRequestEntity.Id)
+                    };
+
+                    if (!await _syncEventRepository.InsertSyncEventsAsync(syncEvents))
+                        throw new Exception("写入好友请求同步事件失败");
+                });
+                if (!transaction.IsSuccess)
+                    return new(false, transaction.ErrorMessage);
 
                 var contactRequestDto = contactRequestEntity.Adapt<ContactRequestDto>();
                 contactRequestDto.Sender_Nickname = sender.Nickname;
@@ -632,6 +689,20 @@ namespace HY.ApiService.Services
 
                     #endregion
 
+                    var syncEvents = new List<SyncEventEntity>
+                    {
+                        SyncEventFactory.Create(contactRequestEntity.Sender_Id, SyncEventTypes.ContactRequestsChanged, contactRequestEntity.Id),
+                        SyncEventFactory.Create(contactRequestEntity.Receiver_Id, SyncEventTypes.ContactRequestsChanged, contactRequestEntity.Id),
+                        SyncEventFactory.Create(contactRequestEntity.Sender_Id, SyncEventTypes.ContactsChanged, contactRequestEntity.Receiver_Id),
+                        SyncEventFactory.Create(contactRequestEntity.Receiver_Id, SyncEventTypes.ContactsChanged, contactRequestEntity.Sender_Id),
+                        SyncEventFactory.Create(contactRequestEntity.Sender_Id, SyncEventTypes.ChatChanged, senderChatDto!.Id),
+                        SyncEventFactory.Create(contactRequestEntity.Receiver_Id, SyncEventTypes.ChatChanged, receiverChatDto!.Id),
+                        SyncEventFactory.Create(contactRequestEntity.Sender_Id, SyncEventTypes.MessageCreated, senderSysMsgDto!.Id, senderChatDto.Id),
+                        SyncEventFactory.Create(contactRequestEntity.Receiver_Id, SyncEventTypes.MessageCreated, receiverSysMsgDto!.Id, receiverChatDto.Id)
+                    };
+
+                    if (!await _syncEventRepository.InsertSyncEventsAsync(syncEvents))
+                        throw new Exception("写入好友关系同步事件失败");
                 });
 
                 // ---------- 事务结束 ----------
@@ -677,6 +748,15 @@ namespace HY.ApiService.Services
                 {
                     throw new Exception("删除聊天记录失败");
                 }
+
+                var syncEvents = new List<SyncEventEntity>
+                {
+                    SyncEventFactory.Create(userId, SyncEventTypes.ContactsChanged, targetId),
+                    SyncEventFactory.Create(userId, SyncEventTypes.ChatChanged, chatEntity.Id)
+                };
+
+                if (!await _syncEventRepository.InsertSyncEventsAsync(syncEvents))
+                    throw new Exception("写入删除联系人同步事件失败");
             });
 
             // ---------- 事务结束 ----------

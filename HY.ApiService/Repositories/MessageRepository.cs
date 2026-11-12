@@ -16,6 +16,7 @@ namespace HY.ApiService.Repositories
         Task<List<MessageEntity>> GetPrivateChatMessages(long currentUserId, long targetUserId, long skipMessageId, int take);
         Task<List<MessageEntity>> GetGroupChatMessages(long currentUserId, long groupId, long skipMessageId, int take);
         Task<List<MessageEntity>> GetMessagesAfter(long currentUserId, ChatType chatType, long targetId, long afterMessageId, int take);
+        Task<MessageEntity?> GetMessageForSync(long currentUserId, ChatType chatType, long targetId, long messageId);
 
         Task<bool> RecallMessage(long messageId);
     }
@@ -140,6 +141,35 @@ namespace HY.ApiService.Repositories
             }
 
             return [];
+        }
+
+        public async Task<MessageEntity?> GetMessageForSync(
+            long currentUserId,
+            ChatType chatType,
+            long targetId,
+            long messageId)
+        {
+            var query = _db.Queryable<MessageEntity>()
+                .LeftJoin<MessageActionEntity>((m, a) =>
+                    m.Id == a.Message_Id &&
+                    a.User_Id == currentUserId &&
+                    a.Action_Type == MessageActionType.Delete)
+                .Where((m, a) => a.Message_Id == null)
+                .Where((m, a) => m.Id == messageId && m.Chat_Type == chatType);
+
+            if (chatType == ChatType.Private)
+            {
+                query = query.Where((m, a) =>
+                    (m.Sender_Id == currentUserId && m.Target_Id == targetId) ||
+                    (m.Sender_Id == targetId && m.Target_Id == currentUserId));
+            }
+            else if (chatType == ChatType.Group)
+            {
+                query = query.Where((m, a) => m.Target_Id == targetId);
+            }
+            else return null;
+
+            return await query.Select((m, a) => m).FirstAsync();
         }
 
         public async Task<bool> RecallMessage(long messageId)

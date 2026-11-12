@@ -33,13 +33,18 @@ namespace HY.ApiService.Services
 
         private readonly IUserRepository _userRepository;
         private readonly IPermissionRepository _permissionRepository;
+        private readonly IContactRepository _contactRepository;
+        private readonly ISyncEventRepository _syncEventRepository;
 
-        public UserService(ISqlSugarClient db, IUserRepository userRepository, IPermissionRepository permissionRepository)
+        public UserService(ISqlSugarClient db, IUserRepository userRepository, IPermissionRepository permissionRepository,
+            IContactRepository contactRepository, ISyncEventRepository syncEventRepository)
         {
             _db = db;
 
             _userRepository = userRepository;
             _permissionRepository = permissionRepository;
+            _contactRepository = contactRepository;
+            _syncEventRepository = syncEventRepository;
         }
 
 
@@ -133,15 +138,19 @@ namespace HY.ApiService.Services
         {
             var userEntity = await _userRepository.GetUserById(userId);
             if (userEntity == null)
-            {
                 return new(false, "User not found.");
-            }
 
             userEntity.Avatar = url;
 
-            var isUpdated = await _userRepository.Update(userEntity);
+            var result = await _db.Ado.UseTranAsync(async () =>
+            {
+                if (!await _userRepository.Update(userEntity))
+                    throw new Exception("Failed to update user avatar.");
 
-            return new(isUpdated, isUpdated ? null : "Failed to update user avatar.");
+                await WriteProfileSyncEventsAsync(userId);
+            });
+
+            return new(result.IsSuccess, result.IsSuccess ? null : result.ErrorMessage);
         }
 
         public async Task<UpdateUserReturn> UpdateProfile(long userId, UpdateUserRequest updateUserRequest)
@@ -168,9 +177,30 @@ namespace HY.ApiService.Services
             userEntity.Phone = updateUserRequest.Phone ?? userEntity.Phone;
             userEntity.Email = updateUserRequest.Email ?? userEntity.Email;
 
-            var isUpdated = await _userRepository.Update(userEntity);
+            var result = await _db.Ado.UseTranAsync(async () =>
+            {
+                if (!await _userRepository.Update(userEntity))
+                    throw new Exception("Failed to update user profile.");
 
-            return new(isUpdated, isUpdated ? null : "Failed to update user profile.");
+                await WriteProfileSyncEventsAsync(userId);
+            });
+
+            return new(result.IsSuccess, result.IsSuccess ? null : result.ErrorMessage);
+        }
+
+        private async Task WriteProfileSyncEventsAsync(long userId)
+        {
+            var events = new List<SyncEventEntity>
+            {
+                SyncEventFactory.Create(userId, SyncEventTypes.ProfileChanged, userId)
+            };
+
+            var contacts = await _contactRepository.GetContactsByContactId(userId);
+            events.AddRange(contacts.Select(c =>
+                SyncEventFactory.Create(c.User_Id, SyncEventTypes.ContactsChanged, userId)));
+
+            if (!await _syncEventRepository.InsertSyncEventsAsync(events))
+                throw new Exception("写入用户资料同步事件失败");
         }
     }
 }
