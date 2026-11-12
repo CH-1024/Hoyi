@@ -16,6 +16,12 @@ namespace HY.MAUI.Communication.Http
         }
 
 
+
+        public async Task<Response?> GetCurrentUser()
+        {
+            return await GetAsync(ApiUrl.GetCurrentUser);
+        }
+
         public async Task<Response?> Register(string nickname, string username, string password, string email, string phone)
         {
             var param = new RegisterUserRequest

@@ -33,6 +33,7 @@ namespace HY.MAUI.PageModels.Login
 
         private readonly ChatHubSignalR _chatHub;
 
+        private readonly UserApi _userApi;
         private readonly ChatApi _chatApi;
         private readonly ContactApi _contactApi;
         private readonly MessageApi _messageApi;
@@ -56,7 +57,7 @@ namespace HY.MAUI.PageModels.Login
 
 
         public LoadingPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, ILoginService loginService, ITokenProvider tokenProvider,
-                                IAuthService authService, ChatHubSignalR chatHub, ChatApi chatApi, ContactApi contactApi, MessageApi messageApi,
+                                IAuthService authService, ChatHubSignalR chatHub, UserApi userApi, ChatApi chatApi, ContactApi contactApi, MessageApi messageApi,
                                 ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore,
                                 GlobalBinding globalBinding)
         {
@@ -68,6 +69,7 @@ namespace HY.MAUI.PageModels.Login
 
             _chatHub = chatHub;
 
+            _userApi = userApi;
             _chatApi = chatApi;
             _contactApi = contactApi;
             _messageApi = messageApi;
@@ -92,8 +94,13 @@ namespace HY.MAUI.PageModels.Login
                 GoBackToLoginPage();
                 return;
             }
+        }
 
-            if (await _tokenProvider.IsAccessTokenExpired() && !await _authService.RefreshTokenAndUserAsync())
+        [RelayCommand]
+        async Task Loaded()
+        {
+            // 检查访问令牌是否过期，过期自动刷新令牌
+            if (await _tokenProvider.IsAccessTokenExpired() && !await _authService.RefreshTokenAsync())
             {
                 _loginService.Logout();
                 _tokenProvider.Clear();
@@ -102,8 +109,17 @@ namespace HY.MAUI.PageModels.Login
                 return;
             }
 
-            // 刷新用户信息
-            if (!await LoadCurrentUser())
+            var resp = await _userApi.GetCurrentUser();
+            if (resp?.IsSucc != true || resp.GetValue<UserDto>("User") is not UserDto userDto)
+            {
+                _loginService.Logout();
+                _tokenProvider.Clear();
+
+                GoBackToLoginPage();
+                return;
+            }
+
+            if (!await RefreshCurrentUser(userDto.ToVM()))
             {
                 _loginService.Logout();
                 _tokenProvider.Clear();
@@ -135,9 +151,24 @@ namespace HY.MAUI.PageModels.Login
             GoToAppShell();
         }
 
-
         private async Task<bool> LoadCurrentUser()
         {
+            CurrentUser = await _loginService.GetCurrentUser();
+            if (CurrentUser != null)
+            {
+                _globalCache.SetCurrentUser(CurrentUser);
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task<bool> RefreshCurrentUser(UserVM userVM)
+        {
+            if (userVM == null) return false;
+
+            await _loginService.SetCurrentUser(userVM);
+
             CurrentUser = await _loginService.GetCurrentUser();
             if (CurrentUser != null)
             {

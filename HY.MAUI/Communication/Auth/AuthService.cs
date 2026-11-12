@@ -12,7 +12,6 @@ namespace HY.MAUI.Communication.Auth
 {
     public interface IAuthService
     {
-        Task<bool> RefreshTokenAndUserAsync();
         Task<bool> RefreshTokenAsync();
     }
 
@@ -36,54 +35,6 @@ namespace HY.MAUI.Communication.Auth
         }
 
 
-        public async Task<bool> RefreshTokenAndUserAsync()
-        {
-            await _refreshLock.WaitAsync();
-            try
-            {
-                var deviceId = await _loginService.GetDeviceId();
-                var devicePlatform = await _loginService.GetDevicePlatform();
-                var refreshToken = await _tokenProvider.GetRefreshTokenAsync();
-
-                if (string.IsNullOrEmpty(refreshToken)) return false;
-
-
-                var param = new RefreshRequest
-                {
-                    DeviceId = deviceId,
-                    DevicePlatform = devicePlatform,
-                    RefreshToken = refreshToken,
-                };
-
-                var resp = await _http.PostAsJsonAsync(ApiUrl.RefreshTokenAndUser, param);
-
-                resp.EnsureSuccessStatusCode();
-
-                var refreshResp = await resp.Content.ReadFromJsonAsync<Response>();
-
-                if (refreshResp == null || !refreshResp.IsSucc) return false;
-
-                var userDto = refreshResp.GetValue<UserDto>("User");
-                var token = refreshResp.GetValue<TokenModel>("Tokens");
-
-                if (userDto == null || token == null) return false;
-
-                await _loginService.SetCurrentUser(userDto.ToVM());
-                await _tokenProvider.SetAsync(token);
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-            finally
-            {
-                _refreshLock.Release();
-            }
-        }
-
-
         public async Task<bool> RefreshTokenAsync()
         {
             await _refreshLock.WaitAsync();
@@ -103,7 +54,7 @@ namespace HY.MAUI.Communication.Auth
                     RefreshToken = refreshToken,
                 };
 
-                var resp = await _http.PostAsJsonAsync(ApiUrl.RefreshToken, param);
+                var resp = await _http.PostAsJsonAsync(ApiUrl.Refresh, param);
 
                 resp.EnsureSuccessStatusCode();
 

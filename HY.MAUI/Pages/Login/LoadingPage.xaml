@@ -15,6 +15,8 @@
         <!--<toolkit:EventToCommandBehavior EventName="NavigatedFrom" Command="{Binding NavigatedFromCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _LoadingPage}, x:DataType=ContentPage}"/>-->
         <toolkit:EventToCommandBehavior EventName="Appearing" Command="{Binding AppearingCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _LoadingPage}, x:DataType=ContentPage}" />
         <!--<toolkit:EventToCommandBehavior EventName="Disappearing" Command="{Binding DisappearingCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference LoadingPage}, x:DataType=ContentPage}" />-->
+        <toolkit:EventToCommandBehavior EventName="Loaded" Command="{Binding LoadedCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _LoadingPage}, x:DataType=ContentPage}" />
+        <!--<toolkit:EventToCommandBehavior EventName="Unloaded" Command="{Binding UnloadedCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _LoadingPage}, x:DataType=ContentPage}" />-->
     </ContentPage.Behaviors>
 
     <Grid RowDefinitions="0.8*,auto,80,auto,*">

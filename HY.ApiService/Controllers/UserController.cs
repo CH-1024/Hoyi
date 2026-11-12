@@ -25,6 +25,26 @@ namespace HY.ApiService.Controllers
             _userService = userService;
         }
 
+        [Authorize]
+        [HttpGet("get/currentuser")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var user = await _userService.GetUserById(userId);
+            if (user == null)
+            {
+                return Ok(new Response(false, "用户不存在"));
+            }
+
+            return Ok(new Response(true)
+            {
+                Data = new Dictionary<string, object?>
+                {
+                    { "User", user }
+                }
+            });
+        }
 
         [AllowAnonymous]
         [HttpPost("register")]
