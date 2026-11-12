@@ -333,7 +333,15 @@ namespace HY.MAUI.Services
             }).ToList();
 
             await MainThread.InvokeOnMainThreadAsync(() =>
-                _chatStore.ReplaceSnapshot(items));
+            {
+                var currentIds = _chatStore.Chats.Select(x => x.Id).ToHashSet();
+                var incomingIds = items.Select(x => x.Id).ToHashSet();
+
+                foreach (var removedChatId in currentIds.Except(incomingIds))
+                    _messageStore.Remove(removedChatId);
+
+                _chatStore.ReplaceSnapshot(items);
+            });
 
             return true;
         }

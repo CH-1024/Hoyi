@@ -57,6 +57,8 @@ namespace HY.MAUI.Stores
         public void Insert(long chatId, MessageVM messageVM, int index = 0) =>
             AddIfNotExists(chatId, messageVM);
 
+        public bool Remove(long chatId) => _messages.Remove(chatId);
+
         public void Clear() => _messages.Clear();
 
         public void UpdateUserHead(long id, string url)

@@ -24,9 +24,14 @@ namespace HY.MAUI.Stores
 
             if (messageDto.Chat_Type == ChatType.Private)
             {
-                var targetId = currentUserId == messageDto.Sender_Id
-                    ? messageDto.Target_Id
-                    : messageDto.Sender_Id;
+                long targetId;
+
+                if (currentUserId == messageDto.Sender_Id)
+                    targetId = messageDto.Target_Id;
+                else if (currentUserId == messageDto.Target_Id)
+                    targetId = messageDto.Sender_Id;
+                else
+                    return null;
 
                 return Chats.FirstOrDefault(c =>
                     c.Type == ChatType.Private && c.Target_Id == targetId);
