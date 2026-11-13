@@ -81,16 +81,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="15.0.1" />
-		<PackageReference Include="CommunityToolkit.Maui.Camera" Version="6.1.0" />
-		<PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="10.0.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="16.0.0" />
+		<PackageReference Include="CommunityToolkit.Maui.Camera" Version="7.0.0" />
+		<PackageReference Include="CommunityToolkit.Maui.MediaElement" Version="11.0.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.14" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.120" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.15" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.15" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.130" />
 		<PackageReference Include="SIPSorcery" Version="10.0.17" />
 		<PackageReference Include="SIPSorcery.VP8" Version="10.0.17" />
-		<PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="4.154.0" />
+		<PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="4.156.0" />
 	</ItemGroup>
 
 	<ItemGroup>
