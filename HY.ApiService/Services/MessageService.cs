@@ -21,9 +21,8 @@ namespace HY.ApiService.Services
         Task<long> InsertMessage(MessageDto messageDto);
 
         Task<MessageDto?> GetMessageById(long currentUserId, long messageId);
-        Task<List<MessageDto>> GetMessagesByChatId(long chatId, long skipMessageId, int take);
-        Task<List<MessageDto>> GetPrivateChatMessages(long currentUserId, long targetUserId, long skipMessageId, int take);
-        Task<List<MessageDto>> GetGroupChatMessages(long currentUserId, long groupId, long skipMessageId, int take);
+        Task<List<MessageDto>> GetMessagesBeforeByChatId(long chatId, long skipMessageId, int take);
+        Task<List<MessageDto>> GetMessagesAfterByChatId(long chatId, long afterMessageId, int take);
 
         Task<bool> RecallMessage(long messageId);
     }
@@ -52,6 +51,9 @@ namespace HY.ApiService.Services
         // MessageAction
         public async Task<bool> InsertMessageAction(long userId, long messageId, MessageActionType actiontype)
         {
+            var messageEntity = await _messageRepository.GetMessageByIdWithoutFilter(messageId);
+            if (messageEntity == null) return false;
+
             var messageActionEntity = new MessageActionEntity
             {
                 User_Id = userId,
@@ -112,7 +114,7 @@ namespace HY.ApiService.Services
 
                     var groupMembers = await _groupMemberRepository.GetGroupMembersByGroupId(messageDto.Target_Id);
 
-                    var userIds = groupMembers.Select(m => m.User_Id).ToList();
+                    var userIds = groupMembers.Select(m => m.User_Id).Distinct().ToList();
 
                     var memberChatEntities = await _chatRepository.GetChatsByUserIdsAndType(userIds, messageDto.Target_Id, ChatType.Group);
                     foreach (var memberChatEntity in memberChatEntities)
@@ -135,6 +137,10 @@ namespace HY.ApiService.Services
 
                     var bol = await _chatRepository.UpdateChats(memberChatEntities);
                     if (!bol) throw new Exception("更新群成员聊天记录失败");
+                }
+                else
+                {
+                    throw new Exception("无效的聊天类型");
                 }
             });
 
@@ -172,17 +178,17 @@ namespace HY.ApiService.Services
             return messageDto;
         }
 
-        public async Task<List<MessageDto>> GetMessagesByChatId(long chatId, long skipMessageId, int take)
+        public async Task<List<MessageDto>> GetMessagesBeforeByChatId(long chatId, long skipMessageId, int take)
         {
             var chatEntity = await _chatRepository.GetChatByChatId(chatId);
 
             if (chatEntity?.Type == ChatType.Private)
             {
-                return await GetPrivateChatMessages(chatEntity.User_Id, chatEntity.Target_Id, skipMessageId, take);
+                return await GetPrivateChatMessages(chatEntity.User_Id, chatEntity.Target_Id, DirectType.Before, skipMessageId, take);
             }
             else if (chatEntity?.Type == ChatType.Group)
             {
-                return await GetGroupChatMessages(chatEntity.User_Id, chatEntity.Target_Id, skipMessageId, take);
+                return await GetGroupChatMessages(chatEntity.User_Id, chatEntity.Target_Id, DirectType.Before, skipMessageId, take);
             }
             else
             {
@@ -190,29 +196,86 @@ namespace HY.ApiService.Services
             }
         }
 
+        public async Task<List<MessageDto>> GetMessagesAfterByChatId(long chatId, long afterMessageId, int take)
+        {
+            var chatEntity = await _chatRepository.GetChatByChatId(chatId);
+
+            if (chatEntity?.Type == ChatType.Private)
+            {
+                return await GetPrivateChatMessages(chatEntity.User_Id, chatEntity.Target_Id, DirectType.After, afterMessageId, take);
+            }
+            else if (chatEntity?.Type == ChatType.Group)
+            {
+                return await GetGroupChatMessages(chatEntity.User_Id, chatEntity.Target_Id, DirectType.After, afterMessageId, take);
+            }
+            else
+            {
+                return new List<MessageDto>();
+            }
+        }
+
+
+        public async Task<bool> RecallMessage(long messageId)
+        {
+            var message = await _messageRepository.GetMessageByIdWithoutFilter(messageId);
+            if (message == null) return false;
+
+            var result = await _db.Ado.UseTranAsync(async () =>
+            {
+                if (!await _messageRepository.RecallMessage(messageId)) throw new Exception("撤回消息失败");
+
+                List<ChatEntity> eventChats;
+                if (message.Chat_Type == ChatType.Private)
+                {
+                    eventChats = new List<ChatEntity>();
+
+                    var senderChat = await _chatRepository.GetChatByUserIdAndType(message.Sender_Id, message.Target_Id, ChatType.Private);
+                    var receiverChat = await _chatRepository.GetChatByUserIdAndType(message.Target_Id, message.Sender_Id, ChatType.Private);
+
+                    if (senderChat != null) eventChats.Add(senderChat);
+                    if (receiverChat != null) eventChats.Add(receiverChat);
+        }
+                else if (message.Chat_Type == ChatType.Group)
+                {
+                    var members = await _groupMemberRepository.GetGroupMembersByGroupId(message.Target_Id);
+                    eventChats = await _chatRepository.GetChatsByUserIdsAndType(members.Select(m => m.User_Id).Distinct().ToList(), message.Target_Id, ChatType.Group);
+                }
+                else
+                {
+                    throw new Exception("无效的聊天类型");
+                }
+
         public async Task<List<MessageDto>> GetPrivateChatMessages(long currentUserId, long targetUserId, long skipMessageId, int take)
         {
             var messageEntities = await _messageRepository.GetPrivateChatMessages(currentUserId, targetUserId, skipMessageId, take);
 
             var messageDtos = messageEntities.Adapt<List<MessageDto>>();
+            });
 
-            return messageDtos;
+            return result.IsSuccess;
         }
 
-        public async Task<List<MessageDto>> GetGroupChatMessages(long currentUserId, long groupId, long skipMessageId, int take)
+
+
+
+
+        async Task<List<MessageDto>> GetPrivateChatMessages(long currentUserId, long targetUserId, DirectType direct, long messageId, int take)
         {
-            var messageEntities = await _messageRepository.GetGroupChatMessages(currentUserId, groupId, skipMessageId, take);
+            var messageEntities = await _messageRepository.GetPrivateChatMessages(currentUserId, targetUserId, direct, messageId, take);
 
             var messageDtos = messageEntities.Adapt<List<MessageDto>>();
 
             return messageDtos;
         }
 
-
-
-        public async Task<bool> RecallMessage(long messageId)
+        async Task<List<MessageDto>> GetGroupChatMessages(long currentUserId, long groupId, DirectType direct, long messageId, int take)
         {
-            return await _messageRepository.RecallMessage(messageId);
+            var messageEntities = await _messageRepository.GetGroupChatMessages(currentUserId, groupId, direct, messageId, take);
+
+            var messageDtos = messageEntities.Adapt<List<MessageDto>>();
+
+            return messageDtos;
         }
+
     }
 }

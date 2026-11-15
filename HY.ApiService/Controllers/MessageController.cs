@@ -47,13 +47,11 @@ namespace HY.ApiService.Controllers
         {
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            var bol = await _chatService.IsUserOwnerChat(userId, chatId);
-            if (!bol)
-            {
-                return Ok(new Response(false, "没有权限"));
-            }
+            if (!await _chatService.IsUserOwnerChat(userId, chatId)) return Ok(new Response(false, "没有权限"));
+            if (!await _chatService.IsChatOwnerMessage(chatId, skipMessageId)) return Ok(new Response(false, "没有权限"));
 
-            var messages = await _messageService.GetMessagesByChatId(chatId, skipMessageId, take);
+            take = Math.Clamp(take, 1, 100);
+            var messages = await _messageService.GetMessagesBeforeByChatId(chatId, skipMessageId, take);
 
             return Ok(new Response(true)
             {

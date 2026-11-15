@@ -20,6 +20,7 @@ namespace HY.ApiService.Services
         Task<bool> ClearChatUnread(long userId, long targetId, ChatType chatType);
 
         Task<bool> IsUserOwnerChat(long userId, long chatId);
+        Task<bool> IsChatOwnerMessage(long chatId, long messageId);
     }
 
 
@@ -134,5 +135,27 @@ namespace HY.ApiService.Services
 
             return chatEntity.User_Id == userId;
         }
+
+        public async Task<bool> IsChatOwnerMessage(long chatId, long messageId)
+        {
+            var chatEntity = await _chatRepository.GetChatByChatId(chatId);
+            if (chatEntity == null) return false;
+
+            var messageEntity = await _messageRepository.GetMessageByIdWithoutFilter(messageId);
+            if (messageEntity == null) return false;
+
+            if (chatEntity.Type == ChatType.Private)
+            {
+                return (messageEntity.Sender_Id == chatEntity.User_Id && messageEntity.Target_Id == chatEntity.Target_Id) ||
+                       (messageEntity.Sender_Id == chatEntity.Target_Id && messageEntity.Target_Id == chatEntity.User_Id);
+            }
+            else if (chatEntity.Type == ChatType.Group)
+            {
+                return messageEntity.Target_Id == chatEntity.Target_Id;
+            }
+
+            return false;
+        }
+
     }
 }

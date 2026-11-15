@@ -33,13 +33,15 @@ namespace HY.ApiService.Services
 
         private readonly IUserRepository _userRepository;
         private readonly IPermissionRepository _permissionRepository;
+        private readonly IContactRepository _contactRepository;
 
-        public UserService(ISqlSugarClient db, IUserRepository userRepository, IPermissionRepository permissionRepository)
+        public UserService(ISqlSugarClient db, ISyncEventRepository syncEventRepository, IUserRepository userRepository, IPermissionRepository permissionRepository, IContactRepository contactRepository)
         {
             _db = db;
 
             _userRepository = userRepository;
             _permissionRepository = permissionRepository;
+            _contactRepository = contactRepository;
         }
 
 
@@ -139,9 +141,13 @@ namespace HY.ApiService.Services
 
             userEntity.Avatar = url;
 
-            var isUpdated = await _userRepository.Update(userEntity);
+            var result = await _db.Ado.UseTranAsync(async () =>
+            {
+                if (!await _userRepository.Update(userEntity)) throw new Exception("Failed to update user avatar.");
 
-            return new(isUpdated, isUpdated ? null : "Failed to update user avatar.");
+            });
+
+            return new(result.IsSuccess, result.IsSuccess ? null : result.ErrorMessage);
         }
 
         public async Task<UpdateUserReturn> UpdateProfile(long userId, UpdateUserRequest updateUserRequest)
@@ -168,9 +174,12 @@ namespace HY.ApiService.Services
             userEntity.Phone = updateUserRequest.Phone ?? userEntity.Phone;
             userEntity.Email = updateUserRequest.Email ?? userEntity.Email;
 
-            var isUpdated = await _userRepository.Update(userEntity);
+            var result = await _db.Ado.UseTranAsync(async () =>
+            {
+                if (!await _userRepository.Update(userEntity)) throw new Exception("Failed to update user profile.");
+            });
 
-            return new(isUpdated, isUpdated ? null : "Failed to update user profile.");
+            return new(result.IsSuccess, result.IsSuccess ? null : result.ErrorMessage);
         }
     }
 }

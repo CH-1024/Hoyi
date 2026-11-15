@@ -49,17 +49,12 @@ namespace HY.ApiService.Controllers
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var platform = int.Parse(User.FindFirst("DevicePlatform")!.Value);
 
-            var bol = await _chatService.IsUserOwnerChat(userId, chatId);
-            if (!bol)
-            {
-                return Ok(new Response(false, "没有权限"));
-            }
+            if (!await _chatService.IsUserOwnerChat(userId, chatId)) return Ok(new Response(false, "没有权限"));
 
             var result = await _chatService.ClearChatUnread(chatId);
-            if (result)
-            {
-                await _chatNotificationService.ReadAllNotify(userId, chatId, platform);
-            }
+            if (!result) return Ok(new Response(false, "清除会话未读数失败"));
+
+            await _chatNotificationService.ReadAllNotify(userId, chatId, platform);
 
             return Ok(new Response(result));
         }
