@@ -97,6 +97,14 @@ namespace HY.ApiService.Setups
                 .Map(dest => dest.Role, src => src.Role)
                 .Map(dest => dest.Nickname, src => src.Nickname)
                 .Map(dest => dest.Created_At, src => src.Created_At);
+
+
+            TypeAdapterConfig<SyncEventEntity, SyncEventDto>.NewConfig()
+                .Map(dest => dest.Id, src => src.Id)
+                .Map(dest => dest.Event_Type, src => src.Event_Type)
+                .Map(dest => dest.Entity_Id, src => src.Entity_Id)
+                .Map(dest => dest.Related_Id, src => src.Related_Id)
+                .Map(dest => dest.Created_At, src => src.Created_At);
         }
 
 
@@ -178,6 +186,14 @@ namespace HY.ApiService.Setups
                 .Map(dest => dest.Nickname, src => src.Nickname)
                 .Map(dest => dest.Created_At, src => src.Created_At);
 
+
+            TypeAdapterConfig<SyncEventDto, SyncEventEntity>.NewConfig()
+                .Map(dest => dest.Id, src => src.Id)
+                .Map(dest => dest.Event_Type, src => src.Event_Type)
+                .Map(dest => dest.Entity_Id, src => src.Entity_Id)
+                .Map(dest => dest.Related_Id, src => src.Related_Id)
+                .Map(dest => dest.Created_At, src => src.Created_At)
+                .Ignore(dest => dest.User_Id);
         }
 
 

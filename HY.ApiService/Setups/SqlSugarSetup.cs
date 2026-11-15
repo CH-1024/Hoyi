@@ -84,6 +84,8 @@ namespace HY.ApiService.Setups
             services.AddScoped<IMediaStorageVariantRepository, MediaStorageVariantRepository>();
 
             services.AddScoped<IPermissionRepository, PermissionRepository>();
+
+            services.AddScoped<ISyncEventRepository, SyncEventRepository>();
         }
 
         public static void AddSqlSugarServices(this IServiceCollection services)
@@ -102,6 +104,9 @@ namespace HY.ApiService.Setups
 
             // 权限服务
             services.AddScoped<IPermissionService, PermissionService>();
+
+            // 同步事件服务
+            services.AddScoped<ISyncEventService, SyncEventService>();
         }
 
 

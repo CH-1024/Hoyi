@@ -250,7 +250,21 @@ CREATE TABLE `user`  (
   UNIQUE INDEX `username`(`username` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = DYNAMIC;
 
-
+-- ----------------------------
+-- Table structure for sync_event
+-- ----------------------------
+DROP TABLE IF EXISTS `sync_event`;
+CREATE TABLE IF NOT EXISTS `sync_event` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT NOT NULL,
+    `event_type` tinyint NOT NULL,
+    `entity_id` BIGINT NOT NULL DEFAULT 0,
+    `related_id` BIGINT NOT NULL DEFAULT 0,
+    `created_at` DATETIME NOT NULL,
+    PRIMARY KEY (`id`),
+    INDEX `idx_sync_event_user_id_id` (`user_id`, `id`),
+    INDEX `idx_sync_event_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 

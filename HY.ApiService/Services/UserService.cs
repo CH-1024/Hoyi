@@ -31,6 +31,8 @@ namespace HY.ApiService.Services
     {
         private readonly ISqlSugarClient _db;
 
+        private readonly ISyncEventRepository _syncEventRepository;
+
         private readonly IUserRepository _userRepository;
         private readonly IPermissionRepository _permissionRepository;
         private readonly IContactRepository _contactRepository;
@@ -38,6 +40,8 @@ namespace HY.ApiService.Services
         public UserService(ISqlSugarClient db, ISyncEventRepository syncEventRepository, IUserRepository userRepository, IPermissionRepository permissionRepository, IContactRepository contactRepository)
         {
             _db = db;
+
+            _syncEventRepository = syncEventRepository;
 
             _userRepository = userRepository;
             _permissionRepository = permissionRepository;
@@ -145,6 +149,15 @@ namespace HY.ApiService.Services
             {
                 if (!await _userRepository.Update(userEntity)) throw new Exception("Failed to update user avatar.");
 
+                var events = new List<SyncEventEntity>
+                {
+                    SyncEventFactory.Create(userId, SyncEventTypes.ProfileChanged, userId)
+                };
+
+                //var contacts = await _contactRepository.GetContactsByContactId(userId);
+                //events.AddRange(contacts.Select(c => SyncEventFactory.Create(c.User_Id, SyncEventTypes.ContactsChanged, userId)));
+
+                if (!await _syncEventRepository.InsertSyncEventsAsync(events)) throw new Exception("写入用户资料同步事件失败");
             });
 
             return new(result.IsSuccess, result.IsSuccess ? null : result.ErrorMessage);
@@ -177,6 +190,16 @@ namespace HY.ApiService.Services
             var result = await _db.Ado.UseTranAsync(async () =>
             {
                 if (!await _userRepository.Update(userEntity)) throw new Exception("Failed to update user profile.");
+
+                var events = new List<SyncEventEntity>
+                {
+                    SyncEventFactory.Create(userId, SyncEventTypes.ProfileChanged, userId)
+                };
+
+                //var contacts = await _contactRepository.GetContactsByContactId(userId);
+                //events.AddRange(contacts.Select(c => SyncEventFactory.Create(c.User_Id, SyncEventTypes.ContactsChanged, userId)));
+
+                if (!await _syncEventRepository.InsertSyncEventsAsync(events)) throw new Exception("写入用户资料同步事件失败");
             });
 
             return new(result.IsSuccess, result.IsSuccess ? null : result.ErrorMessage);

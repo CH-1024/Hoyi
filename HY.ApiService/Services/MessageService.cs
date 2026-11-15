@@ -37,7 +37,9 @@ namespace HY.ApiService.Services
         private readonly IMessageActionRepository _messageActionRepository;
         private readonly IGroupMemberRepository _groupMemberRepository;
 
-        public MessageService(ISqlSugarClient db, IUserRepository userRepository, IChatRepository chatRepository, IMessageRepository messageRepository, IMessageActionRepository messageActionRepository, IGroupMemberRepository groupMemberRepository)
+        private readonly ISyncEventRepository _syncEventRepository;
+
+        public MessageService(ISqlSugarClient db, IUserRepository userRepository, IChatRepository chatRepository, IMessageRepository messageRepository, IMessageActionRepository messageActionRepository, IGroupMemberRepository groupMemberRepository, ISyncEventRepository syncEventRepository)
         {
             _db = db;
             _userRepository = userRepository;
@@ -45,6 +47,7 @@ namespace HY.ApiService.Services
             _messageRepository = messageRepository;
             _messageActionRepository = messageActionRepository;
             _groupMemberRepository = groupMemberRepository;
+            _syncEventRepository = syncEventRepository;
         }
 
 
@@ -61,7 +64,34 @@ namespace HY.ApiService.Services
                 Action_Type = actiontype,
                 Created_At = DateTime.UtcNow,
             };
-            return await _messageActionRepository.InsertMessageAction(messageActionEntity);
+            var result = await _db.Ado.UseTranAsync(async () =>
+            {
+                var inserted = await _messageActionRepository.InsertMessageAction(messageActionEntity);
+                if (!inserted) throw new Exception("保存消息操作失败");
+
+                if (actiontype == MessageActionType.Delete)
+                {
+                    var targetId = messageEntity.Chat_Type == ChatType.Private
+                        ? (messageEntity.Sender_Id == userId ? messageEntity.Target_Id : messageEntity.Sender_Id)
+                        : messageEntity.Target_Id;
+
+                    var chat = await _chatRepository.GetChatByUserIdAndType(userId, targetId, messageEntity.Chat_Type);
+
+                    var events = new List<SyncEventEntity>
+                    {
+                        SyncEventFactory.Create(userId, SyncEventTypes.MessageDeleted, messageId, chat?.Id ?? 0)
+                    };
+
+                    if (chat != null)
+                    {
+                        events.Add(SyncEventFactory.Create(userId, SyncEventTypes.ChatChanged, chat.Id));
+                    }
+
+                    if (!await _syncEventRepository.InsertSyncEventsAsync(events)) throw new Exception("写入消息删除同步事件失败");
+                }
+            });
+
+            return result.IsSuccess;
         }
 
 
@@ -81,10 +111,14 @@ namespace HY.ApiService.Services
                 messageDto.Id = await _messageRepository.InsertMessage(messageEntity);
                 if (messageDto.Id == 0) throw new Exception("保存消息失败");
 
+                // 同步事件流
+                List<ChatEntity> eventChats;
+
                 // 更新会话的最后一条消息
                 if (messageDto.Chat_Type == ChatType.Private)
                 {
                     // 单人
+                    eventChats = new List<ChatEntity>();
 
                     var senderChatEntity = await _chatRepository.GetChatByUserIdAndType(messageDto.Sender_Id, messageDto.Target_Id, ChatType.Private);
                     if (senderChatEntity != null)
@@ -95,6 +129,8 @@ namespace HY.ApiService.Services
                         senderChatEntity.Last_Msg_Time = messageDto.Created_At;
                         var bol = await _chatRepository.UpdateChat(senderChatEntity);
                         if (!bol) throw new Exception("更新发送者聊天记录失败");
+
+                        eventChats.Add(senderChatEntity);
                     }
 
                     var receiverChatEntity = await _chatRepository.GetChatByUserIdAndType(messageDto.Target_Id, messageDto.Sender_Id, ChatType.Private);
@@ -106,6 +142,8 @@ namespace HY.ApiService.Services
                         receiverChatEntity.Last_Msg_Time = messageDto.Created_At;
                         var bol = await _chatRepository.UpdateChat(receiverChatEntity);
                         if (!bol) throw new Exception("更新接收者聊天记录失败");
+
+                        eventChats.Add(receiverChatEntity);
                     }
                 }
                 else if (messageDto.Chat_Type == ChatType.Group)
@@ -137,11 +175,22 @@ namespace HY.ApiService.Services
 
                     var bol = await _chatRepository.UpdateChats(memberChatEntities);
                     if (!bol) throw new Exception("更新群成员聊天记录失败");
+
+                    eventChats = memberChatEntities;
                 }
                 else
                 {
                     throw new Exception("无效的聊天类型");
                 }
+
+                var syncEvents = new List<SyncEventEntity>();
+                foreach (var chat in eventChats)
+                {
+                    syncEvents.Add(SyncEventFactory.Create(chat.User_Id, SyncEventTypes.MessageCreated, messageDto.Id, chat.Id));
+                    syncEvents.Add(SyncEventFactory.Create(chat.User_Id, SyncEventTypes.ChatChanged, chat.Id));
+                }
+
+                if (!await _syncEventRepository.InsertSyncEventsAsync(syncEvents)) throw new Exception("写入新消息同步事件失败");
             });
 
             // ---------- 事务结束 ----------
@@ -234,7 +283,7 @@ namespace HY.ApiService.Services
 
                     if (senderChat != null) eventChats.Add(senderChat);
                     if (receiverChat != null) eventChats.Add(receiverChat);
-        }
+                }
                 else if (message.Chat_Type == ChatType.Group)
                 {
                     var members = await _groupMemberRepository.GetGroupMembersByGroupId(message.Target_Id);
@@ -245,11 +294,14 @@ namespace HY.ApiService.Services
                     throw new Exception("无效的聊天类型");
                 }
 
-        public async Task<List<MessageDto>> GetPrivateChatMessages(long currentUserId, long targetUserId, long skipMessageId, int take)
-        {
-            var messageEntities = await _messageRepository.GetPrivateChatMessages(currentUserId, targetUserId, skipMessageId, take);
+                var syncEvents = new List<SyncEventEntity>();
+                foreach (var chat in eventChats)
+                {
+                    syncEvents.Add(SyncEventFactory.Create(chat.User_Id, SyncEventTypes.MessageRecalled, messageId, chat.Id));
+                    syncEvents.Add(SyncEventFactory.Create(chat.User_Id, SyncEventTypes.ChatChanged, chat.Id));
+                }
 
-            var messageDtos = messageEntities.Adapt<List<MessageDto>>();
+                if (!await _syncEventRepository.InsertSyncEventsAsync(syncEvents)) throw new Exception("写入消息撤回同步事件失败");
             });
 
             return result.IsSuccess;
