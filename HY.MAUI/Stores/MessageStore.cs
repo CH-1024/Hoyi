@@ -1,4 +1,5 @@
 ﻿using HY.MAUI.Dtos;
+using HY.MAUI.Interfaces;
 using HY.MAUI.Models;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,17 @@ namespace HY.MAUI.Stores
 {
     public class MessageStore
     {
+        readonly IGlobalCache _globalCache;
+
+
         private readonly Dictionary<long, ObservableCollection<MessageVM>> _messages = new();
+
+
+        public MessageStore(IGlobalCache globalCache)
+        {
+            _globalCache = globalCache;
+        }
+
 
         public ObservableCollection<MessageVM> GetMessages(long chatId)
         {
@@ -59,7 +70,8 @@ namespace HY.MAUI.Stores
 
         public void Insert(long chatId, MessageVM messageVM, int index = 0)
         {
-            AddIfNotExists(chatId, messageVM);
+            var chatMessages = GetMessages(chatId);
+            chatMessages.Insert(0, messageVM);
         }
 
         public void Remove(long chatId)

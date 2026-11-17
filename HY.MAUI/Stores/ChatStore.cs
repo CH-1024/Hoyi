@@ -12,18 +12,29 @@ namespace HY.MAUI.Stores
 {
     public class ChatStore
     {
+        readonly IGlobalCache _globalCache;
+
+
         public ObservableCollection<ChatVM> Chats { get; } = new();
+
+
+        public ChatStore(IGlobalCache globalCache)
+        {
+            _globalCache = globalCache;
+        }
 
         public ChatVM? GetChat(long chatId)
         {
             return Chats.FirstOrDefault(x => x.Id == chatId);
         }
 
-        public ChatVM? GetChat(long currentUserId, MessageDto messageDto)
+        public ChatVM? GetChat(MessageDto messageDto)
         {
+            var currentUser = _globalCache.GetCurrentUser();
+
             if (messageDto.Chat_Type == ChatType.Private)
             {
-                var targetId = currentUserId == messageDto.Sender_Id
+                var targetId = currentUser.Id == messageDto.Sender_Id
                     ? messageDto.Target_Id
                     : messageDto.Sender_Id;
 
@@ -98,9 +109,9 @@ namespace HY.MAUI.Stores
             }
         }
 
-        public void ReplaceSnapshot(IEnumerable<ChatVM> chats)
+        public void ReplaceSnapshot(IEnumerable<ChatVM> chatVMs)
         {
-            var incoming = chats.ToList();
+            var incoming = chatVMs.ToList();
             var ids = incoming.Select(x => x.Id).ToHashSet();
 
             foreach (var stale in Chats.Where(x => !ids.Contains(x.Id)).ToList())

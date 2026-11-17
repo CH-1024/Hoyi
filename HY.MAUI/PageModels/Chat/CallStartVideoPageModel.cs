@@ -6,8 +6,8 @@ using HY.MAUI.Communication.SignalR;
 using HY.MAUI.Dtos;
 using HY.MAUI.Enums;
 using HY.MAUI.Interfaces;
-using HY.MAUI.Mapping;
 using HY.MAUI.Models.MsgVM;
+using HY.MAUI.Services;
 using HY.MAUI.Stores;
 using HY.MAUI.Tools;
 using SIPSorcery.Net;
@@ -26,6 +26,7 @@ namespace HY.MAUI.PageModels.Chat
     public partial class CallStartVideoPageModel : ObservableObject, IQueryAttributable
     {
         readonly IGlobalCache _globalCache;
+        readonly IGlobalMapper _globalMapper;
         readonly ChatHubSignalR _chatHub;
         readonly ChatStore _chatStore;
         readonly ContactStore _contactStore;
@@ -77,9 +78,10 @@ namespace HY.MAUI.PageModels.Chat
         readonly object _remoteLock = new object();
 
 
-        public CallStartVideoPageModel(IGlobalCache globalCache, ChatHubSignalR chatHub, ChatStore chatStore, ContactStore contactStore, CallApi callApi)
+        public CallStartVideoPageModel(IGlobalCache globalCache, IGlobalMapper globalMapper, ChatHubSignalR chatHub, ChatStore chatStore, ContactStore contactStore, CallApi callApi)
         {
             _globalCache = globalCache;
+            _globalMapper = globalMapper;
             _chatHub = chatHub;
             _chatStore = chatStore;
             _contactStore = contactStore;
@@ -128,14 +130,12 @@ namespace HY.MAUI.PageModels.Chat
 
         private Task<bool> OnReceiveMessage_ChatHub(MessageDto msgDto)
         {
-            var currentUser = _globalCache.GetCurrentUser();
-            var chat = _chatStore.GetChat(currentUser.Id, msgDto);
+            var chat = _chatStore.GetChat(msgDto);
             if (chat != null && chat.Type == ChatType.Private)
             {
                 // 私聊 从联系人列表获取发送者信息
 
-                var contact = _contactStore.GetContact(msgDto.Sender_Id);
-                var messageVM = msgDto.ToVM(currentUser.Id, contact?.Avatar, contact?.Nickname);
+                var messageVM = _globalMapper.ToVM(msgDto);
                 if (messageVM is CallVideoMessageVM videoCallMsg && videoCallMsg.CallId == _callId)
                 {
                     if (!messageVM.IsSelf)

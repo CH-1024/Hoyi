@@ -7,7 +7,6 @@ using HY.MAUI.Communication.SignalR.Requests;
 using HY.MAUI.Dtos;
 using HY.MAUI.Enums;
 using HY.MAUI.Interfaces;
-using HY.MAUI.Mapping;
 using HY.MAUI.Models;
 using HY.MAUI.Models.MsgVM;
 using HY.MAUI.Pages.Chat;
@@ -27,12 +26,13 @@ namespace HY.MAUI.PageModels.Login
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IGlobalCache _globalCache;
+        private readonly IGlobalMapper _globalMapper;
         private readonly ILoginService _loginService;
         private readonly ITokenProvider _tokenProvider;
         private readonly IAuthService _authService;
 
         private readonly ChatHubSignalR _chatHub;
-        private readonly SyncEventSyncService _syncEventSyncService;
+        private readonly ISyncEventSyncService _syncEventSyncService;
 
         private readonly UserApi _userApi;
         private readonly ChatApi _chatApi;
@@ -58,14 +58,15 @@ namespace HY.MAUI.PageModels.Login
 
 
 
-        public LoadingPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, ILoginService loginService, ITokenProvider tokenProvider,
-                                IAuthService authService, ChatHubSignalR chatHub, SyncEventSyncService syncEventSyncService,
+        public LoadingPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, IGlobalMapper globalMapper, ILoginService loginService, ITokenProvider tokenProvider,
+                                IAuthService authService, ChatHubSignalR chatHub, ISyncEventSyncService syncEventSyncService,
                                 UserApi userApi, ChatApi chatApi, ContactApi contactApi, MessageApi messageApi, SyncApi syncApi,
                                 ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore,
                                 GlobalBinding globalBinding)
         {
             _serviceProvider = serviceProvider;
             _globalCache = globalCache;
+            _globalMapper = globalMapper;
             _loginService = loginService;
             _tokenProvider = tokenProvider;
             _authService = authService;
@@ -124,7 +125,7 @@ namespace HY.MAUI.PageModels.Login
                 return;
             }
 
-            if (!await RefreshCurrentUser(userDto.ToVM()))
+            if (!await RefreshCurrentUser(_globalMapper.ToVM(userDto)))
             {
                 _loginService.Logout();
                 _tokenProvider.Clear();
@@ -213,7 +214,7 @@ namespace HY.MAUI.PageModels.Login
                 var contactDtos = resp.GetValue<List<ContactDto>>("Contacts") ?? [];
                 foreach (var contactDto in contactDtos)
                 {
-                    _contactStore.Upsert(contactDto.ToVM());
+                    _contactStore.Upsert(_globalMapper.ToVM(contactDto));
                 }
             }
         }
@@ -228,7 +229,7 @@ namespace HY.MAUI.PageModels.Login
                 var contactRequestDtos = resp.GetValue<List<ContactRequestDto>>("ContactRequests") ?? [];
                 foreach (var contactRequestDto in contactRequestDtos)
                 {
-                    _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
+                    _contactRequestStore.Upsert(_globalMapper.ToVM(contactRequestDto));
                 }
 
                 _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
@@ -246,7 +247,7 @@ namespace HY.MAUI.PageModels.Login
                 var chatDtos = resp.GetValue<List<ChatDto>>("Chats") ?? [];
                 foreach (var chatDto in chatDtos)
                 {
-                    _chatStore.Upsert(chatDto.ToVM());
+                    _chatStore.Upsert(_globalMapper.ToVM(chatDto));
                 }
 
                 _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();
@@ -268,8 +269,7 @@ namespace HY.MAUI.PageModels.Login
                     {
                         foreach (var messageDto in messageDtos)
                         {
-                            var contact = _contactStore.GetContact(messageDto.Sender_Id);
-                            var messageVM = messageDto.ToVM(currentUser.Id, contact?.Avatar, contact?.Nickname);
+                            var messageVM = _globalMapper.ToVM(messageDto);
                             _messageStore.Insert(chat.Id, messageVM);
                         }
                     }

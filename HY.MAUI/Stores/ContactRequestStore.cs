@@ -13,12 +13,13 @@ namespace HY.MAUI.Stores
     {
         readonly IGlobalCache _globalCache;
 
+
+        public ObservableCollection<ContactRequestVM> ContactRequests { get; } = new();
+
         public ContactRequestStore(IGlobalCache globalCache)
         {
             _globalCache = globalCache;
         }
-
-        public ObservableCollection<ContactRequestVM> ContactRequests { get; } = new();
 
         public void Upsert(ContactRequestVM contactRequestVM)
         {
@@ -48,9 +49,9 @@ namespace HY.MAUI.Stores
             }
         }
 
-        public void ReplaceSnapshot(IEnumerable<ContactRequestVM> requests)
+        public void ReplaceSnapshot(IEnumerable<ContactRequestVM> contactRequestVMs)
         {
-            var incoming = requests.ToList();
+            var incoming = contactRequestVMs.ToList();
             var keys = incoming.Select(x => (x.Sender_Id, x.Receiver_Id)).ToHashSet();
 
             foreach (var stale in ContactRequests.Where(x => !keys.Contains((x.Sender_Id, x.Receiver_Id))).ToList())

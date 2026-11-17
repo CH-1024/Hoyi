@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
-namespace HY.MAUI.Mapping
+namespace HY.MAUI.Extensions.Mapping
 {
     public static class MessageMapping
     {

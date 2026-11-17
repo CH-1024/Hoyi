@@ -5,7 +5,6 @@ using HY.MAUI.Communication.SignalR;
 using HY.MAUI.Dtos;
 using HY.MAUI.Enums;
 using HY.MAUI.Interfaces;
-using HY.MAUI.Mapping;
 using HY.MAUI.Models;
 using HY.MAUI.Services;
 using HY.MAUI.Stores;
@@ -21,6 +20,7 @@ namespace HY.MAUI.PageModels.Contact
 
         private readonly IServiceProvider _serviceProvider;
         private readonly IGlobalCache _globalCache;
+        private readonly IGlobalMapper _globalMapper;
         private readonly ContactApi _contactApi;
 
         private readonly GlobalBinding _globalBinding;
@@ -41,11 +41,12 @@ namespace HY.MAUI.PageModels.Contact
 
 
 
-        public StrangerDetailPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, ContactApi contactApi, GlobalBinding globalBinding,
+        public StrangerDetailPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, IGlobalMapper globalMapper, ContactApi contactApi, GlobalBinding globalBinding,
                                        ContactRequestStore contactRequestStore, ContactStore contactStore, ChatStore chatStore, MessageStore messageStore, ChatHubSignalR chatHub)
         {
             _serviceProvider = serviceProvider;
             _globalCache = globalCache;
+            _globalMapper = globalMapper;
             _contactApi = contactApi;
 
             _globalBinding = globalBinding;
@@ -97,7 +98,7 @@ namespace HY.MAUI.PageModels.Contact
             var chatDto = result.GetValue<ChatDto>("Chat");
             var messageDto = result.GetValue<MessageDto>("Message");
 
-            _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
+            _contactRequestStore.Upsert(_globalMapper.ToVM(contactRequestDto));
 
             // 更新全局未读消息数
             _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
@@ -105,11 +106,11 @@ namespace HY.MAUI.PageModels.Contact
 
             if (contactRequestDto.Relation_Request_Status == RelationRequestStatus.Accepted)
             {
-                _contactStore.Upsert(contactDto!.ToVM());
+                _contactStore.Upsert(_globalMapper.ToVM(contactDto!));
 
-                _chatStore.UpsertAndSetTop(chatDto!.ToVM());
+                _chatStore.UpsertAndSetTop(_globalMapper.ToVM(chatDto!));
 
-                _messageStore.Add(chatDto!.Id, messageDto!.ToVM(currentUser.Id, contactDto!.Avatar, contactDto!.Nickname));
+                _messageStore.Add(chatDto!.Id, _globalMapper.ToVM(messageDto!));
 
                 // 更新全局未读消息数
                 _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();

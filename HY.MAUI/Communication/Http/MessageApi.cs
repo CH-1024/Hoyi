@@ -1,6 +1,7 @@
 ﻿using HY.MAUI.Enums;
-using HY.MAUI.Mapping;
+using HY.MAUI.Interfaces;
 using HY.MAUI.Models;
+using HY.MAUI.Services;
 using System;
 using System.Collections.Generic;
 using System.Net.Http.Json;
@@ -10,9 +11,11 @@ namespace HY.MAUI.Communication.Http
 {
     public class MessageApi : BaseApi
     {
-        public MessageApi(HttpClient http) : base(http)
-        {
+        private readonly IGlobalMapper _globalMapper;
 
+        public MessageApi(HttpClient http, IGlobalMapper globalMapper) : base(http)
+        {
+            _globalMapper = globalMapper;
         }
 
 
@@ -25,7 +28,7 @@ namespace HY.MAUI.Communication.Http
         {
             try
             {
-                var resp = await PostAsJsonAsync(ApiUrl.SendMessage, messageVM.ToDto());
+                var resp = await PostAsJsonAsync(ApiUrl.SendMessage, _globalMapper.ToDto(messageVM));
                 if (resp?.IsSucc == true)
                 {
                     var msgId = resp.GetValue<long>("MessageId");

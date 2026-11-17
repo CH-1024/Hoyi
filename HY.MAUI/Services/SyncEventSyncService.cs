@@ -2,7 +2,6 @@
 using HY.MAUI.Dtos;
 using HY.MAUI.Enums;
 using HY.MAUI.Interfaces;
-using HY.MAUI.Mapping;
 using HY.MAUI.Models;
 using HY.MAUI.Stores;
 using HY.MAUI.Tools;
@@ -14,11 +13,12 @@ namespace HY.MAUI.Services
     /// Replays the durable per-user event stream. A page cursor is persisted only after
     /// the required snapshots and all events in that page have been applied successfully.
     /// </summary>
-    public sealed class SyncEventSyncService
+    public class SyncEventSyncService : ISyncEventSyncService
     {
         private const int PageSize = 100;
 
         private readonly IGlobalCache _globalCache;
+        private readonly IGlobalMapper _globalMapper;
         private readonly ILoginService _loginService;
 
         private readonly SyncApi _syncApi;
@@ -36,11 +36,13 @@ namespace HY.MAUI.Services
 
         private readonly SemaphoreSlim _syncLock = new(1, 1);
 
-        public SyncEventSyncService(IGlobalCache globalCache, ILoginService loginService, 
-                                    SyncApi syncApi, UserApi userApi, ContactApi contactApi, ChatApi chatApi, SyncCursorStore cursorStore, 
-                                    ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore, GlobalBinding globalBinding)
+        public SyncEventSyncService(GlobalBinding globalBinding, IGlobalCache globalCache, IGlobalMapper globalMapper, ILoginService loginService, 
+                                    SyncApi syncApi, UserApi userApi, ContactApi contactApi, ChatApi chatApi, /*SyncCursorStore cursorStore, 
+*/                                  ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore)
         {
+            _globalBinding = globalBinding;
             _globalCache = globalCache;
+            _globalMapper = globalMapper;
             _loginService = loginService;
 
             _syncApi = syncApi;
@@ -53,8 +55,6 @@ namespace HY.MAUI.Services
             _contactStore = contactStore;
             _contactRequestStore = contactRequestStore;
             _messageStore = messageStore;
-
-            _globalBinding = globalBinding;
         }
 
 
@@ -103,10 +103,10 @@ namespace HY.MAUI.Services
                     var response = await _syncApi.GetChanges(cursor, PageSize);
                     if (response?.IsSucc != true) return false;
 
-                    var events = response.GetValue<List<SyncEventDto>>("Events") ?? [];
-                    if (events.Count == 0) return true;
+                    var syncEvents = response.GetValue<List<SyncEventDto>>("Events") ?? [];
+                    if (syncEvents.Count == 0) return true;
 
-                    var orderedEvents = events.OrderBy(x => x.Id).ToList();
+                    var orderedEvents = syncEvents.OrderBy(x => x.Id).ToList();
 
                     // First determine which snapshots are invalidated by this event page.
                     var refreshContacts = false;
@@ -114,9 +114,9 @@ namespace HY.MAUI.Services
                     var refreshChats = false;
                     var refreshProfile = false;
 
-                    foreach (var item in orderedEvents)
+                    foreach (var syncEvent in orderedEvents)
                     {
-                        switch (item.Event_Type)
+                        switch (syncEvent.Event_Type)
                         {
                             case SyncEventTypes.MessageCreated:
                             case SyncEventTypes.MessageRecalled:
@@ -148,26 +148,26 @@ namespace HY.MAUI.Services
                     if (refreshChats && !await RefreshChatsAsync()) return false;
 
                     // Apply message and read events in strict per-user sequence order.
-                    foreach (var item in orderedEvents)
+                    foreach (var syncEvent in orderedEvents)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        switch (item.Event_Type)
+                        switch (syncEvent.Event_Type)
                         {
                             case SyncEventTypes.MessageCreated:
-                                if (!await ApplyMessageCreatedAsync(user.Id, item)) return false;
+                                if (!await ApplyMessageCreatedAsync(user.Id, syncEvent)) return false;
                                 break;
 
                             case SyncEventTypes.MessageRecalled:
-                                await ApplyMessageStatusAsync(item.Entity_Id, MessageStatus.Recalled);
+                                await ApplyMessageStatusAsync(syncEvent.Entity_Id, MessageStatus.Recalled);
                                 break;
 
                             case SyncEventTypes.MessageDeleted:
-                                await ApplyMessageStatusAsync(item.Entity_Id, MessageStatus.Deleted);
+                                await ApplyMessageStatusAsync(syncEvent.Entity_Id, MessageStatus.Deleted);
                                 break;
 
                             case SyncEventTypes.ChatRead:
-                                await ApplyChatReadAsync(item.Entity_Id);
+                                await ApplyChatReadAsync(syncEvent.Entity_Id);
                                 break;
                         }
                     }
@@ -201,12 +201,12 @@ namespace HY.MAUI.Services
             }
         }
 
-        private async Task<bool> ApplyMessageCreatedAsync(long currentUserId, SyncEventDto item)
+        private async Task<bool> ApplyMessageCreatedAsync(long currentUserId, SyncEventDto syncEvent)
         {
-            if (item.Related_Id <= 0 || item.Entity_Id <= 0)
+            if (syncEvent.Related_Id <= 0 || syncEvent.Entity_Id <= 0)
                 return true;
 
-            var response = await _syncApi.GetMessage(item.Related_Id, item.Entity_Id);
+            var response = await _syncApi.GetMessage(syncEvent.Related_Id, syncEvent.Entity_Id);
             if (response?.IsSucc != true)
             {
                 // The message may already have been deleted for this user, or the chat
@@ -219,26 +219,25 @@ namespace HY.MAUI.Services
 
             await UI.RunTask(() =>
             {
-                var chat = _chatStore.GetChat(item.Related_Id);
-                if (chat == null) return;
+                var chatVM = _chatStore.GetChat(syncEvent.Related_Id);
+                if (chatVM == null) return;
 
-                if (chat.Type == ChatType.Private)
+                if (chatVM.Type == ChatType.Private)
                 {
                     // 私聊 从联系人列表获取发送者信息
 
-                    var contact = _contactStore.GetContact(messageDto.Sender_Id);
-                    var messageVM = messageDto.ToVM(currentUserId, contact?.Avatar, contact?.Nickname);
-                    _messageStore.AddIfNotExists(chat.Id, messageVM);
+                    var messageVM = _globalMapper.ToVM(messageDto);
+                    _messageStore.AddIfNotExists(chatVM.Id, messageVM);
 
-                    if (chat.Last_Msg == null || messageDto.Id >= chat.Last_Msg.Id)
+                    if (chatVM.Last_Msg == null || messageDto.Id >= chatVM.Last_Msg.Id)
                     {
-                        chat.Last_Msg = messageVM;
-                        chat.Is_Deleted = false;
+                        chatVM.Last_Msg = messageVM;
+                        chatVM.Is_Deleted = false;
 
-                        _chatStore.SetTop(chat.Id);
+                        _chatStore.SetTop(chatVM.Id);
                     }
                 }
-                else if (chat.Type == ChatType.Group)
+                else if (chatVM.Type == ChatType.Group)
                 {
                     // 群聊 从群成员列表获取发送者信息
                     throw new NotImplementedException("群聊消息处理未实现");
@@ -256,8 +255,8 @@ namespace HY.MAUI.Services
         {
             await UI.RunTask(() =>
             {
-                var message = _messageStore.GetMessage(messageId);
-                if (message != null) message.Message_Status = status;
+                var messageVM = _messageStore.GetMessage(messageId);
+                if (messageVM != null) messageVM.Message_Status = status;
             });
         }
 
@@ -265,8 +264,8 @@ namespace HY.MAUI.Services
         {
             await UI.RunTask(() =>
             {
-                var chat = _chatStore.GetChat(chatId);
-                if (chat != null) chat.Unread_Count = 0;
+                var chatVM = _chatStore.GetChat(chatId);
+                if (chatVM != null) chatVM.Unread_Count = 0;
             });
         }
 
@@ -275,10 +274,10 @@ namespace HY.MAUI.Services
             var response = await _contactApi.GetContacts();
             if (response?.IsSucc != true) return false;
 
-            var dtos = response.GetValue<List<ContactDto>>("Contacts") ?? [];
-            var items = dtos.Select(x => x.ToVM()).ToList();
+            var contactDtos = response.GetValue<List<ContactDto>>("Contacts") ?? [];
+            var contactVMs = contactDtos.Select(_globalMapper.ToVM).ToList();
 
-            await UI.RunTask(() => _contactStore.ReplaceSnapshot(items));
+            await UI.RunTask(() => _contactStore.ReplaceSnapshot(contactVMs));
 
             return true;
         }
@@ -289,10 +288,10 @@ namespace HY.MAUI.Services
             if (response?.IsSucc != true)
                 return false;
 
-            var dtos = response.GetValue<List<ContactRequestDto>>("ContactRequests") ?? [];
-            var items = dtos.Select(x => x.ToVM(userId)).ToList();
+            var contactRequestDtos = response.GetValue<List<ContactRequestDto>>("ContactRequests") ?? [];
+            var contactRequestVMs = contactRequestDtos.Select(_globalMapper.ToVM).ToList();
 
-            await UI.RunTask(() => _contactRequestStore.ReplaceSnapshot(items));
+            await UI.RunTask(() => _contactRequestStore.ReplaceSnapshot(contactRequestVMs));
 
             return true;
         }
@@ -303,30 +302,30 @@ namespace HY.MAUI.Services
             if (response?.IsSucc != true)
                 return false;
 
-            var dtos = response.GetValue<List<ChatDto>>("Chats") ?? [];
-            var items = dtos.Select(dto => dto.ToVM()).ToList();
+            var chatDtos = response.GetValue<List<ChatDto>>("Chats") ?? [];
+            var chatVMs = chatDtos.Select(_globalMapper.ToVM).ToList();
 
             await UI.RunTask(() =>
             {
                 // Merge last-message references on the UI thread because MessageStore
                 // contains ObservableCollections which may be updated by live SignalR events.
-                for (var i = 0; i < items.Count; i++)
+                for (var i = 0; i < chatVMs.Count; i++)
                 {
-                    var lastMessageId = dtos[i].Last_Msg?.Id;
+                    var lastMessageId = chatDtos[i].Last_Msg?.Id;
                     if (lastMessageId is long id)
                     {
-                        var loadedMessage = _messageStore.GetMessage(id);
-                        if (loadedMessage != null) items[i].Last_Msg = loadedMessage;
+                        var message = _messageStore.GetMessage(id);
+                        if (message != null) chatVMs[i].Last_Msg = message;
                     }
                 }
 
                 var currentIds = _chatStore.Chats.Select(x => x.Id).ToHashSet();
-                var incomingIds = items.Select(x => x.Id).ToHashSet();
+                var incomingIds = chatVMs.Select(x => x.Id).ToHashSet();
 
                 foreach (var removedChatId in currentIds.Except(incomingIds))
                     _messageStore.Remove(removedChatId);
 
-                _chatStore.ReplaceSnapshot(items);
+                _chatStore.ReplaceSnapshot(chatVMs);
             });
 
             return true;
@@ -337,11 +336,11 @@ namespace HY.MAUI.Services
             var response = await _userApi.GetCurrentUser();
             if (response?.IsSucc != true || response.GetValue<UserDto>("User") is not UserDto userDto) return false;
 
-            var user = userDto.ToVM();
+            var userVM = _globalMapper.ToVM(userDto);
 
-            await _loginService.SetCurrentUser(user);
+            await _loginService.SetCurrentUser(userVM);
 
-            _globalCache.UpdateCurrentUser(user);
+            _globalCache.UpdateCurrentUser(userVM);
 
             return true;
         }

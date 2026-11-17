@@ -6,7 +6,6 @@ using HY.MAUI.Communication.Http;
 using HY.MAUI.Communication.SignalR;
 using HY.MAUI.Dtos;
 using HY.MAUI.Interfaces;
-using HY.MAUI.Mapping;
 using HY.MAUI.Pages.Login;
 using HY.MAUI.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +19,7 @@ namespace HY.MAUI.PageModels.Login
     public partial class LoginPageModel : ObservableObject
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly IGlobalMapper _globalMapper;
         private readonly ILoginService _loginService;
         private readonly ITokenProvider _tokenProvider;
         private readonly LoginApi _loginApi;
@@ -39,9 +39,10 @@ namespace HY.MAUI.PageModels.Login
         }
 
 
-        public LoginPageModel(IServiceProvider serviceProvider, ILoginService loginService, ITokenProvider tokenProvider, LoginApi loginApi)
+        public LoginPageModel(IServiceProvider serviceProvider, IGlobalMapper globalMapper, ILoginService loginService, ITokenProvider tokenProvider, LoginApi loginApi)
         {
             _serviceProvider = serviceProvider;
+            _globalMapper = globalMapper;
             _loginService = loginService;
             _tokenProvider = tokenProvider;
             _loginApi = loginApi;
@@ -84,7 +85,7 @@ namespace HY.MAUI.PageModels.Login
                 await _tokenProvider.SetAsync(tokens!);
 
                 var userDto = loginResp.GetValue<UserDto>("User")!;
-                await _loginService.Login(userDto.ToVM());
+                await _loginService.Login(_globalMapper.ToVM(userDto));
 
                 var loadingPage = _serviceProvider.GetRequiredService<LoadingPage>();
                 Application.Current!.Windows[0].Page = new NavigationPage(loadingPage);

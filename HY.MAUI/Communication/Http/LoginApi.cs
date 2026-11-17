@@ -20,6 +20,7 @@ namespace HY.MAUI.Communication.Http
             _loginService = loginService;
         }
 
+
         public async Task<bool> Ping()
         {
             try

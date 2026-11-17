@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HY.MAUI.Mapping
+namespace HY.MAUI.Extensions.Mapping
 {
     public static class ChatMapping
     {

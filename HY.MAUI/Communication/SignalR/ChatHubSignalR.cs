@@ -6,7 +6,6 @@ using HY.MAUI.Configurations;
 using HY.MAUI.Dtos;
 using HY.MAUI.Enums;
 using HY.MAUI.Interfaces;
-using HY.MAUI.Mapping;
 using HY.MAUI.Models;
 using HY.MAUI.Models.MsgVM;
 using HY.MAUI.Pages.Login;
@@ -27,6 +26,7 @@ namespace HY.MAUI.Communication.SignalR
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IGlobalCache _globalCache;
+        private readonly IGlobalMapper _globalMapper;
         private readonly ILoginService _loginService;
         private readonly ITokenProvider _tokenProvider;
         private readonly INotificationManagerService _notificationManager;
@@ -44,7 +44,7 @@ namespace HY.MAUI.Communication.SignalR
 
         public HubConnectionState State => _connection?.State ?? HubConnectionState.Disconnected;
 
-        public ChatHubSignalR(IServiceProvider serviceProvider, IGlobalCache globalCache, ILoginService loginService, ITokenProvider tokenProvider,
+        public ChatHubSignalR(IServiceProvider serviceProvider, IGlobalCache globalCache, IGlobalMapper globalMapper, ILoginService loginService, ITokenProvider tokenProvider,
                               INotificationManagerService notificationManager, GlobalBinding globalBinding,
                               ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore)
         {
@@ -52,6 +52,7 @@ namespace HY.MAUI.Communication.SignalR
 
             _serviceProvider = serviceProvider;
             _globalCache = globalCache;
+            _globalMapper = globalMapper;
             _loginService = loginService;
             _tokenProvider = tokenProvider;
             _notificationManager = notificationManager;
@@ -355,16 +356,14 @@ namespace HY.MAUI.Communication.SignalR
 
         private async Task<bool> OnReceiveMessage(MessageDto messageDto)
         {
-            var currentUser = _globalCache.GetCurrentUser();
             MessageVM? messageVM = null;
 
-            var chat = _chatStore.GetChat(currentUser.Id, messageDto);
+            var chat = _chatStore.GetChat(messageDto);
             if (chat != null && chat.Type == ChatType.Private)
             {
                 // 私聊 从联系人列表获取发送者信息
 
-                var contact = _contactStore.GetContact(messageDto.Sender_Id);
-                messageVM = messageDto.ToVM(currentUser.Id, contact?.Avatar, contact?.Nickname);
+                messageVM = _globalMapper.ToVM(messageDto);
                 _messageStore.Add(chat.Id, messageVM);
 
                 chat.Last_Msg = messageVM;
@@ -426,8 +425,7 @@ namespace HY.MAUI.Communication.SignalR
 
         private void OnRecallMessage(MessageDto messageDto)
         {
-            var currentUser = _globalCache.GetCurrentUser();
-            var chat = _chatStore.GetChat(currentUser.Id, messageDto);
+            var chat = _chatStore.GetChat(messageDto);
             if (chat != null)
             {
                 var message = _messageStore.GetMessages(chat.Id).FirstOrDefault(m => m.Id == messageDto.Id);
@@ -445,8 +443,7 @@ namespace HY.MAUI.Communication.SignalR
 
         private void OnDeleteMessage(MessageDto messageDto)
         {
-            var currentUser = _globalCache.GetCurrentUser();
-            var chat = _chatStore.GetChat(currentUser.Id, messageDto);
+            var chat = _chatStore.GetChat(messageDto);
             if (chat != null)
             {
                 var message = _messageStore.GetMessages(chat.Id).FirstOrDefault(m => m.Id == messageDto.Id);
@@ -464,9 +461,7 @@ namespace HY.MAUI.Communication.SignalR
 
         private async Task<bool> OnRequestContact(ContactRequestDto contactRequestDto, ContactDto? contactDto, ChatDto? chatDto, MessageDto? messageDto)
         {
-            var currentUser = _globalCache.GetCurrentUser();
-
-            _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
+            _contactRequestStore.Upsert(_globalMapper.ToVM(contactRequestDto));
 
             // 更新全局未读消息数
             _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
@@ -474,12 +469,11 @@ namespace HY.MAUI.Communication.SignalR
 
             if (contactRequestDto.Relation_Request_Status == RelationRequestStatus.Accepted)
             {
-                var messageVM = messageDto!.ToVM(currentUser.Id, contactDto?.Avatar, contactDto?.Nickname);
+                _contactStore.Upsert(_globalMapper.ToVM(contactDto!));
 
-                _contactStore.Upsert(contactDto!.ToVM());
+                _chatStore.UpsertAndSetTop(_globalMapper.ToVM(chatDto!));
 
-                _chatStore.UpsertAndSetTop(chatDto!.ToVM());
-
+                var messageVM = _globalMapper.ToVM(messageDto!);
                 _messageStore.Add(chatDto!.Id, messageVM);
 
 
@@ -531,7 +525,7 @@ namespace HY.MAUI.Communication.SignalR
         {
             var currentUser = _globalCache.GetCurrentUser();
 
-            _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
+            _contactRequestStore.Upsert(_globalMapper.ToVM(contactRequestDto));
 
             // 更新全局未读消息数
             _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
@@ -539,11 +533,11 @@ namespace HY.MAUI.Communication.SignalR
 
             if (contactRequestDto.Relation_Request_Status == RelationRequestStatus.Accepted)
             {
-                _contactStore.Upsert(contactDto!.ToVM());
+                _contactStore.Upsert(_globalMapper.ToVM(contactDto!));
 
-                _chatStore.UpsertAndSetTop(chatDto!.ToVM());
+                _chatStore.UpsertAndSetTop(_globalMapper.ToVM(chatDto!));
 
-                _messageStore.Add(chatDto!.Id, messageDto!.ToVM(currentUser.Id, contactDto?.Avatar, contactDto?.Nickname));
+                _messageStore.Add(chatDto!.Id, _globalMapper.ToVM(messageDto!));
 
                 // 更新全局未读消息数
                 _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();

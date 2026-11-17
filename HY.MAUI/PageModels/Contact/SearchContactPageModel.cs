@@ -6,9 +6,9 @@ using HY.MAUI.Communication.SignalR;
 using HY.MAUI.Dtos;
 using HY.MAUI.Enums;
 using HY.MAUI.Interfaces;
-using HY.MAUI.Mapping;
 using HY.MAUI.Models;
 using HY.MAUI.Pages.Contact;
+using HY.MAUI.Services;
 using HY.MAUI.Stores;
 using System;
 using System.Collections.Generic;
@@ -21,13 +21,15 @@ namespace HY.MAUI.PageModels.Contact
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IGlobalCache _globalCache;
+        private readonly IGlobalMapper _globalMapper;
 
         private readonly ContactApi _contactApi;
 
-        public SearchContactPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, ContactApi contactApi)
+        public SearchContactPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, IGlobalMapper globalMapper, ContactApi contactApi)
         {
             _serviceProvider = serviceProvider;
             _globalCache = globalCache;
+            _globalMapper = globalMapper;
             _contactApi = contactApi;
         }
 
@@ -45,7 +47,7 @@ namespace HY.MAUI.PageModels.Contact
                     // 是联系人
                     var parameters = new Dictionary<string, object>
                     {
-                        { "ContactInfo", contact.ToVM() }
+                        { "ContactInfo", _globalMapper.ToVM(contact) }
                     };
 
                     await Shell.Current.GoToAsync(nameof(ContactDetailPage), true, parameters);
@@ -55,7 +57,7 @@ namespace HY.MAUI.PageModels.Contact
                     var parameters = new Dictionary<string, object>
                     {
                         { "Source", 2 },
-                        { "ContactInfo", contact.ToVM() },
+                        { "ContactInfo", _globalMapper.ToVM(contact) },
                     };
                     await Shell.Current.GoToAsync(nameof(StrangerDetailPage), true, parameters);
                 }

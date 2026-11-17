@@ -4,7 +4,6 @@ using HY.MAUI.Communication.Http;
 using HY.MAUI.Dtos;
 using HY.MAUI.Enums;
 using HY.MAUI.Interfaces;
-using HY.MAUI.Mapping;
 using HY.MAUI.Models;
 using HY.MAUI.Pages.Contact;
 using HY.MAUI.Services;
@@ -19,6 +18,7 @@ namespace HY.MAUI.PageModels.Contact
     public partial class ContactRequestDetailPageModel : ObservableObject, IQueryAttributable
     {
         private readonly IGlobalCache _globalCache;
+        private readonly IGlobalMapper _globalMapper;
 
         private readonly GlobalBinding _globalBinding;
 
@@ -45,9 +45,10 @@ namespace HY.MAUI.PageModels.Contact
         }
 
 
-        public ContactRequestDetailPageModel(IGlobalCache globalCache, GlobalBinding globalBinding, ContactApi contactApi, ChatStore chatStore, MessageStore messageStore, ContactStore contactStore, ContactRequestStore contactRequestStore)
+        public ContactRequestDetailPageModel(IGlobalCache globalCache, IGlobalMapper globalMapper, GlobalBinding globalBinding, ContactApi contactApi, ChatStore chatStore, MessageStore messageStore, ContactStore contactStore, ContactRequestStore contactRequestStore)
         {
             _globalCache = globalCache;
+            _globalMapper = globalMapper;
             _globalBinding = globalBinding;
 
             _contactApi = contactApi;
@@ -85,7 +86,7 @@ namespace HY.MAUI.PageModels.Contact
             var chatDto = resp.GetValue<ChatDto>("Chat");
             var messageDto = resp.GetValue<MessageDto>("Message");
 
-            _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
+            _contactRequestStore.Upsert(_globalMapper.ToVM(contactRequestDto!));
 
             // 更新全局未读消息数
             _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
@@ -93,11 +94,11 @@ namespace HY.MAUI.PageModels.Contact
 
             if (contactRequestDto.Relation_Request_Status == RelationRequestStatus.Accepted)
             {
-                _contactStore.Upsert(contactDto!.ToVM());
+                _contactStore.Upsert(_globalMapper.ToVM(contactDto!));
 
-                _chatStore.UpsertAndSetTop(chatDto!.ToVM());
+                _chatStore.UpsertAndSetTop(_globalMapper.ToVM(chatDto!));
 
-                _messageStore.Add(chatDto!.Id, messageDto!.ToVM(currentUser.Id, contactDto!.Avatar, contactDto!.Nickname));
+                _messageStore.Add(chatDto!.Id, _globalMapper.ToVM(messageDto!));
 
                 // 更新全局未读消息数
                 _globalBinding.UnreadMessageCount = _chatStore.GetUnreadCount();
@@ -120,7 +121,7 @@ namespace HY.MAUI.PageModels.Contact
             //var chatDto = resp.GetValue<ChatDto>("Chat");
             //var messageDto = resp.GetValue<MessageDto>("Message");
 
-            _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
+            _contactRequestStore.Upsert(_globalMapper.ToVM(contactRequestDto!));
 
             // 更新全局未读消息数
             _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
@@ -143,7 +144,7 @@ namespace HY.MAUI.PageModels.Contact
             //var chatDto = resp.GetValue<ChatDto>("Chat");
             //var messageDto = resp.GetValue<MessageDto>("Message");
 
-            _contactRequestStore.Upsert(contactRequestDto.ToVM(currentUser.Id));
+            _contactRequestStore.Upsert(_globalMapper.ToVM(contactRequestDto!));
 
             // 更新全局未读消息数
             _globalBinding.RequestContactCount = _contactRequestStore.GetRequestCount();
@@ -174,14 +175,14 @@ namespace HY.MAUI.PageModels.Contact
                     if (contactDto.Relation_Status == RelationStatus.Friend)
                     {
                         // 是联系人
-                        parameters.Add("ContactInfo", contactDto.ToVM());
+                        parameters.Add("ContactInfo", _globalMapper.ToVM(contactDto));
                         await Shell.Current.GoToAsync(nameof(ContactDetailPage), true, parameters);
                     }
                     else
                     {
                         // 是陌生人
                         parameters.Add("Source", 1);
-                        parameters.Add("ContactInfo", contactDto.ToVM());
+                        parameters.Add("ContactInfo", _globalMapper.ToVM(contactDto));
                         await Shell.Current.GoToAsync(nameof(StrangerDetailPage), true, parameters);
                     }
                 }

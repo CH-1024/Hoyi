@@ -15,8 +15,11 @@ namespace HY.MAUI.Setups
         public static void AddLocalServiceSetup(this IServiceCollection services)
         {
             services.AddSingleton<GlobalBinding>();
+
             services.AddSingleton<IGlobalCache, GlobalCache>();
+            services.AddSingleton<IGlobalMapper, GlobalMapper>();
             services.AddSingleton<ILoginService, LoginService>();
+            services.AddSingleton<ISyncEventSyncService, SyncEventSyncService>();
 
             services.AddSingleton<MessageSendQueue>();
             services.AddSingleton<MessageSendService>();
@@ -28,7 +31,6 @@ namespace HY.MAUI.Setups
             services.AddSingleton<MessageStore>();
 
             services.AddSingleton<SyncCursorStore>();
-            services.AddSingleton<SyncEventSyncService>();
 
 
 #if WINDOWS

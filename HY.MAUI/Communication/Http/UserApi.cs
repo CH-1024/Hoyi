@@ -16,7 +16,6 @@ namespace HY.MAUI.Communication.Http
         }
 
 
-
         public async Task<Response?> GetCurrentUser()
         {
             return await GetAsync(ApiUrl.GetCurrentUser);

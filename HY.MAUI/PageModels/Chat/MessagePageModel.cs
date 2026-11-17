@@ -7,7 +7,6 @@ using HY.MAUI.Communication.SignalR.Requests;
 using HY.MAUI.Dtos;
 using HY.MAUI.Enums;
 using HY.MAUI.Interfaces;
-using HY.MAUI.Mapping;
 using HY.MAUI.Models;
 using HY.MAUI.Models.MsgVM;
 using HY.MAUI.PageModels.Chat.MessageCommands;
@@ -33,6 +32,7 @@ namespace HY.MAUI.PageModels.Chat
         private bool _isNavigatedTo;
         private readonly IServiceProvider _serviceProvider;
         private readonly IGlobalCache _globalCache;
+        private readonly IGlobalMapper _globalMapper;
         private readonly IDispatcher _dispatcher;
 
         private readonly ChatHubSignalR _chatHub;
@@ -104,12 +104,13 @@ namespace HY.MAUI.PageModels.Chat
             set { SetProperty(ref messageCollection, value); }
         }
 
-        public MessagePageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, IDispatcher dispatcher, ChatHubSignalR chatHub, MessageSendService messageSendService,
+        public MessagePageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, IGlobalMapper globalMapper, IDispatcher dispatcher, ChatHubSignalR chatHub, MessageSendService messageSendService,
                                 ChatStore chatStore, MessageStore messageStore, ContactStore contactStore,
                                 ChatApi chatApi, MessageApi messageApi, ContactApi contactApi, FileApi fileApi, LoginApi loginApi, GlobalBinding globalBinding)
         {
             _serviceProvider = serviceProvider;
             _globalCache = globalCache;
+            _globalMapper = globalMapper;
             _dispatcher = dispatcher;
 
             _chatHub = chatHub;
@@ -263,8 +264,7 @@ namespace HY.MAUI.PageModels.Chat
                 {
                     foreach (var messageDto in messageDtos)
                     {
-                        var contact = _contactStore.GetContact(messageDto.Sender_Id);
-                        var messageVM = messageDto.ToVM(_currentUser.Id, contact?.Avatar, contact?.Nickname);
+                        var messageVM = _globalMapper.ToVM(messageDto);
                         _messageStore.Insert(_currentChat.Id, messageVM);
                     }
                 }
@@ -405,14 +405,14 @@ namespace HY.MAUI.PageModels.Chat
                         if (contactDto.Relation_Status == RelationStatus.Friend)
                         {
                             // 是联系人
-                            parameters.Add("ContactInfo", contactDto.ToVM());
+                            parameters.Add("ContactInfo", _globalMapper.ToVM(contactDto));
                             await Shell.Current.GoToAsync(nameof(ContactDetailPage), true, parameters);
                         }
                         else
                         {
                             // 是陌生人
                             parameters.Add("Source", 1);
-                            parameters.Add("ContactInfo", contactDto.ToVM());
+                            parameters.Add("ContactInfo", _globalMapper.ToVM(contactDto));
                             await Shell.Current.GoToAsync(nameof(StrangerDetailPage), true, parameters);
                         }
                     }

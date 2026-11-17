@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace HY.MAUI.Mapping
+namespace HY.MAUI.Extensions.Mapping
 {
     public static class ContactRequestMapping
     {
@@ -28,25 +28,6 @@ namespace HY.MAUI.Mapping
                 Handled_At = dto.Handled_At,
 
                 IsSelf = isSelf,
-            };
-        }
-
-        public static ContactRequestDto ToDto(this ContactRequestVM vm)
-        {
-            return new ContactRequestDto
-            {
-                Id = vm.Id,
-                Sender_Id = vm.Sender_Id,
-                Sender_Avatar = vm.Sender_Avatar,
-                Sender_Nickname = vm.Sender_Nickname,
-                Receiver_Id = vm.Receiver_Id,
-                Receiver_Avatar = vm.Receiver_Avatar,
-                Receiver_Nickname = vm.Receiver_Nickname,
-                Message = vm.Message,
-                Source = vm.Source,
-                Relation_Request_Status = vm.Relation_Request_Status,
-                Created_At = vm.Created_At,
-                Handled_At = vm.Handled_At
             };
         }
 
