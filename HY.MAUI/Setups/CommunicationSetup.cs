@@ -45,6 +45,7 @@ namespace HY.MAUI.Setups
             AddApiClient<ContactApi>(services, ApiOptions.Timeout);
             AddApiClient<UserApi>(services, ApiOptions.Timeout);
             AddApiClient<FileApi>(services, ApiOptions.Timeout);
+            AddApiClient<SyncApi>(services, ApiOptions.Timeout);
 
 
             // ==============================

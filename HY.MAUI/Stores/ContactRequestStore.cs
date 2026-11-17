@@ -48,6 +48,28 @@ namespace HY.MAUI.Stores
             }
         }
 
+        public void ReplaceSnapshot(IEnumerable<ContactRequestVM> requests)
+        {
+            var incoming = requests.ToList();
+            var keys = incoming.Select(x => (x.Sender_Id, x.Receiver_Id)).ToHashSet();
+
+            foreach (var stale in ContactRequests.Where(x => !keys.Contains((x.Sender_Id, x.Receiver_Id))).ToList())
+                ContactRequests.Remove(stale);
+
+            foreach (var item in incoming)
+                Upsert(item);
+
+            var ordered = incoming
+                .Select(x => ContactRequests.First(r => r.Sender_Id == x.Sender_Id && r.Receiver_Id == x.Receiver_Id))
+                .ToList();
+
+            for (var i = 0; i < ordered.Count; i++)
+            {
+                var oldIndex = ContactRequests.IndexOf(ordered[i]);
+                if (oldIndex != i) ContactRequests.Move(oldIndex, i);
+            }
+        }
+
         public void Clear()
         {
             ContactRequests.Clear();
@@ -58,13 +80,13 @@ namespace HY.MAUI.Stores
         public int GetRequestCount()
         {
             var currentUser = _globalCache.GetCurrentUser();
-            return ContactRequests.Where(cr => cr.Relation_Request_Status == RelationRequestStatus.Pending && cr.Sender_Id == currentUser.Id).Count();
+            return ContactRequests.Count(cr => cr.Relation_Request_Status == RelationRequestStatus.Pending && cr.Sender_Id == currentUser.Id);
         }
 
         public int GetRespondCount()
         {
             var currentUser = _globalCache.GetCurrentUser();
-            return ContactRequests.Where(cr => cr.Relation_Request_Status == RelationRequestStatus.Pending  && cr.Receiver_Id == currentUser.Id).Count();
+            return ContactRequests.Count(cr => cr.Relation_Request_Status == RelationRequestStatus.Pending && cr.Receiver_Id == currentUser.Id);
         }
 
         public ObservableCollection<ContactRequestVM> GetRequestCollection()

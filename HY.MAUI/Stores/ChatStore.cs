@@ -21,13 +21,17 @@ namespace HY.MAUI.Stores
 
         public ChatVM? GetChat(long currentUserId, MessageDto messageDto)
         {
-            if (currentUserId == messageDto.Sender_Id)
+            if (messageDto.Chat_Type == ChatType.Private)
             {
-                return Chats.FirstOrDefault(c => c.Target_Id == messageDto.Target_Id && c.Type == messageDto.Chat_Type);
+                var targetId = currentUserId == messageDto.Sender_Id
+                    ? messageDto.Target_Id
+                    : messageDto.Sender_Id;
+
+                return Chats.FirstOrDefault(c => c.Type == ChatType.Private && c.Target_Id == targetId);
             }
-            else if (currentUserId == messageDto.Target_Id)
+            else if (messageDto.Chat_Type == ChatType.Group)
             {
-                return Chats.FirstOrDefault(c => c.Target_Id == messageDto.Sender_Id && c.Type == messageDto.Chat_Type);
+                return Chats.FirstOrDefault(c => c.Type == ChatType.Group && c.Target_Id == messageDto.Target_Id);
             }
 
             return null;
@@ -91,6 +95,25 @@ namespace HY.MAUI.Stores
             if (existing != null)
             {
                 Chats.Move(Chats.IndexOf(existing), 0);
+            }
+        }
+
+        public void ReplaceSnapshot(IEnumerable<ChatVM> chats)
+        {
+            var incoming = chats.ToList();
+            var ids = incoming.Select(x => x.Id).ToHashSet();
+
+            foreach (var stale in Chats.Where(x => !ids.Contains(x.Id)).ToList())
+                Chats.Remove(stale);
+
+            for (var i = 0; i < incoming.Count; i++)
+            {
+                Upsert(incoming[i]);
+                var existing = GetChat(incoming[i].Id);
+                if (existing == null) continue;
+
+                var oldIndex = Chats.IndexOf(existing);
+                if (oldIndex != i) Chats.Move(oldIndex, Math.Min(i, Chats.Count - 1));
             }
         }
 

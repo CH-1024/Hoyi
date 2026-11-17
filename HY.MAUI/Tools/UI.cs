@@ -17,7 +17,18 @@ namespace HY.MAUI.Tools
             MainThread.BeginInvokeOnMainThread(action);
         }
 
-        public static Task Run(Func<Task> funcTask)
+        public static Task RunTask(Action action)
+        {
+            if (MainThread.IsMainThread)
+            {
+                action();
+                return Task.CompletedTask;
+            }
+
+            return MainThread.InvokeOnMainThreadAsync(action);
+        }
+
+        public static Task RunTask(Func<Task> funcTask)
         {
             if (MainThread.IsMainThread)
             {
@@ -27,7 +38,7 @@ namespace HY.MAUI.Tools
             return MainThread.InvokeOnMainThreadAsync(funcTask);
         }
 
-        //public static Task<T> Run<T>(Func<T> func)
+        //public static RunTask<T> Run<T>(Func<T> func)
         //{
         //    if (MainThread.IsMainThread)
         //    {
@@ -37,7 +48,7 @@ namespace HY.MAUI.Tools
         //    return MainThread.InvokeOnMainThreadAsync(func);
         //}
 
-        public static Task<T> Run<T>(Func<Task<T>> funcTask)
+        public static Task<T> RunTask<T>(Func<Task<T>> funcTask)
         {
             if (MainThread.IsMainThread)
             {

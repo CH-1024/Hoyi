@@ -33,14 +33,38 @@ namespace HY.MAUI.Stores
 
         public void Add(long chatId, MessageVM messageVM)
         {
+            AddIfNotExists(chatId, messageVM);
+        }
+
+        public bool AddIfNotExists(long chatId, MessageVM messageVM)
+        {
             var chatMessages = GetMessages(chatId);
-            chatMessages.Add(messageVM);
+
+            if (messageVM.Id > 0 && chatMessages.Any(x => x.Id == messageVM.Id))
+                return false;
+
+            if (messageVM.Id <= 0 || chatMessages.Count == 0)
+            {
+                chatMessages.Add(messageVM);
+                return true;
+            }
+
+            var index = 0;
+            while (index < chatMessages.Count && (chatMessages[index].Id <= 0 || chatMessages[index].Id < messageVM.Id))
+                index++;
+
+            chatMessages.Insert(index, messageVM);
+            return true;
         }
 
         public void Insert(long chatId, MessageVM messageVM, int index = 0)
         {
-            var chatMessages = GetMessages(chatId);
-            chatMessages.Insert(0, messageVM);
+            AddIfNotExists(chatId, messageVM);
+        }
+
+        public void Remove(long chatId)
+        {
+            _messages.Remove(chatId);
         }
 
         public void Clear()

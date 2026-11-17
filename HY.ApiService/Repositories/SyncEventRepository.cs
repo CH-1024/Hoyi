@@ -24,15 +24,25 @@ namespace HY.ApiService.Repositories
 
         public async Task<bool> InsertSyncEventAsync(SyncEventEntity syncEvent)
         {
-            return await _db.Insertable(syncEvent).ExecuteCommandIdentityIntoEntityAsync();
+            syncEvent.Id = await _db.Insertable(syncEvent).ExecuteReturnBigIdentityAsync();
+            return syncEvent.Id > 0;
         }
 
         public async Task<bool> InsertSyncEventsAsync(List<SyncEventEntity> events)
         {
-            if (events.Count == 0)
-                return true;
+            if (events.Count == 0) return true;
 
-            return await _db.Insertable(events).ExecuteCommandIdentityIntoEntityAsync();
+            var ids = await _db.Insertable(events).ExecuteReturnPkListAsync<long>();
+
+            if (ids.Count != events.Count) return false;
+
+            // 按插入顺序回填 ID
+            for (int i = 0; i < events.Count; i++)
+            {
+                events[i].Id = ids[i];
+            }
+
+            return true;
         }
 
 

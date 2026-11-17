@@ -11,7 +11,7 @@ namespace HY.ApiService.Tools
         //MessageRecalled,                      messageId               chatId
         //MessageDeleted,                       messageId               chatId
         //ChatChanged,                          chatId
-        //ChatRead,                             
+        //ChatRead,                             chatId
         //ContactsChanged,                      userId
         //ContactRequestsChanged,               contactRequestId
         //ProfileChanged                        userId 

@@ -60,14 +60,14 @@ namespace HY.ApiService.Repositories
                 .In(msgIds).ToListAsync();
         }
 
-        public async Task<List<MessageEntity>> GetPrivateChatMessages(long currentUserId, long targetUserId, DirectType direct, long messageId, int take)
+        public async Task<List<MessageEntity>> GetPrivateChatMessages(long currentUserId, long targetUserId, DirectType direct, long skipMsgId, int take)
         {
             var baseQuery = _db.Queryable<MessageEntity>()
                 .LeftJoin<MessageActionEntity>((m, a) => m.Id == a.Message_Id && a.User_Id == currentUserId && a.Action_Type == MessageActionType.Delete)
                 .Where((m, a) => a.Message_Id == null)   // 过滤已删除
                 .Where((m, a) => m.Chat_Type == ChatType.Private)
-                .WhereIF(direct == DirectType.Before, (m, a) => m.Id < messageId)
-                .WhereIF(direct == DirectType.After, (m, a) => m.Id > messageId);
+                .WhereIF(skipMsgId > 0 && direct == DirectType.Before, (m, a) => m.Id < skipMsgId)
+                .WhereIF(skipMsgId > 0 && direct == DirectType.After, (m, a) => m.Id > skipMsgId);
 
             var q1 = baseQuery.Clone().Where((m, a) => m.Sender_Id == currentUserId && m.Target_Id == targetUserId).Select((m, a) => m);
             var q2 = baseQuery.Clone().Where((m, a) => m.Sender_Id == targetUserId && m.Target_Id == currentUserId).Select((m, a) => m);
@@ -76,14 +76,14 @@ namespace HY.ApiService.Repositories
             return await _db.UnionAll(q1, q2).OrderBy(m => m.Id, OrderByType.Desc).Take(take).ToListAsync();
         }
 
-        public async Task<List<MessageEntity>> GetGroupChatMessages(long currentUserId, long groupId, DirectType direct, long messageId, int take)
+        public async Task<List<MessageEntity>> GetGroupChatMessages(long currentUserId, long groupId, DirectType direct, long skipMsgId, int take)
         {
             return await _db.Queryable<MessageEntity>()
                 .LeftJoin<MessageActionEntity>((m, a) => m.Id == a.Message_Id && a.User_Id == currentUserId && a.Action_Type == MessageActionType.Delete)
                 .Where((m, a) => a.Message_Id == null)   // 过滤已删除
                 .Where((m, a) => m.Target_Id == groupId && m.Chat_Type == ChatType.Group)
-                .WhereIF(direct == DirectType.Before, (m, a) => m.Id < messageId)
-                .WhereIF(direct == DirectType.After, (m, a) => m.Id > messageId)
+                .WhereIF(skipMsgId > 0 && direct == DirectType.Before, (m, a) => m.Id < skipMsgId)
+                .WhereIF(skipMsgId > 0 && direct == DirectType.After, (m, a) => m.Id > skipMsgId)
                 .OrderBy((m, a) => m.Id, OrderByType.Desc)
                 .Take(take)
                 .ToListAsync();

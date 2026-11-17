@@ -42,6 +42,8 @@ namespace HY.MAUI.Communication.SignalR
         private readonly SemaphoreSlim _initLock = new(1, 1);
 
 
+        public HubConnectionState State => _connection?.State ?? HubConnectionState.Disconnected;
+
         public ChatHubSignalR(IServiceProvider serviceProvider, IGlobalCache globalCache, ILoginService loginService, ITokenProvider tokenProvider,
                               INotificationManagerService notificationManager, GlobalBinding globalBinding,
                               ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore)
@@ -175,13 +177,7 @@ namespace HY.MAUI.Communication.SignalR
                 // 使用 TokenProvider 获取访问令牌
                 options.AccessTokenProvider = async () => await _tokenProvider.GetAccessTokenAsync();
             })
-            .WithAutomaticReconnect(
-            [
-                TimeSpan.Zero,
-                TimeSpan.FromSeconds(1),
-                TimeSpan.FromSeconds(2),
-                TimeSpan.FromSeconds(3),
-            ])
+            .WithAutomaticReconnect(new SignalRRetryPolicy())
             .Build();
             return connection;
         }
@@ -380,7 +376,7 @@ namespace HY.MAUI.Communication.SignalR
             else if (chat != null && chat.Type == ChatType.Group)
             {
                 // 群聊 从群成员列表获取发送者信息
-
+                throw new NotImplementedException("群聊消息处理未实现");
             }
             else
             {
@@ -392,7 +388,7 @@ namespace HY.MAUI.Communication.SignalR
             var handlers = OnReceiveMessage_ChatHub?.GetInvocationList() ?? [];
             if (handlers.Length > 0)
             {
-                result = await UI.Run(async () =>
+                result = await UI.RunTask(async () =>
                 {
                     bool handled = false;
 
@@ -492,7 +488,7 @@ namespace HY.MAUI.Communication.SignalR
                 var handlers = OnReceiveMessage_ChatHub?.GetInvocationList() ?? [];
                 if (handlers.Length > 0)
                 {
-                    result = await UI.Run(async () =>
+                    result = await UI.RunTask(async () =>
                     {
                         bool handled = false;
 

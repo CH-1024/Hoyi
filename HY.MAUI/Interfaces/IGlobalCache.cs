@@ -10,5 +10,8 @@ namespace HY.MAUI.Interfaces
         void SetCurrentUser(UserVM userVM);
         UserVM GetCurrentUser();
         void UpdateCurrentUser(UserVM currentUser);
+
+        void SetLastEventId(long eventId);
+        long GetLastEventId();
     }
 }

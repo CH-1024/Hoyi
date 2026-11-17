@@ -82,6 +82,12 @@ namespace HY.MAUI.Communication
         public static string Register => $"{HttpBase}/user/register/";
         public static string UpdateHead => $"{HttpBase}/user/update/head/";
         public static string UpdateProfile => $"{HttpBase}/user/update/profile/";
+
+
+        //Sync
+        public static string SyncHead => $"{HttpBase}/sync/head/";
+        public static string SyncChanges => $"{HttpBase}/sync/changes/";
+        public static string SyncMessage => $"{HttpBase}/sync/message/";
         #endregion
 
 

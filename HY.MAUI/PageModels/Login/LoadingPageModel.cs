@@ -32,11 +32,13 @@ namespace HY.MAUI.PageModels.Login
         private readonly IAuthService _authService;
 
         private readonly ChatHubSignalR _chatHub;
+        private readonly SyncEventSyncService _syncEventSyncService;
 
         private readonly UserApi _userApi;
         private readonly ChatApi _chatApi;
         private readonly ContactApi _contactApi;
         private readonly MessageApi _messageApi;
+        private readonly SyncApi _syncApi;
 
         private readonly ChatStore _chatStore;
         private readonly ContactStore _contactStore;
@@ -57,7 +59,8 @@ namespace HY.MAUI.PageModels.Login
 
 
         public LoadingPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, ILoginService loginService, ITokenProvider tokenProvider,
-                                IAuthService authService, ChatHubSignalR chatHub, UserApi userApi, ChatApi chatApi, ContactApi contactApi, MessageApi messageApi,
+                                IAuthService authService, ChatHubSignalR chatHub, SyncEventSyncService syncEventSyncService,
+                                UserApi userApi, ChatApi chatApi, ContactApi contactApi, MessageApi messageApi, SyncApi syncApi,
                                 ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore,
                                 GlobalBinding globalBinding)
         {
@@ -68,11 +71,13 @@ namespace HY.MAUI.PageModels.Login
             _authService = authService;
 
             _chatHub = chatHub;
+            _syncEventSyncService = syncEventSyncService;
 
             _userApi = userApi;
             _chatApi = chatApi;
             _contactApi = contactApi;
             _messageApi = messageApi;
+            _syncApi = syncApi;
 
             _chatStore = chatStore;
             _contactStore = contactStore;
@@ -137,8 +142,18 @@ namespace HY.MAUI.PageModels.Login
                 return;
             }
 
+            _chatHub.OnReconnected_ChatHub += ChatHub_OnReconnected_ChatHub;
             _chatHub.OnClosed_ChatHub += ChatHub_OnClosed_ChatHub;
             _chatHub.OnReceiveCall_ChatHub += OnReceiveCall_ChatHub;
+
+            if (!await _syncEventSyncService.InitCursorAsync())
+            {
+                _loginService.Logout();
+                _tokenProvider.Clear();
+
+                GoBackToLoginPage();
+                return;
+            }
 
             await LoadContact();
 
@@ -147,6 +162,15 @@ namespace HY.MAUI.PageModels.Login
             await LoadChats();
 
             await LoadMessage();
+
+            if (!await _syncEventSyncService.SyncAsync())
+            {
+                _loginService.Logout();
+                _tokenProvider.Clear();
+
+                GoBackToLoginPage();
+                return;
+            }
 
             GoToAppShell();
         }
@@ -272,6 +296,13 @@ namespace HY.MAUI.PageModels.Login
             // #else
             //             Application.Current!.Windows[0].Page = _serviceProvider.GetRequiredService<AppShell_Phone>();
             // #endif
+        }
+
+
+
+        private async void ChatHub_OnReconnected_ChatHub(string? connectionId)
+        {
+            await _syncEventSyncService.SyncAsync();
         }
 
         private void ChatHub_OnClosed_ChatHub(Exception? e)

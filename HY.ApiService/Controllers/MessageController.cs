@@ -48,7 +48,7 @@ namespace HY.ApiService.Controllers
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             if (!await _chatService.IsUserOwnerChat(userId, chatId)) return Ok(new Response(false, "没有权限"));
-            if (!await _chatService.IsChatOwnerMessage(chatId, skipMessageId)) return Ok(new Response(false, "没有权限"));
+            if (skipMessageId != 0 && !await _chatService.IsChatOwnerMessage(chatId, skipMessageId)) return Ok(new Response(false, "没有权限"));
 
             take = Math.Clamp(take, 1, 100);
             var messages = await _messageService.GetMessagesBeforeByChatId(chatId, skipMessageId, take);
@@ -57,7 +57,7 @@ namespace HY.ApiService.Controllers
             {
                 Data = new Dictionary<string, object?>
                 {
-                    { "Messages",  messages}
+                    { "Messages",  messages }
                 }
             });
         }

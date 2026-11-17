@@ -11,6 +11,7 @@ namespace HY.MAUI.Services
     {
         private static readonly ConcurrentDictionary<string, object> _cache = new ConcurrentDictionary<string, object>();
         private static readonly string CurrentUserKey = "CurrentUser";
+        private static readonly string LastEventIdKey = "LastEventId";
 
         private void SetCache(string key, object value)
         {
@@ -49,5 +50,18 @@ namespace HY.MAUI.Services
                 existingUser.Created_At = currentUser.Created_At;
             }
         }
+
+
+
+        public void SetLastEventId(long eventId)
+        {
+            SetCache(LastEventIdKey, eventId);
+        }
+
+        public long GetLastEventId()
+        {
+            return GetCache<long?>(LastEventIdKey) ?? throw new InvalidOperationException("当前用户尚未初始化");
+        }
+
     }
 }

@@ -60,29 +60,48 @@ namespace HY.ApiService.Controllers
             });
         }
 
-
-
-        [Authorize]
-        [HttpGet("messages")]
-        public async Task<IActionResult> SyncMessages(long chatId, long afterMessageId, int take)
+        [HttpGet("message")]
+        public async Task<IActionResult> GetMessage(long chatId, long messageId)
         {
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             if (!await _chatService.IsUserOwnerChat(userId, chatId)) return Ok(new Response(false, "没有权限"));
-            if (!await _chatService.IsChatOwnerMessage(chatId, afterMessageId)) return Ok(new Response(false, "没有权限"));
+            if (!await _chatService.IsChatOwnerMessage(chatId, messageId)) return Ok(new Response(false, "没有权限"));
 
-            take = Math.Clamp(take, 1, 100);
-            var messages = await _messageService.GetMessagesAfterByChatId(chatId, afterMessageId, take);
+            var message = await _messageService.GetMessageById(userId, messageId);
+
+            if (message == null) return Ok(new Response(false, "消息不存在、无权访问或已对当前用户删除"));
 
             return Ok(new Response(true)
             {
                 Data = new Dictionary<string, object?>
                 {
-                    { "Messages", messages }
+                    { "Message", message }
                 }
             });
         }
 
+
+
+        //[HttpGet("message")]
+        //public async Task<IActionResult> SyncMessage(long chatId, long afterMessageId, int take)
+        //{
+        //    var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        //    if (!await _chatService.IsUserOwnerChat(userId, chatId)) return Ok(new Response(false, "没有权限"));
+        //    if (!await _chatService.IsChatOwnerMessage(chatId, afterMessageId)) return Ok(new Response(false, "没有权限"));
+
+        //    take = Math.Clamp(take, 1, 100);
+        //    var messages = await _messageService.GetMessagesAfterByChatId(chatId, afterMessageId, take);
+
+        //    return Ok(new Response(true)
+        //    {
+        //        Data = new Dictionary<string, object?>
+        //        {
+        //            { "Messages", messages }
+        //        }
+        //    });
+        //}
 
     }
 }
