@@ -7,6 +7,15 @@ namespace HY.MAUI.Services
 {
     public class GlobalBinding : ObservableObject
     {
+        private bool autoLogin;
+        public bool AutoLogin
+        {
+            get { return autoLogin; }
+            set { SetProperty(ref autoLogin, value); }
+        }
+
+
+
         private int unreadMessageCount;
         public int UnreadMessageCount
         {

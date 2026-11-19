@@ -11,6 +11,8 @@ namespace HY.MAUI.Services
 {
     public class LoginService : ILoginService
     {
+        private readonly GlobalBinding _globalBinding;
+
         private const string LoginKey = "hy_is_login";
         private const string CurrentUserKey = "hy_current_user";
         private const string DeviceIdKey = "hy_device_id";
@@ -18,16 +20,28 @@ namespace HY.MAUI.Services
         public bool IsLoggedIn => SecureStorage.GetAsync(LoginKey).Result == "True";
 
 
+        public LoginService(GlobalBinding globalBinding)
+        {
+            _globalBinding = globalBinding;
+        }
+
+
         public async Task Login(UserVM user)
         {
             await SecureStorage.SetAsync(CurrentUserKey, JsonSerializer.Serialize(user));
-            await SecureStorage.SetAsync(LoginKey, "True");
+
+            if (_globalBinding.AutoLogin)
+            {
+                await SecureStorage.SetAsync(LoginKey, "True");
+            }
         }
 
         public void Logout()
         {
             SecureStorage.Remove(LoginKey);
             SecureStorage.Remove(CurrentUserKey);
+
+            _globalBinding.AutoLogin = false;
         }
 
         public async Task SetCurrentUser(UserVM user)

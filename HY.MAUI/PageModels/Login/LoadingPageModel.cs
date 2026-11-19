@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace HY.MAUI.PageModels.Login
@@ -56,6 +55,12 @@ namespace HY.MAUI.PageModels.Login
             set { SetProperty(ref currentUser, value); }
         }
 
+        private string loadingMessage;
+        public string LoadingMessage
+        {
+            get { return loadingMessage; }
+            set { SetProperty(ref loadingMessage, value); }
+        }
 
 
         public LoadingPageModel(IServiceProvider serviceProvider, IGlobalCache globalCache, IGlobalMapper globalMapper, ILoginService loginService, ITokenProvider tokenProvider,
@@ -115,6 +120,8 @@ namespace HY.MAUI.PageModels.Login
                 return;
             }
 
+            LoadingMessage = "正在加载用户信息";
+            await Task.Delay(500);
             var resp = await _userApi.GetCurrentUser();
             if (resp?.IsSucc != true || resp.GetValue<UserDto>("User") is not UserDto userDto)
             {
@@ -134,6 +141,8 @@ namespace HY.MAUI.PageModels.Login
                 return;
             }
 
+            LoadingMessage = "正在连接服务器";
+            await Task.Delay(500);
             if (!await _chatHub.StartAsync())
             {
                 _loginService.Logout();
@@ -147,6 +156,8 @@ namespace HY.MAUI.PageModels.Login
             _chatHub.OnClosed_ChatHub += ChatHub_OnClosed_ChatHub;
             _chatHub.OnReceiveCall_ChatHub += OnReceiveCall_ChatHub;
 
+            LoadingMessage = "正在初始化同步游标";
+            await Task.Delay(500);
             if (!await _syncEventSyncService.InitCursorAsync())
             {
                 _loginService.Logout();
@@ -156,14 +167,24 @@ namespace HY.MAUI.PageModels.Login
                 return;
             }
 
+            LoadingMessage = "正在加载联系人";
+            await Task.Delay(500);
             await LoadContact();
 
+            LoadingMessage = "正在加载联系人请求";
+            await Task.Delay(500);
             await LoadContactRequest();
 
+            LoadingMessage = "正在加载会话";
+            await Task.Delay(500);
             await LoadChats();
 
+            LoadingMessage = "正在加载消息";
+            await Task.Delay(500);
             await LoadMessage();
 
+            LoadingMessage = "正在同步数据";
+            await Task.Delay(500);
             if (!await _syncEventSyncService.SyncAsync())
             {
                 _loginService.Logout();
@@ -307,6 +328,7 @@ namespace HY.MAUI.PageModels.Login
 
         private void ChatHub_OnClosed_ChatHub(Exception? e)
         {
+            _chatHub.OnReconnected_ChatHub -= ChatHub_OnReconnected_ChatHub;
             _chatHub.OnClosed_ChatHub -= ChatHub_OnClosed_ChatHub;
             _chatHub.OnReceiveCall_ChatHub -= OnReceiveCall_ChatHub;
 

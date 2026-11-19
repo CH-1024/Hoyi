@@ -1,16 +1,22 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace HY.MAUI.Controls
 {
-    public class AnimatedEllipsisLabel : Label
+    public class AnimatedEllipsisLabel : ContentView
     {
+        private readonly Label _label;
+
         private CancellationTokenSource? _cts;
+        private int _dotCount;
 
-        // 当前真正由外部设置的基础文本
-        private string _baseText = string.Empty;
+        #region BindableProperties
 
-        // 防止动画自己修改 Text 时触发文本变化处理
-        private bool _isAnimating;
+        public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(AnimatedEllipsisLabel), string.Empty, propertyChanged: OnDisplayPropertyChanged);
 
         public static readonly BindableProperty IsAnimationEnabledProperty = BindableProperty.Create(nameof(IsAnimationEnabled), typeof(bool), typeof(AnimatedEllipsisLabel), true, propertyChanged: OnIsAnimationEnabledChanged);
 
@@ -18,36 +24,111 @@ namespace HY.MAUI.Controls
 
         public static readonly BindableProperty MaxDotsProperty = BindableProperty.Create(nameof(MaxDots), typeof(int), typeof(AnimatedEllipsisLabel), 3);
 
-        /// <summary>
-        /// 是否启用动画
-        /// </summary>
+        public static readonly BindableProperty FontSizeProperty = BindableProperty.Create(nameof(FontSize), typeof(double), typeof(AnimatedEllipsisLabel), 14d, propertyChanged: OnDisplayPropertyChanged);
+
+        public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(AnimatedEllipsisLabel), null, propertyChanged: OnDisplayPropertyChanged);
+
+        public static readonly BindableProperty FontAttributesProperty = BindableProperty.Create(nameof(FontAttributes), typeof(FontAttributes), typeof(AnimatedEllipsisLabel), FontAttributes.None, propertyChanged: OnDisplayPropertyChanged);
+
+        public static readonly BindableProperty FontFamilyProperty = BindableProperty.Create(nameof(FontFamily), typeof(string), typeof(AnimatedEllipsisLabel), null, propertyChanged: OnDisplayPropertyChanged);
+
+        public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create(nameof(HorizontalTextAlignment), typeof(TextAlignment), typeof(AnimatedEllipsisLabel), TextAlignment.Start, propertyChanged: OnDisplayPropertyChanged);
+
+        public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create(nameof(VerticalTextAlignment), typeof(TextAlignment), typeof(AnimatedEllipsisLabel), TextAlignment.Center, propertyChanged: OnDisplayPropertyChanged);
+
+        public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create(nameof(LineBreakMode), typeof(LineBreakMode), typeof(AnimatedEllipsisLabel), LineBreakMode.WordWrap, propertyChanged: OnDisplayPropertyChanged);
+
+        public static readonly BindableProperty MaxLinesProperty = BindableProperty.Create(nameof(MaxLines), typeof(int), typeof(AnimatedEllipsisLabel), -1, propertyChanged: OnDisplayPropertyChanged);
+
+        #endregion
+
+        #region Properties
+
+        public string? Text
+        {
+            get => (string?)GetValue(TextProperty);
+            set => SetValue(TextProperty, value);
+        }
+
         public bool IsAnimationEnabled
         {
             get => (bool)GetValue(IsAnimationEnabledProperty);
             set => SetValue(IsAnimationEnabledProperty, value);
         }
 
-        /// <summary>
-        /// 点变化间隔，单位毫秒
-        /// </summary>
         public int Interval
         {
             get => (int)GetValue(IntervalProperty);
             set => SetValue(IntervalProperty, value);
         }
 
-        /// <summary>
-        /// 最大点数量
-        /// </summary>
         public int MaxDots
         {
             get => (int)GetValue(MaxDotsProperty);
             set => SetValue(MaxDotsProperty, value);
         }
 
+        public double FontSize
+        {
+            get => (double)GetValue(FontSizeProperty);
+            set => SetValue(FontSizeProperty, value);
+        }
+
+        public Color? TextColor
+        {
+            get => (Color?)GetValue(TextColorProperty);
+            set => SetValue(TextColorProperty, value);
+        }
+
+        public FontAttributes FontAttributes
+        {
+            get => (FontAttributes)GetValue(FontAttributesProperty);
+            set => SetValue(FontAttributesProperty, value);
+        }
+
+        public string? FontFamily
+        {
+            get => (string?)GetValue(FontFamilyProperty);
+            set => SetValue(FontFamilyProperty, value);
+        }
+
+        public TextAlignment HorizontalTextAlignment
+        {
+            get => (TextAlignment)GetValue(HorizontalTextAlignmentProperty);
+            set => SetValue(HorizontalTextAlignmentProperty, value);
+        }
+
+        public TextAlignment VerticalTextAlignment
+        {
+            get => (TextAlignment)GetValue(VerticalTextAlignmentProperty);
+            set => SetValue(VerticalTextAlignmentProperty, value);
+        }
+
+        public LineBreakMode LineBreakMode
+        {
+            get => (LineBreakMode)GetValue(LineBreakModeProperty);
+            set => SetValue(LineBreakModeProperty, value);
+        }
+
+        public int MaxLines
+        {
+            get => (int)GetValue(MaxLinesProperty);
+            set => SetValue(MaxLinesProperty, value);
+        }
+
+        #endregion
+
         public AnimatedEllipsisLabel()
         {
-            _baseText = Text ?? string.Empty;
+            _label = new Label
+            {
+                HorizontalOptions = LayoutOptions.Fill,
+                VerticalOptions = LayoutOptions.Center
+            };
+
+            Content = _label;
+
+            UpdateDisplay();
         }
 
         protected override void OnHandlerChanged()
@@ -56,14 +137,11 @@ namespace HY.MAUI.Controls
 
             if (Handler != null)
             {
-                // 控件进入可视界面
-                _baseText = Text ?? string.Empty;
-
+                UpdateDisplay();
                 StartAnimation();
             }
             else
             {
-                // 控件离开可视界面
                 StopAnimation();
             }
         }
@@ -72,15 +150,18 @@ namespace HY.MAUI.Controls
         {
             base.OnPropertyChanged(propertyName);
 
-            if (propertyName != TextProperty.PropertyName)
-                return;
+            if (propertyName == nameof(Padding))
+            {
+                _label.Padding = Padding;
+            }
+        }
 
-            // Text 是动画自己修改的，不处理
-            if (_isAnimating)
-                return;
+        #region PropertyChanged
 
-            // Text 是外部修改的
-            _baseText = Text ?? string.Empty;
+        private static void OnDisplayPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var control = (AnimatedEllipsisLabel)bindable;
+            control.UpdateDisplay();
         }
 
         private static void OnIsAnimationEnabledChanged(BindableObject bindable, object oldValue, object newValue)
@@ -89,87 +170,98 @@ namespace HY.MAUI.Controls
 
             if ((bool)newValue)
             {
+                control._dotCount = 0;
+                control.UpdateDisplay();
                 control.StartAnimation();
             }
             else
             {
                 control.StopAnimation();
-
-                // 关闭动画后恢复原始文本
-                control.Text = control._baseText;
             }
         }
 
+        #endregion
+
+        #region Display
+
+        private void UpdateDisplay()
+        {
+            if (_label == null)
+                return;
+
+            // 原始文本 + 动态点号
+            _label.Text = (Text ?? string.Empty) + (IsAnimationEnabled ? new string('.', _dotCount) : string.Empty);
+
+            // 同步 Label 外观
+            _label.FontSize = FontSize;
+            _label.TextColor = TextColor;
+            _label.FontAttributes = FontAttributes;
+            _label.FontFamily = FontFamily;
+
+            _label.HorizontalTextAlignment = HorizontalTextAlignment;
+            _label.VerticalTextAlignment = VerticalTextAlignment;
+
+            _label.LineBreakMode = LineBreakMode;
+            _label.MaxLines = MaxLines;
+            _label.Padding = Padding;
+        }
+
+        #endregion
+
+        #region Animation
+
         private void StartAnimation()
         {
-            if (!IsAnimationEnabled)
+            if (!IsAnimationEnabled || Handler == null || _cts != null)
                 return;
 
-            if (Handler == null)
-                return;
+            var cts = new CancellationTokenSource();
+            _cts = cts;
 
-            // 已经运行，不重复启动
-            if (_cts != null)
-                return;
-
-            _cts = new CancellationTokenSource();
-
-            _ = AnimateAsync(_cts.Token);
+            _ = AnimateAsync(cts);
         }
 
         private void StopAnimation()
         {
-            _cts?.Cancel();
-            _cts?.Dispose();
+            var cts = _cts;
+
             _cts = null;
 
-            _isAnimating = false;
+            if (cts != null)
+                cts.Cancel();
 
-            // 停止后显示基础文本
-            if (Text != _baseText)
-            {
-                _isAnimating = true;
+            _dotCount = 0;
 
-                try
-                {
-                    Text = _baseText;
-                }
-                finally
-                {
-                    _isAnimating = false;
-                }
-            }
+            UpdateDisplay();
         }
 
-        private async Task AnimateAsync(CancellationToken token)
+        private async Task AnimateAsync(CancellationTokenSource cts)
         {
-            int dotCount = 0;
+            var token = cts.Token;
 
             try
             {
                 while (!token.IsCancellationRequested)
                 {
-                    string animatedText = _baseText + new string('.', dotCount);
+                    await Task.Delay(Math.Max(Interval, 1), token);
 
-                    _isAnimating = true;
+                    if (token.IsCancellationRequested)
+                        break;
 
-                    try
+                    await MainThread.InvokeOnMainThreadAsync(() =>
                     {
-                        Text = animatedText;
-                    }
-                    finally
-                    {
-                        _isAnimating = false;
-                    }
+                        if (token.IsCancellationRequested || !ReferenceEquals(_cts, cts) || Handler == null || !IsAnimationEnabled)
+                        {
+                            return;
+                        }
 
-                    dotCount++;
+                        int maxDots = Math.Max(MaxDots, 0);
 
-                    if (dotCount > MaxDots)
-                    {
-                        dotCount = 0;
-                    }
+                        if (_dotCount >= maxDots) _dotCount = 0;
+                        else _dotCount++;
 
-                    await Task.Delay(Interval, token);
+                        UpdateDisplay();
+                    });
                 }
             }
             catch (OperationCanceledException)
@@ -178,8 +270,13 @@ namespace HY.MAUI.Controls
             }
             finally
             {
-                _isAnimating = false;
+                if (ReferenceEquals(_cts, cts))
+                    _cts = null;
+
+                cts.Dispose();
             }
         }
+
+        #endregion
     }
 }

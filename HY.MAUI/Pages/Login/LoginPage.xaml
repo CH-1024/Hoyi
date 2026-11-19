@@ -3,10 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="HY.MAUI.Pages.Login.LoginPage"
              x:Name="_LoginPage"
+             NavigationPage.HasNavigationBar="False"
+             xmlns:maui="clr-namespace:HY.MAUI"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:pm="clr-namespace:HY.MAUI.PageModels.Login"
-             xmlns:m="clr-namespace:HY.MAUI.Models"
-             x:DataType="pm:LoginPageModel">
+             x:DataType="pm:LoginPageModel"
+             BackgroundColor="#F5F6FC">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
 
     <ContentPage.Behaviors>
         <!--<toolkit:EventToCommandBehavior EventName="NavigatedTo" Command="{Binding NavigatedToCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _LoginPage}, x:DataType=ContentPage}"/>-->
@@ -15,22 +24,211 @@
         <!--<toolkit:EventToCommandBehavior EventName="Disappearing" Command="{Binding DisappearingCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _LoginPage}, x:DataType=ContentPage}" />-->
     </ContentPage.Behaviors>
 
-    <ScrollView>
-        <Grid>
-            <VerticalStackLayout Padding="40" Spacing="20">
 
-                <Label Text="登录" FontSize="24" />
+    <Grid>
 
-                <Entry x:Name="username" Text="{Binding Username}" Placeholder="用户名" toolkit:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference password}"/>
-                <Entry x:Name="password" Text="{Binding Password}" Placeholder="密码" toolkit:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference login}" IsPassword="True"/>
+        <!-- 背景装饰 -->
+        <Border WidthRequest="200"
+                HeightRequest="200"
+                StrokeThickness="0"
+                BackgroundColor="#E9E8FF"
+                Opacity="0.65"
+                StrokeShape="RoundRectangle 140"
+                HorizontalOptions="End"
+                VerticalOptions="Start"
+                TranslationX="100"
+                TranslationY="0" >
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#E9E8FF" Offset="0" />
+                    <GradientStop Color="#5145CE" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
 
-                <Button x:Name="login" Text="登录" Command="{Binding LoginCommand}"/>
-                <Button Text="注册" Command="{Binding RegisterCommand}"/>
-                
-                
+        <Border WidthRequest="230"
+                HeightRequest="230"
+                StrokeThickness="0"
+                BackgroundColor="#E9F0FF"
+                Opacity="0.7"
+                StrokeShape="RoundRectangle 115"
+                HorizontalOptions="Start"
+                VerticalOptions="End"
+                TranslationX="-100"
+                TranslationY="100" >
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#5145CE" Offset="0" />
+                    <GradientStop Color="#E9F0FF" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+
+
+        <ScrollView VerticalOptions="Center" HorizontalOptions="Fill">
+
+            <VerticalStackLayout Spacing="0" Padding="0" HorizontalOptions="Fill">
+
+                <!-- Hoyi 品牌 -->
+                <!--<HorizontalStackLayout Spacing="12" HorizontalOptions="Center" VerticalOptions="Center">
+
+                    <Border WidthRequest="54" HeightRequest="54" StrokeThickness="0" StrokeShape="RoundRectangle 17" Padding="0">
+
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#7568F5" Offset="0" />
+                                <GradientStop Color="#5145CE" Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+
+                        <Label Text="h" FontSize="38" FontAttributes="Bold" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                    </Border>
+
+                    <Label Text="hoyi ~" FontSize="38" FontAttributes="Bold" TextColor="#282746" VerticalOptions="Center" CharacterSpacing="-1.5" />
+
+                </HorizontalStackLayout>-->
+
+                <!-- 页面标题 -->
+                <VerticalStackLayout Spacing="8" Margin="0,28">
+
+                    <Label Text="欢迎回来" FontSize="30" FontAttributes="Bold" TextColor="#24243A" HorizontalTextAlignment="Center" />
+
+                    <Label Text="登录 Hoyi，继续连接你的每一个重要时刻" FontSize="14" TextColor="#8B8DA3" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" />
+
+                </VerticalStackLayout>
+
+                <!-- 登录卡片 -->
+                <Border 
+                    BackgroundColor="White" 
+                    Stroke="#ECECF4" 
+                    StrokeThickness="1" 
+                    StrokeShape="RoundRectangle 24" 
+                    Padding="28" 
+                    Margin="38" 
+                    Shadow="{Shadow Radius=20, Opacity=0.08, Offset='0,8'}" 
+                    IsEnabled="{Binding LoginCommand.IsRunning, Converter={StaticResource InvertedBoolConverter}}">
+
+                    <VerticalStackLayout Spacing="0">
+
+                        <Label Text="账号登录" FontSize="21" FontAttributes="Bold" TextColor="#292940" />
+
+                        <Label Text="请输入你的账号和密码" FontSize="13" TextColor="#999AAF" Margin="0,7,0,26" />
+
+                        <!-- 用户名 -->
+                        <Label Text="用户名" FontSize="13" FontAttributes="Bold" TextColor="#55566C" Margin="0,0,0,9" />
+
+                        <Border BackgroundColor="#F7F8FC" Stroke="#E9EAF2" StrokeThickness="1" StrokeShape="RoundRectangle 13" Padding="14,0" HeightRequest="54">
+
+                            <Entry
+                                x:Name="username"
+                                Text="{Binding Username}"
+                                Placeholder="请输入用户名"
+                                PlaceholderColor="#B2B4C3"
+                                TextColor="#292940"
+                                FontSize="15"
+                                BackgroundColor="Transparent"
+                                ClearButtonVisibility="WhileEditing"
+                                VerticalOptions="Center"
+                                ReturnType="Next"
+                                toolkit:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference password}" />
+
+                        </Border>
+
+                        <!-- 间距 -->
+                        <BoxView HeightRequest="20" Opacity="0" />
+
+                        <!-- 密码 -->
+                        <Label Text="密码" FontSize="13" FontAttributes="Bold" TextColor="#55566C" Margin="0,0,0,9" />
+
+                        <Border BackgroundColor="#F7F8FC" Stroke="#E9EAF2" StrokeThickness="1" StrokeShape="RoundRectangle 13" Padding="14,0" HeightRequest="54">
+
+                            <Entry
+                                x:Name="password"
+                                Text="{Binding Password}"
+                                Placeholder="请输入密码"
+                                PlaceholderColor="#B2B4C3"
+                                TextColor="#292940"
+                                FontSize="15"
+                                BackgroundColor="Transparent"
+                                IsPassword="True"
+                                VerticalOptions="Center"
+                                ReturnType="Go"
+                                toolkit:SetFocusOnEntryCompletedBehavior.NextElement="{x:Reference login}" />
+                        </Border>
+
+                        <!-- 登录按钮 -->
+                        <Button
+                            x:Name="login"
+                            Text="登 录"
+                            Command="{Binding LoginCommand}"
+                            BackgroundColor="#6256DC"
+                            TextColor="White"
+                            FontSize="16"
+                            FontAttributes="Bold"
+                            CornerRadius="13"
+                            HeightRequest="54"
+                            Margin="0,30,0,0"
+                            HorizontalOptions="Fill"
+                            VerticalOptions="Fill" />
+
+                        <!--<CheckBox Text="自动登录"/>-->
+                        <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
+                            <CheckBox Scale="1.2" Margin="0" IsChecked="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=AutoLogin}"/>
+                            <Label Text="自动登录" VerticalOptions="Center" TextColor="Gray"/>
+                        </HorizontalStackLayout>
+                        
+                        <!-- 注册 -->
+                        <Border BackgroundColor="Transparent" Stroke="Transparent" StrokeThickness="1" StrokeShape="RoundRectangle 13" Margin="0,15,0,0" HeightRequest="54">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding RegisterCommand}"/>
+                            </Border.GestureRecognizers>
+
+                            <Label Text="还没有账号？立即注册"
+                                BackgroundColor="Transparent"
+                                TextColor="#6256DC"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                HeightRequest="48"
+                                Padding="8,0"
+                                HorizontalTextAlignment="Center" />
+
+                        </Border>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
             </VerticalStackLayout>
-            <ActivityIndicator IsRunning="{Binding LoginCommand.IsRunning}" Color="White" HorizontalOptions="Center" VerticalOptions="Center" />
-        </Grid>
-    </ScrollView>
+
+        </ScrollView>
+
+        <!-- 底部品牌信息 -->
+        <VerticalStackLayout VerticalOptions="End">
+
+            <Label
+                Text="让沟通更简单，让连接更自由"
+                FontSize="13"
+                TextColor="#9293A8"
+                HorizontalTextAlignment="Center" />
+
+            <Label
+                Text="HOYI · CONNECT EVERYTHING"
+                FontSize="10"
+                TextColor="#B7B8C8"
+                CharacterSpacing="2"
+                HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+
+        <ActivityIndicator
+            Color="Gray"
+            IsRunning="{Binding LoginCommand.IsRunning}"
+            IsVisible="{Binding LoginCommand.IsRunning}"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Margin="0,0,0,0"
+            InputTransparent="True" />
+
+    </Grid>
 
 </ContentPage>

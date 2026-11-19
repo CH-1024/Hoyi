@@ -263,6 +263,7 @@ namespace HY.MAUI.Communication.SignalR
 
             _connection?.Remove("UpdateHead");
             _connection?.Remove("UpdateProfile");
+            _connection?.Remove("UploadProgress");
 
             _connection?.Remove("ForceLogout");
         }
