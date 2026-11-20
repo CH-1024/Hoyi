@@ -19,7 +19,8 @@
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
                 <Setter Property="HeightRequest" Value="50"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Gray000}}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource Gray000}}"/>
+                <Setter Property="BorderColor" Value="{AppThemeBinding Dark={StaticResource Gray600}, Light={StaticResource Gray100}}"/>
                 <Setter Property="ContentLayout" Value="Left,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="0"/>
@@ -67,12 +68,12 @@
                         <Border Grid.Row="1" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 10">
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="1">
                                 <Button Grid.Column="0" Style="{StaticResource IconBtn1}" Text="申请中" Command="{Binding RequestCommand}"/>
-                                <controls:BadgeView Grid.Column="0" HorizontalOptions="Center" VerticalOptions="Center" Margin="80,0,0,0" BadgeColor="#FF453A" TextColor="White" ZIndex="1"
+                                <controls:BadgeView Grid.Column="0" HorizontalOptions="Center" VerticalOptions="Center" Margin="80,0,0,0" BadgeColor="#FF453A" TextColor="White" ZIndex="1" Opacity="0.85"
                                                     IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RequestContactCountVisible}"
                                                     Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RequestContactCountShow}"/>
 
                                 <Button Grid.Column="1" Style="{StaticResource IconBtn1}" Text="待同意" Command="{Binding RespondCommand}"/>
-                                <controls:BadgeView Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center" Margin="80,0,0,0" BadgeColor="#FF453A" TextColor="White" ZIndex="1"
+                                <controls:BadgeView Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center" Margin="80,0,0,0" BadgeColor="#FF453A" TextColor="White" ZIndex="1" Opacity="0.85"
                                                     IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RespondContactCountVisible}"
                                                     Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RespondContactCountShow}"/>
                             </Grid>
@@ -95,7 +96,7 @@
                                     <Border Padding="8" StrokeThickness="0">
 
                                         <Grid ColumnDefinitions="50,*" ColumnSpacing="5">
-                                            <toolkit:AvatarView ImageSource="{Binding Avatar}" BackgroundColor="Black" StrokeThickness="0" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
+                                            <toolkit:AvatarView ImageSource="{Binding Avatar}" BackgroundColor="Transparent" StrokeThickness="0" CornerRadius="5" WidthRequest="48" HeightRequest="48" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
 
                                             <Label Grid.Column="1" Text="{Binding Nickname}" TextColor="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}" FontSize="Body" Padding="0" VerticalOptions="Center"/>
 

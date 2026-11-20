@@ -20,14 +20,15 @@
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
                 <Setter Property="HeightRequest" Value="50"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Gray400}}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource Gray000}}"/>
+                <Setter Property="BorderColor" Value="{AppThemeBinding Dark={StaticResource Gray600}, Light={StaticResource Gray100}}"/>
                 <Setter Property="ContentLayout" Value="Left,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="0"/>
-                <Setter Property="BorderWidth" Value="0"/>
-                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="BorderWidth" Value="1"/>
+                <Setter Property="CornerRadius" Value="5"/>
                 <Setter Property="FontSize" Value="14"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
             </Style>
@@ -71,7 +72,7 @@
 
             <!-- 头像 + 昵称 -->
             <VerticalStackLayout HorizontalOptions="Center" Spacing="10">
-                <toolkit:AvatarView ImageSource="{Binding ContactInfo.Avatar}" BackgroundColor="Black" StrokeThickness="0" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
+                <toolkit:AvatarView ImageSource="{Binding ContactInfo.Avatar}" BackgroundColor="Transparent" StrokeThickness="0" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
 
                 <Label
                     Text="{Binding ContactInfo.Nickname}"

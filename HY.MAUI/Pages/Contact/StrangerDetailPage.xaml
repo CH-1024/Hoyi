@@ -19,18 +19,19 @@
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
                 <Setter Property="HeightRequest" Value="50"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Gray400}}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource Gray000}}"/>
+                <Setter Property="BorderColor" Value="{AppThemeBinding Dark={StaticResource Gray600}, Light={StaticResource Gray100}}"/>
                 <Setter Property="ContentLayout" Value="Left,0"/>
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="Padding" Value="0"/>
-                <Setter Property="BorderWidth" Value="0"/>
-                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="BorderWidth" Value="1"/>
+                <Setter Property="CornerRadius" Value="5"/>
                 <Setter Property="FontSize" Value="14"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
             </Style>
-
+            
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -73,7 +74,8 @@
                     <TapGestureRecognizer Command="{Binding Source={x:Reference _StrangerDetailPage}, Path=BindingContext.ProfileCommand}"/>
                 </Grid.GestureRecognizers>
 
-                <Image Grid.RowSpan="2" Grid.Column="0" Source="{Binding StrangerInfo.Avatar}" HeightRequest="100" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Aspect="AspectFit" BackgroundColor="Gray"/>
+                <!--<Image Grid.RowSpan="2" Grid.Column="0" Source="{Binding StrangerInfo.Avatar}" HeightRequest="100" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Aspect="AspectFit" BackgroundColor="Gray"/>-->
+                <toolkit:AvatarView Grid.RowSpan="2" Grid.Column="0" ImageSource="{Binding StrangerInfo.Avatar}" BackgroundColor="Transparent" StrokeThickness="0" CornerRadius="18" WidthRequest="100" HeightRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0"/>
 
                 <Label Grid.Row="0" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding StrangerInfo.Nickname}" FontSize="Medium"/>
                 <Label Grid.Row="1" Grid.Column="1" HorizontalOptions="Start" VerticalOptions="Center" Text="{Binding StrangerInfo.Region}" FontSize="Caption"/>

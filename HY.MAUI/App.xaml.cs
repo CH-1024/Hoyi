@@ -27,7 +27,7 @@ namespace HY.MAUI
         protected override Window CreateWindow(IActivationState? activationState)
         {
             // 切换到深色模式
-            Application.Current!.UserAppTheme = AppTheme.Dark;
+            //Application.Current!.UserAppTheme = AppTheme.Dark;
 
             var window = new Window();
 

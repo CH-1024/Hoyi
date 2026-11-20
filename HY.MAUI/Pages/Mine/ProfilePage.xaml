@@ -19,16 +19,23 @@
             <Style x:Key="IconBtn1" TargetType="Button">
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
-                <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#151515, Light=#EEEEEE}"/>
-                <Setter Property="ContentLayout" Value="Top,0"/>
+                <Setter Property="HeightRequest" Value="50"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource Gray000}}"/>
+                <Setter Property="BorderColor" Value="{AppThemeBinding Dark={StaticResource Gray600}, Light={StaticResource Gray100}}"/>
+                <Setter Property="ContentLayout" Value="Left,0"/>
                 <Setter Property="Margin" Value="0"/>
-                <Setter Property="Padding" Value="10"/>
-                <Setter Property="CornerRadius" Value="0"/>
-                <Setter Property="FontSize" Value="Micro"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="BorderWidth" Value="1"/>
+                <Setter Property="CornerRadius" Value="5"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
+            </Style>
+
+            <Style x:Key="InEntry" TargetType="Entry">
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource SoftBlack}, Light={StaticResource SoftWhite}}"/>
+                <Setter Property="ReturnType" Value="Next"/>
             </Style>
 
         </ResourceDictionary>
@@ -67,7 +74,7 @@
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20" BackgroundColor="{AppThemeBinding Light={StaticResource Gray050}, Dark={StaticResource SoftBlack}}">
 
-            <toolkit:AvatarView ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="Black" StrokeThickness="0" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0">
+            <toolkit:AvatarView ImageSource="{Binding CurrentUser.Avatar}" BackgroundColor="Transparent" StrokeThickness="0" CornerRadius="18" WidthRequest="120" HeightRequest="120" HorizontalOptions="Center" VerticalOptions="Center" Padding="0" Margin="0">
                 <FlyoutBase.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="下载"/>
@@ -86,22 +93,22 @@
 
             <VerticalStackLayout>
                 <Label Text="姓名" FontSize="14" TextColor="Gray"/>
-                <Entry Text="{Binding RealName}" Placeholder="请输入姓名"/>
+                <Entry Style="{StaticResource InEntry}" Text="{Binding RealName}" Placeholder="请输入姓名"/>
             </VerticalStackLayout>
 
             <VerticalStackLayout>
                 <Label Text="昵称" FontSize="14" TextColor="Gray"/>
-                <Entry Text="{Binding CurrentUser.Nickname}" Placeholder="请输入昵称"/>
+                <Entry Style="{StaticResource InEntry}" Text="{Binding CurrentUser.Nickname}" Placeholder="请输入昵称"/>
             </VerticalStackLayout>
 
             <VerticalStackLayout>
                 <Label Text="手机号" FontSize="14" TextColor="Gray"/>
-                <Entry Text="{Binding CurrentUser.Phone}" Placeholder="请输入手机号"/>
+                <Entry Style="{StaticResource InEntry}" Text="{Binding CurrentUser.Phone}" Placeholder="请输入手机号"/>
             </VerticalStackLayout>
 
             <VerticalStackLayout>
                 <Label Text="邮箱" FontSize="14" TextColor="Gray"/>
-                <Entry Text="{Binding CurrentUser.Email}" Placeholder="请输入邮箱"/>
+                <Entry Style="{StaticResource InEntry}" Text="{Binding CurrentUser.Email}" Placeholder="请输入邮箱"/>
             </VerticalStackLayout>
 
             <Button Style="{StaticResource IconBtn1}" Text="保存" Command="{Binding SaveCommand}"/>

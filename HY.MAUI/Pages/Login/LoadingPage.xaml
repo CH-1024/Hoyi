@@ -21,151 +21,123 @@
         <!--<toolkit:EventToCommandBehavior EventName="Unloaded" Command="{Binding UnloadedCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _LoadingPage}, x:DataType=ContentPage}" />-->
     </ContentPage.Behaviors>
 
+
     <Grid>
 
-        <!-- 背景装饰 -->
-        <!--<Border WidthRequest="320"
-                HeightRequest="320"
-                StrokeThickness="0"
-                BackgroundColor="#E9E8FF"
-                Opacity="0.65"
-                StrokeShape="RoundRectangle 160"
-                HorizontalOptions="End"
-                VerticalOptions="Start"
-                TranslationX="130"
-                TranslationY="-150" />-->
+        <controls:AnimatedSmokeView ZIndex="0"/>
 
-        <!--<Border WidthRequest="260"
-                HeightRequest="260"
-                StrokeThickness="0"
-                BackgroundColor="#E8EDFF"
-                Opacity="0.7"
-                StrokeShape="RoundRectangle 130"
-                HorizontalOptions="Start"
-                VerticalOptions="End"
-                TranslationX="-120"
-                TranslationY="120" />-->
+        <!-- 柔化烟雾 -->
+        <BoxView ZIndex="1" BackgroundColor="#80FFFFFF" InputTransparent="True" />
 
-        <!-- 主体 -->
-        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Padding="28,30" Spacing="0" MaximumWidthRequest="420">
+        <Grid ZIndex="2">
 
-            <!-- Hoyi Logo -->
-            <!--<HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="11">
+            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="0">
 
-                <Border WidthRequest="52" HeightRequest="52" StrokeThickness="0" StrokeShape="RoundRectangle 17">
+                <!-- 用户欢迎信息 -->
+                <Label
+                    Text="正在进入 Hoyi"
+                    FontSize="19"
+                    FontAttributes="Bold"
+                    TextColor="#292940"
+                    HorizontalTextAlignment="Center"/>
 
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#7568F5" Offset="0" />
-                            <GradientStop Color="#5145CE" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.Background>
+                <!-- 当前用户头像 -->
+                <Border
+                    WidthRequest="96"
+                    HeightRequest="96"
+                    Stroke="#ECE9FF"
+                    StrokeThickness="4"
+                    StrokeShape="RoundRectangle 50"
+                    Padding="3"
+                    Margin="0,27"
+                    HorizontalOptions="Center">
 
-                    <Label Text="h" FontSize="37" FontAttributes="Bold" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                    <Image
+                        Source="{Binding CurrentUser.Avatar}"
+                        BackgroundColor="#6256DC"
+                        WidthRequest="90"
+                        HeightRequest="90"
+                        Margin="0"/>
+
                 </Border>
 
-                <Label Text="hoyi" FontSize="37" FontAttributes="Bold" TextColor="#282746" CharacterSpacing="-1.5" VerticalOptions="Center" />
+                <!-- 加载状态 -->
+                <controls:AnimatedEllipsisLabel
+                    Text="{Binding LoadingMessage}"
+                    Interval="500"
+                    MaxDots="3"
+                    FontSize="13"
+                    TextColor="#999AAF"
+                    HorizontalOptions="Center"/>
 
-            </HorizontalStackLayout>-->
+                <ActivityIndicator
+                    IsRunning="True"
+                    Color="#6256DC"
+                    WidthRequest="22"
+                    HeightRequest="22"
+                    Margin="0,17"
+                    VerticalOptions="Center" />
 
-            <!-- 欢迎标题 -->
-            <!--<VerticalStackLayout Spacing="8" Margin="0,48,0,34">
+            </VerticalStackLayout>
+
+            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Padding="28,30" Spacing="0" MaximumWidthRequest="420">
+
+                <!-- Hoyi Logo -->
+                <!--<HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="11">
+
+                    <Border WidthRequest="52" HeightRequest="52" StrokeThickness="0" StrokeShape="RoundRectangle 17">
+
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#7568F5" Offset="0" />
+                                <GradientStop Color="#5145CE" Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+
+                        <Label Text="h" FontSize="37" FontAttributes="Bold" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                    </Border>
+
+                    <Label Text="hoyi" FontSize="37" FontAttributes="Bold" TextColor="#282746" CharacterSpacing="-1.5" VerticalOptions="Center" />
+
+                </HorizontalStackLayout>-->
+
+                <!-- 欢迎标题 -->
+                <!--<VerticalStackLayout Spacing="8" Margin="0,48,0,34">
+
+                    <Label
+                        Text="欢迎回来"
+                        FontSize="30"
+                        FontAttributes="Bold" TextColor="#24243A" HorizontalTextAlignment="Center" />
+
+                    <Label
+                        Text="很高兴再次与你相见"
+                        FontSize="14"
+                        TextColor="#9293A8"
+                        HorizontalTextAlignment="Center" />
+
+                </VerticalStackLayout>-->
+
+            </VerticalStackLayout>
+
+            <!-- 底部品牌信息 -->
+            <VerticalStackLayout VerticalOptions="End" Opacity="0.55">
 
                 <Label
-                    Text="欢迎回来"
-                    FontSize="30"
-                    FontAttributes="Bold" TextColor="#24243A" HorizontalTextAlignment="Center" />
-
-                <Label
-                    Text="很高兴再次与你相见"
-                    FontSize="14"
+                    Text="让沟通更简单，让连接更自由"
+                    FontSize="13"
                     TextColor="#9293A8"
                     HorizontalTextAlignment="Center" />
 
-            </VerticalStackLayout>-->
+                <Label
+                    Text="HOYI · CONNECT EVERYTHING"
+                    FontSize="10"
+                    TextColor="#B7B8C8"
+                    CharacterSpacing="2"
+                    HorizontalTextAlignment="Center" />
 
-            <!-- 用户信息卡片 -->
-            <Border
-                BackgroundColor="White"
-                Stroke="#ECECF4"
-                StrokeThickness="1"
-                StrokeShape="RoundRectangle 24"
-                WidthRequest="200"
-                HeightRequest="300"
-                Shadow="{Shadow Radius=20, Opacity=0.08, Offset='0,8'}">
+            </VerticalStackLayout>
 
-                <VerticalStackLayout HorizontalOptions="Center" Spacing="0">
-
-
-                    <!-- 用户欢迎信息 -->
-                    <Label
-                        Text="正在进入 Hoyi"
-                        FontSize="19"
-                        FontAttributes="Bold"
-                        TextColor="#292940"
-                        HorizontalTextAlignment="Center"
-                        Margin="0,32,0,27" />
-                    
-                    <!-- 当前用户头像 -->
-                    <Border
-                        WidthRequest="96"
-                        HeightRequest="96"
-                        Stroke="#ECE9FF"
-                        StrokeThickness="4"
-                        StrokeShape="RoundRectangle 50"
-                        Padding="3"
-                        HorizontalOptions="Center">
-
-                        <Image
-                            Source="{Binding CurrentUser.Avatar}"
-                            BackgroundColor="#6256DC"
-                            WidthRequest="90"
-                            HeightRequest="90"
-                            Margin="0"/>
-
-                    </Border>
-
-                    <!-- 加载状态 -->
-                    <controls:AnimatedEllipsisLabel
-                        Grid.Column="1"
-                        Text="{Binding LoadingMessage}"
-                        Interval="500"
-                        MaxDots="3"
-                        FontSize="13"
-                        TextColor="#999AAF"
-                        HorizontalOptions="Center"
-                        Margin="0,17"/>
-
-                    <ActivityIndicator
-                        IsRunning="True"
-                        Color="#6256DC"
-                        WidthRequest="22"
-                        HeightRequest="22"
-                        VerticalOptions="Center" />
-
-                </VerticalStackLayout>
-
-            </Border>
-
-        </VerticalStackLayout>
-
-        <!-- 底部品牌信息 -->
-        <VerticalStackLayout VerticalOptions="End">
-
-            <Label
-                Text="让沟通更简单，让连接更自由"
-                FontSize="13"
-                TextColor="#9293A8"
-                HorizontalTextAlignment="Center" />
-
-            <Label
-                Text="HOYI · CONNECT EVERYTHING"
-                FontSize="10"
-                TextColor="#B7B8C8"
-                CharacterSpacing="2"
-                HorizontalTextAlignment="Center" />
-
-        </VerticalStackLayout>
+        </Grid>
 
     </Grid>
 

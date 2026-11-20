@@ -17,14 +17,16 @@
             <Style x:Key="IconBtn1" TargetType="Button">
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
-                <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#111111, Light=#EEEEEE}"/>
-                <Setter Property="ContentLayout" Value="Top,0"/>
+                <Setter Property="HeightRequest" Value="50"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource Gray000}}"/>
+                <Setter Property="BorderColor" Value="{AppThemeBinding Dark={StaticResource Gray600}, Light={StaticResource Gray100}}"/>
+                <Setter Property="ContentLayout" Value="Left,0"/>
                 <Setter Property="Margin" Value="0"/>
-                <Setter Property="Padding" Value="10"/>
-                <Setter Property="CornerRadius" Value="0"/>
-                <Setter Property="FontSize" Value="Micro"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="BorderWidth" Value="1"/>
+                <Setter Property="CornerRadius" Value="5"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimary}, Light={StaticResource TextSecondary}}"/>
                 <Setter Property="HorizontalOptions" Value="Fill"/>
                 <Setter Property="VerticalOptions" Value="Fill"/>
             </Style>

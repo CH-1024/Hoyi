@@ -16,20 +16,6 @@
     <ContentPage.Resources>
         <ResourceDictionary>
 
-            <Style x:Key="IconBtn1" TargetType="Button">
-                <Setter Property="MinimumHeightRequest" Value="0"/>
-                <Setter Property="MinimumWidthRequest" Value="0"/>
-                <Setter Property="HeightRequest" Value="{OnIdiom Desktop=50, Phone=60}"/>
-                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=#111111, Light=#EEEEEE}"/>
-                <Setter Property="ContentLayout" Value="Top,0"/>
-                <Setter Property="Margin" Value="0"/>
-                <Setter Property="Padding" Value="10"/>
-                <Setter Property="CornerRadius" Value="0"/>
-                <Setter Property="FontSize" Value="Micro"/>
-                <Setter Property="TextColor" Value="White"/>
-                <Setter Property="HorizontalOptions" Value="Fill"/>
-                <Setter Property="VerticalOptions" Value="Fill"/>
-            </Style>
 
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -78,7 +64,7 @@
 
                             <Grid ColumnDefinitions="50,*,auto,auto,auto,auto" ColumnSpacing="0" HeightRequest="50">
 
-                                <toolkit:AvatarView Grid.Column="0" BackgroundColor="Black" StrokeThickness="0" CornerRadius="5" WidthRequest="50" HeightRequest="50" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0">
+                                <toolkit:AvatarView Grid.Column="0" BackgroundColor="Transparent" StrokeThickness="0" CornerRadius="5" WidthRequest="48" HeightRequest="48" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0">
                                     <toolkit:AvatarView.Triggers>
                                         <DataTrigger TargetType="toolkit:AvatarView" Binding="{Binding IsSelf}" Value="True">
                                             <Setter Property="ImageSource" Value="{Binding Receiver_Avatar}"/>

@@ -11,5 +11,10 @@ namespace HY.MAUI.Pages.Login
 
             BindingContext = login;
         }
+
+        private void TapGestureRecognizer_OnTapped(object? sender, TappedEventArgs e)
+        {
+            autoLogin.IsChecked = !autoLogin.IsChecked;
+        }
     }
 }

@@ -21,9 +21,10 @@
                     <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="7" HorizontalOptions="Center" VerticalOptions="Center">
                         <Image x:Name="ChatIcon" Source="chat.png" WidthRequest="23" HeightRequest="23" Aspect="AspectFit" Opacity="0.58"/>
                         <Label x:Name="ChatLabel" Grid.Column="1" Text="聊天" FontSize="Body" TextColor="#7B8494" VerticalOptions="Center"/>
-                        <controls:BadgeView Grid.ColumnSpan="2" Margin="0,0,0,25" HorizontalOptions="Center" VerticalOptions="Center" BadgeColor="#FF453A" TextColor="White"
-                                            IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadMessageCountVisible}" 
-                                            Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadMessageCountShow}"/>
+                        <controls:BadgeView 
+                            Grid.Column="0" Margin="0,0,0,0" HorizontalOptions="Center" VerticalOptions="Center" BadgeColor="#FF453A" TextColor="White" Opacity="0.85"
+                            IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadMessageCountVisible}" 
+                            Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadMessageCountShow}"/>
                     </Grid>
 
                 </Border>
@@ -37,9 +38,10 @@
                     <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="7" HorizontalOptions="Center" VerticalOptions="Center">
                         <Image x:Name="ContactIcon" Source="contact.png" WidthRequest="23" HeightRequest="23" Aspect="AspectFit" Opacity="0.58"/>
                         <Label x:Name="ContactLabel" Grid.Column="1" Text="好友" FontSize="Body" TextColor="#7B8494" VerticalOptions="Center"/>
-                        <controls:BadgeView Grid.ColumnSpan="2" Margin="0,0,0,25" HorizontalOptions="Center" VerticalOptions="Center" BadgeColor="#FF453A" TextColor="White"
-                                            IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadContactCountVisible}" 
-                                            Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadContactCountShow}"/>
+                        <controls:BadgeView 
+                            Grid.Column="0" Margin="0,0,0,0" HorizontalOptions="Center" VerticalOptions="Center" BadgeColor="#FF453A" TextColor="White" Opacity="0.85"
+                            IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadContactCountVisible}" 
+                            Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=UnreadContactCountShow}"/>
                     </Grid>
                 </Border>
 
