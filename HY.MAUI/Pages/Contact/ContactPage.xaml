@@ -65,17 +65,19 @@
 
                         <BoxView IsVisible="{OnPlatform iOS=True, MacCatalyst=True,Default=False}" Color="{AppThemeBinding Dark={StaticResource Gray800}, Light={StaticResource Gray100}}" HeightRequest="1" HorizontalOptions="Fill" VerticalOptions="End" />
 
-                        <Border Grid.Row="1" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 10">
+                        <Border Grid.Row="1" Stroke="{AppThemeBinding Dark={StaticResource Gray600}, Light={StaticResource Gray100}}" StrokeThickness="1" StrokeShape="RoundRectangle 5">
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="1">
                                 <Button Grid.Column="0" Style="{StaticResource IconBtn1}" Text="申请中" Command="{Binding RequestCommand}"/>
-                                <controls:BadgeView Grid.Column="0" HorizontalOptions="Center" VerticalOptions="Center" Margin="80,0,0,0" BadgeColor="#FF453A" TextColor="White" ZIndex="1" Opacity="0.85"
-                                                    IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RequestContactCountVisible}"
-                                                    Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RequestContactCountShow}"/>
+                                <controls:BadgeView 
+                                    Grid.Column="0" HorizontalOptions="Center" VerticalOptions="Center" Margin="80,0,0,0" BadgeColor="#FF453A" TextColor="White" ZIndex="1" Opacity="0.85"
+                                    IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RequestContactCountVisible}"
+                                    Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RequestContactCountShow}"/>
 
                                 <Button Grid.Column="1" Style="{StaticResource IconBtn1}" Text="待同意" Command="{Binding RespondCommand}"/>
-                                <controls:BadgeView Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center" Margin="80,0,0,0" BadgeColor="#FF453A" TextColor="White" ZIndex="1" Opacity="0.85"
-                                                    IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RespondContactCountVisible}"
-                                                    Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RespondContactCountShow}"/>
+                                <controls:BadgeView 
+                                    Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center" Margin="80,0,0,0" BadgeColor="#FF453A" TextColor="White" ZIndex="1" Opacity="0.85"
+                                    IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RespondContactCountVisible}"
+                                    Text="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=RespondContactCountShow}"/>
                             </Grid>
                         </Border>
 

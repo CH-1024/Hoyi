@@ -68,6 +68,7 @@ namespace HY.MAUI.Controls
             set => SetValue(MaxDotsProperty, value);
         }
 
+        [System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
         public double FontSize
         {
             get => (double)GetValue(FontSizeProperty);
