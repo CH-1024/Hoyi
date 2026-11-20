@@ -80,6 +80,7 @@ namespace HY.MAUI.Services
 
         public async Task<bool> SyncAsync(CancellationToken cancellationToken = default)
         {
+            _globalBinding.IsSyncing = true;
             await _syncLock.WaitAsync(cancellationToken);
 
             try
@@ -198,6 +199,7 @@ namespace HY.MAUI.Services
             finally
             {
                 _syncLock.Release();
+                _globalBinding.IsSyncing = false;
             }
         }
 

@@ -6,6 +6,7 @@
              Shell.NavBarIsVisible="{OnIdiom Phone=True, Desktop=True}"
              Shell.TabBarIsVisible="False"
              Shell.FlyoutBehavior="Disabled"
+             xmlns:maui="clr-namespace:HY.MAUI"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:pm="clr-namespace:HY.MAUI.PageModels.Mine"
              xmlns:m="clr-namespace:HY.MAUI.Models"
@@ -30,19 +31,21 @@
 
     <!--<Shell.BackButtonBehavior>
         <BackButtonBehavior IsEnabled="False" IsVisible="False" />
-    </Shell.BackButtonBehavior>
-    <Shell.TitleView>
-        <Grid ColumnDefinitions="50,*,50">
-            <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _SettingPage}, x:DataType=ContentPage}" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
-            <Label  HeightRequest="40" Grid.Column="1" Text="设置" TextColor="{StaticResource PrimaryDark}" FontSize="Title" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
-            <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
+    </Shell.BackButtonBehavior>-->
 
-            <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="#292929" VerticalOptions="End"/>
+    <Shell.TitleView>
+        <Grid HorizontalOptions="Center" VerticalOptions="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{OnPlatform WinUI=45,Default=0}"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="{OnPlatform Default=45}"/>
+            </Grid.ColumnDefinitions>
+
+            <HorizontalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                <ActivityIndicator IsRunning="True" IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=IsSyncing}" HorizontalOptions="Start" VerticalOptions="Center" Margin="0" WidthRequest="20" HeightRequest="20"/>
+                <Label Text="设置" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
+            </HorizontalStackLayout>
         </Grid>
-    </Shell.TitleView>-->
-
-    <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="设置" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
     </Shell.TitleView>
 
     <!--<ContentPage.ToolbarItems>

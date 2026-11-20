@@ -201,7 +201,7 @@ namespace HY.MAUI.PageModels.Chat
         void Appearing()
         {
             if (_isNavigatedTo) return;
-
+            
             if (_currentChat.Unread_Count != 0)
             {
                 _ = Task.Run(async () =>
@@ -223,7 +223,7 @@ namespace HY.MAUI.PageModels.Chat
         void Disappearing()
         {
             if (_isNavigatedTo) return;
-
+            
         }
 
         [RelayCommand]
@@ -306,7 +306,7 @@ namespace HY.MAUI.PageModels.Chat
                 await RefreshCommand.ExecuteAsync(null);
                 _collectionView.IsEnabled = true;
 
-                _collectionView.ScrollTo(first, position: ScrollToPosition.Center, animate: false);
+                //_collectionView.ScrollTo(first, position: ScrollToPosition.Center, animate: false);
             }
 
             await Task.Delay(100);

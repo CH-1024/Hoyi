@@ -44,7 +44,17 @@
     </ContentPage.Behaviors>
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}" Text="好友" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
+        <Grid HorizontalOptions="Center" VerticalOptions="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{OnPlatform WinUI=45, Default=0}"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <HorizontalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                <ActivityIndicator IsRunning="True" IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=IsSyncing}" HorizontalOptions="Start" VerticalOptions="Center" Margin="0" WidthRequest="20" HeightRequest="20"/>
+                <Label Text="好友" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
+            </HorizontalStackLayout>
+        </Grid>
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>

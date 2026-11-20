@@ -14,6 +14,12 @@ namespace HY.MAUI.Services
             set { SetProperty(ref autoLogin, value); }
         }
 
+        private bool isSyncing;
+        public bool IsSyncing
+        {
+            get { return isSyncing; }
+            set { SetProperty(ref isSyncing, value); }
+        }
 
 
         private int unreadMessageCount;

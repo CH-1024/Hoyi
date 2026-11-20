@@ -7,6 +7,7 @@
              Shell.NavBarIsVisible="{OnIdiom Phone=True, Desktop=True}"
              Shell.TabBarIsVisible="False"
              Shell.FlyoutBehavior="Disabled"
+             xmlns:maui="clr-namespace:HY.MAUI"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:pm="clr-namespace:HY.MAUI.PageModels.Chat"
              xmlns:m="clr-namespace:HY.MAUI.Models"
@@ -66,37 +67,32 @@
 
     <!--<Shell.BackButtonBehavior>
         <BackButtonBehavior IsEnabled="False" IsVisible="False" />
-    </Shell.BackButtonBehavior>
+    </Shell.BackButtonBehavior>-->
 
     <Shell.TitleView>
-        <Grid ColumnDefinitions="50,*,50">
-            <Button HeightRequest="40" Grid.Column="0" Text="＜" Command="{Binding GoBackCommand}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center" Padding="0" Margin="0"/>
-            <Label  HeightRequest="40" Grid.Column="1" Text="{Binding Title}" BindingContext="{Binding Path=BindingContext, Source={x:Reference _MessagePage}, x:DataType=ContentPage}" TextColor="{StaticResource White}" FontSize="Title" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalOptions="Center"/>
-            <Button HeightRequest="40" Grid.Column="2" Text="…" Clicked="Button_Clicked" TextColor="Gray" FontSize="Title" FontAttributes="Bold" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center" Padding="0" Margin="0"/>
+        <Grid HorizontalOptions="Center" VerticalOptions="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{OnPlatform WinUI=45, Default=0}"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-            <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="#292929" VerticalOptions="End"/>
-        </Grid>
-    </Shell.TitleView>-->
-
-    <Shell.TitleView>
-        <Grid ColumnDefinitions="*,auto,auto,*" Margin="{OnPlatform WinUI='45,0,0,0', Default='0,0,0,0'}">
-            <Label Grid.Column="1" Text="{Binding Title}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
-            <Ellipse Grid.Column="2" MinimumHeightRequest="0" MinimumWidthRequest="0" WidthRequest="8" HeightRequest="8" Margin="5,0,0,0">
-                <Ellipse.Triggers>
-
-                    <DataTrigger TargetType="Ellipse" Binding="{Binding CurrentContact}" Value="{x:Null}">
-                        <Setter Property="IsVisible" Value="False"/>
-                    </DataTrigger>
-                    <DataTrigger TargetType="Ellipse" Binding="{Binding CurrentContact.Is_Online}" Value="True">
-                        <Setter Property="Fill" Value="LightGreen"/>
-                    </DataTrigger>
-                    <DataTrigger TargetType="Ellipse" Binding="{Binding CurrentContact.Is_Online}" Value="False">
-                        <Setter Property="Fill" Value="LightGray"/>
-                    </DataTrigger>
-
-                </Ellipse.Triggers>
-
-            </Ellipse>
+            <HorizontalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                <ActivityIndicator IsRunning="True" IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=IsSyncing}" HorizontalOptions="Start" VerticalOptions="Center" Margin="0" WidthRequest="20" HeightRequest="20"/>
+                <Label Text="{Binding Title}" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
+                <Ellipse MinimumHeightRequest="0" MinimumWidthRequest="0" WidthRequest="8" HeightRequest="8" Margin="5,0,0,0">
+                    <Ellipse.Triggers>
+                        <DataTrigger TargetType="Ellipse" Binding="{Binding CurrentContact}" Value="{x:Null}">
+                            <Setter Property="IsVisible" Value="False"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Ellipse" Binding="{Binding CurrentContact.Is_Online}" Value="True">
+                            <Setter Property="Fill" Value="LightGreen"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Ellipse" Binding="{Binding CurrentContact.Is_Online}" Value="False">
+                            <Setter Property="Fill" Value="LightGray"/>
+                        </DataTrigger>
+                    </Ellipse.Triggers>
+                </Ellipse>
+            </HorizontalStackLayout>
         </Grid>
     </Shell.TitleView>
 

@@ -7,6 +7,7 @@
              Shell.NavBarIsVisible="{OnIdiom Phone=True, Desktop=True}"
              Shell.TabBarIsVisible="False"
              Shell.FlyoutBehavior="Disabled"
+             xmlns:maui="clr-namespace:HY.MAUI"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:pm="clr-namespace:HY.MAUI.PageModels.Chat"
              xmlns:m="clr-namespace:HY.MAUI.Models"
@@ -22,7 +23,18 @@
     </ContentPage.Behaviors>
 
     <Shell.TitleView>
-        <Label Margin="{OnPlatform WinUI='0,0,0,0', Default='-30,0,0,0'}" Text="搜索" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
+        <Grid HorizontalOptions="Center" VerticalOptions="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{OnPlatform WinUI=45,Default=0}"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="{OnPlatform Default=45}"/>
+            </Grid.ColumnDefinitions>
+
+            <HorizontalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                <ActivityIndicator IsRunning="True" IsVisible="{Binding Source={x:Static maui:MauiProgram.GlobalBindings}, Path=IsSyncing}" HorizontalOptions="Start" VerticalOptions="Center" Margin="0" WidthRequest="20" HeightRequest="20"/>
+                <Label Text="搜索" TextColor="{AppThemeBinding Dark={StaticResource White}, Light={StaticResource Black}}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" FontSize="18"/>
+            </HorizontalStackLayout>
+        </Grid>
     </Shell.TitleView>
 
     <!-- <ContentPage.ToolbarItems> -->
