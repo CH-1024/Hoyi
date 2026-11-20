@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="HY.MAUI.Controls.VideoBubble"
-             x:Name="_VideoBubble"
+             x:Class="HY.MAUI.Controls.ImageBubble"
+             x:Name="_ImageBubble"
              xmlns:msgvm="clr-namespace:HY.MAUI.Models.MsgVM"
              xmlns:controls="clr-namespace:HY.MAUI.Controls"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             x:DataType="msgvm:VideoMessageVM">
+             x:DataType="msgvm:ImageMessageVM">
+
 
     <ContentView.Triggers>
 
@@ -20,7 +21,7 @@
     <Grid ColumnDefinitions="50,*,50" Margin="0,6">
 
         <!-- ================== 头像 ================== -->
-        <toolkit:AvatarView BackgroundColor="Black" StrokeThickness="0" CornerRadius="5" Padding="0" Margin="0" WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Start" IsVisible="False">
+        <toolkit:AvatarView BackgroundColor="Transparent" StrokeThickness="0" CornerRadius="5" Padding="0" Margin="0" WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Start" IsVisible="False">
 
             <!-- 绑定头像 -->
             <toolkit:AvatarView.ImageSource>
@@ -87,7 +88,7 @@
                         <Setter Property="Color" Value="Red"/>
                         <Setter Property="IsVisible" Value="True"/>
                     </DataTrigger>
-                    
+
                 </ActivityIndicator.Triggers>
 
             </ActivityIndicator>
@@ -123,7 +124,7 @@
             </controls:CircularProgressBar>
 
             <!-- 气泡 -->
-            <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Secondary}}" StrokeThickness="0" Padding="0" WidthRequest="100" HeightRequest="150">
+            <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource PrimaryDark}}" StrokeThickness="0" Padding="0" WidthRequest="100" HeightRequest="150">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Bubble_Primary_Tapped" Buttons="Primary"/>
                     <TapGestureRecognizer Tapped="Bubble_Secondary_Tapped" Buttons="Secondary"/>
@@ -149,7 +150,7 @@
 
                 <Border.Triggers>
                     <DataTrigger TargetType="Border" Binding="{Binding IsSelf}" Value="True">
-                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource PrimaryDark}}"/>
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource Secondary}}"/>
                     </DataTrigger>
                     <DataTrigger TargetType="Border" Binding="{Binding Message_Status}" Value="Recalled">
                         <Setter Property="IsVisible" Value="False"/>
@@ -157,24 +158,7 @@
                 </Border.Triggers>
 
                 <!-- 内容 -->
-                <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
-                    <Image Aspect="AspectFill" Source="{Binding Cover_Video_Url}"/>
-                    <Ellipse Fill="#CCFFFFFF" WidthRequest="45" HeightRequest="45" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="False">
-                        <Ellipse.Triggers>
-                            <DataTrigger TargetType="Ellipse" Binding="{Binding Message_Status}" Value="Sented">
-                                <Setter Property="IsVisible" Value="True"/>
-                            </DataTrigger>
-                        </Ellipse.Triggers>
-                    </Ellipse>
-
-                    <Path Fill="Black" WidthRequest="25" HeightRequest="25" Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center" Data="M8,6 Q6,6 6,8 L6,22 Q6,24 8,24 L22,16 Q24,15 22,14 Z" IsVisible="False">
-                        <Path.Triggers>
-                            <DataTrigger TargetType="Path" Binding="{Binding Message_Status}" Value="Sented">
-                                <Setter Property="IsVisible" Value="True"/>
-                            </DataTrigger>
-                        </Path.Triggers>
-                    </Path>
-                </Grid>
+                <Image Aspect="AspectFill" Source="{Binding Thumbnail_Image_Url}"/>
             </Border>
 
             <!--撤回提示-->
@@ -221,5 +205,4 @@
         </Grid>
 
     </Grid>
-
 </ContentView>

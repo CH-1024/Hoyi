@@ -42,24 +42,17 @@
                     HorizontalTextAlignment="Center"/>
 
                 <!-- 当前用户头像 -->
-                <Border
-                    WidthRequest="96"
-                    HeightRequest="96"
-                    Stroke="#ECE9FF"
-                    StrokeThickness="4"
-                    StrokeShape="RoundRectangle 50"
-                    Padding="3"
-                    Margin="0,27"
-                    HorizontalOptions="Center">
-
-                    <Image
-                        Source="{Binding CurrentUser.Avatar}"
-                        BackgroundColor="#6256DC"
-                        WidthRequest="90"
-                        HeightRequest="90"
-                        Margin="0"/>
-
-                </Border>
+                <toolkit:AvatarView 
+                    ImageSource="{Binding CurrentUser.Avatar}" 
+                    BackgroundColor="Transparent" 
+                    Stroke="#ECE9FF" 
+                    StrokeThickness="5" 
+                    CornerRadius="45" 
+                    WidthRequest="90" 
+                    HeightRequest="90" 
+                    HorizontalOptions="Center" 
+                    Padding="0" 
+                    Margin="0,15"/>
 
                 <!-- 加载状态 -->
                 <controls:AnimatedEllipsisLabel
@@ -75,7 +68,7 @@
                     Color="#6256DC"
                     WidthRequest="22"
                     HeightRequest="22"
-                    Margin="0,17"
+                    Margin="0,5"
                     VerticalOptions="Center" />
 
             </VerticalStackLayout>

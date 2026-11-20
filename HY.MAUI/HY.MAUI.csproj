@@ -100,10 +100,10 @@
 	  <Compile Update="AppShell_Desktop.xaml.cs">
 	    <DependentUpon>AppShell_Desktop.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="Controls\CallVideoBubble.xaml.cs">
+	  <Compile Update="Controls\Bubble\CallVideoBubble.xaml.cs">
 	    <DependentUpon>CallVideoBubble.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="Controls\CallVoiceBubble.xaml.cs">
+	  <Compile Update="Controls\Bubble\CallVoiceBubble.xaml.cs">
 	    <DependentUpon>CallVoiceBubble.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="Controls\BottomTabBar.xaml.cs">
@@ -154,28 +154,28 @@
 	  <MauiXaml Update="Controls\BadgeView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Controls\ImageBubble.xaml">
+	  <MauiXaml Update="Controls\Bubble\ImageBubble.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Controls\SystemBubble.xaml">
+	  <MauiXaml Update="Controls\Bubble\SystemBubble.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Controls\TextBubble.xaml">
+	  <MauiXaml Update="Controls\Bubble\TextBubble.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Controls\ThemeSwitch.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Controls\VideoBubble.xaml">
+	  <MauiXaml Update="Controls\Bubble\VideoBubble.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Controls\CallVideoBubble.xaml">
+	  <MauiXaml Update="Controls\Bubble\CallVideoBubble.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Controls\VoiceBubble.xaml">
+	  <MauiXaml Update="Controls\Bubble\VoiceBubble.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Controls\CallVoiceBubble.xaml">
+	  <MauiXaml Update="Controls\Bubble\CallVoiceBubble.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Controls\BottomTabBar.xaml">

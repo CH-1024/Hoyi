@@ -26,7 +26,7 @@
     <Grid ColumnDefinitions="50,*,50" Margin="0,6">
 
         <!-- ================== 头像 ================== -->
-        <toolkit:AvatarView BackgroundColor="Black" StrokeThickness="0" CornerRadius="5" Padding="0" Margin="0" WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Start" IsVisible="False">
+        <toolkit:AvatarView BackgroundColor="Transparent" StrokeThickness="0" CornerRadius="5" Padding="0" Margin="0" WidthRequest="36" HeightRequest="36" HorizontalOptions="Center" VerticalOptions="Start" IsVisible="False">
 
             <!-- 绑定头像 -->
             <toolkit:AvatarView.ImageSource>
@@ -66,7 +66,7 @@
             </Grid.Triggers>
 
             <!-- 气泡 -->
-            <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Secondary}}" StrokeThickness="0" Padding="8">
+            <Border Grid.Column="1" BackgroundColor="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource PrimaryDark}}" StrokeThickness="0" Padding="8">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Bubble_Primary_Tapped" Buttons="Primary"/>
                     <TapGestureRecognizer Tapped="Bubble_Secondary_Tapped" Buttons="Secondary"/>
@@ -92,7 +92,7 @@
 
                 <Border.Triggers>
                     <DataTrigger TargetType="Border" Binding="{Binding IsSelf}" Value="True">
-                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource PrimaryDark}}"/>
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray900}, Light={StaticResource Secondary}}"/>
                     </DataTrigger>
                 </Border.Triggers>
 
