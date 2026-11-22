@@ -30,6 +30,7 @@ namespace HY.MAUI.Communication.SignalR
         private readonly ILoginService _loginService;
         private readonly ITokenProvider _tokenProvider;
         private readonly INotificationManagerService _notificationManager;
+        private readonly IAuthService _authService;
 
         private readonly GlobalBinding _globalBinding;
 
@@ -45,7 +46,7 @@ namespace HY.MAUI.Communication.SignalR
         public HubConnectionState State => _connection?.State ?? HubConnectionState.Disconnected;
 
         public ChatHubSignalR(IServiceProvider serviceProvider, IGlobalCache globalCache, IGlobalMapper globalMapper, ILoginService loginService, ITokenProvider tokenProvider,
-                              INotificationManagerService notificationManager, GlobalBinding globalBinding,
+                              INotificationManagerService notificationManager, IAuthService authService, GlobalBinding globalBinding,
                               ChatStore chatStore, ContactStore contactStore, ContactRequestStore contactRequestStore, MessageStore messageStore)
         {
             _globalBinding = globalBinding;
@@ -56,6 +57,7 @@ namespace HY.MAUI.Communication.SignalR
             _loginService = loginService;
             _tokenProvider = tokenProvider;
             _notificationManager = notificationManager;
+            _authService = authService;
 
             _chatStore = chatStore;
             _contactStore = contactStore;
@@ -176,7 +178,17 @@ namespace HY.MAUI.Communication.SignalR
                 //};
 
                 // 使用 TokenProvider 获取访问令牌
-                options.AccessTokenProvider = async () => await _tokenProvider.GetAccessTokenAsync();
+                options.AccessTokenProvider = async () =>
+                {
+                    if (await _tokenProvider.IsAccessTokenExpired())
+                    {
+                        var refreshed = await _authService.RefreshTokenAsync();
+
+                        if (!refreshed) return null;
+                    }
+
+                    return await _tokenProvider.GetAccessTokenAsync();
+                };
             })
             .WithAutomaticReconnect(new SignalRRetryPolicy())
             .Build();
@@ -666,5 +678,14 @@ namespace HY.MAUI.Communication.SignalR
         }
 
         #endregion
+    }
+
+    public sealed class SignalRRetryPolicy : IRetryPolicy
+    {
+        public TimeSpan? NextRetryDelay(RetryContext retryContext)
+        {
+            var seconds = Math.Min(60, Math.Pow(2, Math.Min(retryContext.PreviousRetryCount, 6)));
+            return TimeSpan.FromSeconds(seconds);
+        }
     }
 }

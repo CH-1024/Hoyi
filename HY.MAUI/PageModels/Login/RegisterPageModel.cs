@@ -11,7 +11,7 @@ namespace HY.MAUI.PageModels.Login
     public partial class RegisterPageModel : ObservableObject
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly UserApi _userApi;
+        private readonly LoginApi _loginApi;
 
         private string nickname = null;
         public string Nickname
@@ -56,10 +56,10 @@ namespace HY.MAUI.PageModels.Login
         }
 
 
-        public RegisterPageModel(IServiceProvider serviceProvider, UserApi userApi)
+        public RegisterPageModel(IServiceProvider serviceProvider, LoginApi loginApi)
         {
             _serviceProvider = serviceProvider;
-            _userApi = userApi;
+            _loginApi = loginApi;
         }
 
 
@@ -83,7 +83,7 @@ namespace HY.MAUI.PageModels.Login
                 return;
             }
 
-            var registerResp = await _userApi.Register(Nickname, Username, Password, Email, Phone);
+            var registerResp = await _loginApi.Register(Nickname, Username, Password, Email, Phone);
             if (registerResp?.IsSucc == true)
             {
                 // 返回登录页

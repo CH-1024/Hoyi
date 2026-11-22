@@ -1,4 +1,5 @@
-﻿using HY.ApiService.Controllers.Requests;
+﻿using HY.ApiService.Authorization;
+using HY.ApiService.Controllers.Requests;
 using HY.ApiService.Dtos;
 using HY.ApiService.Entities;
 using HY.ApiService.Enums;
@@ -11,11 +12,13 @@ using SqlSugar;
 namespace HY.ApiService.Services
 {
     public record RefreshReturn(bool IsSucc, string? Error = null, UserDto? User = null, TokenModel? Token = null);
+    public record RegisterReturn(bool IsSucc, string? Error = null);
     public record LoginReturn(bool IsSucc, string? Error = null, UserDto? User = null, TokenModel? Token = null);
 
     public interface ILoginService
     {
         Task<RefreshReturn> Refresh(RefreshRequest param);
+        Task<RegisterReturn> Register(RegisterRequest param);
         Task<LoginReturn> Login(string ip, LoginRequest param);
         Task<bool> Logout(long userId, string deviceId);
 
@@ -32,9 +35,10 @@ namespace HY.ApiService.Services
         private readonly IUserRepository _userRepository;
         private readonly ILoginTokenRepository _loginTokenRepository;
         private readonly ILoginDeviceRepository _loginDeviceRepository;
+        private readonly IPermissionRepository _permissionRepository;
 
 
-        public LoginService(ISqlSugarClient db, IRedisTokenService redisTokenService, IUserRepository userRepository, ILoginTokenRepository loginTokenRepository, ILoginDeviceRepository loginDeviceRepository)
+        public LoginService(ISqlSugarClient db, IRedisTokenService redisTokenService, IUserRepository userRepository, ILoginTokenRepository loginTokenRepository, ILoginDeviceRepository loginDeviceRepository, IPermissionRepository permissionRepository)
         {
             _db = db;
 
@@ -43,6 +47,7 @@ namespace HY.ApiService.Services
             _userRepository = userRepository;
             _loginTokenRepository = loginTokenRepository;
             _loginDeviceRepository = loginDeviceRepository;
+            _permissionRepository = permissionRepository;
         }
 
 
@@ -97,6 +102,60 @@ namespace HY.ApiService.Services
             };
 
             return new (true, null, user.Adapt<UserDto>(), token);
+        }
+
+        public async Task<RegisterReturn> Register(RegisterRequest param)
+        {
+            if (await _userRepository.ExistsUsername(param.Username))
+            {
+                return new(false, "用户名已存在");
+            }
+            else if (await _userRepository.ExistsEmail(param.Email))
+            {
+                return new(false, "邮箱已存在");
+            }
+            else if (await _userRepository.ExistsPhone(param.Phone))
+            {
+                return new(false, "手机号已存在");
+            }
+
+            var hash = PBKDF2PasswordHasher.Hash(param.Password, out string salt);
+            var hyid = Guid.NewGuid().ToString("N")[..16];
+
+            long userId = 0;
+
+            var result = await _db.Ado.UseTranAsync(async () =>
+            {
+                // 创建用户
+                var userEntity = new UserEntity
+                {
+                    HYid = hyid,
+                    Username = param.Username,
+                    Nickname = param.Nickname,
+                    Avatar = null,
+                    Phone = param.Phone,
+                    Email = param.Email,
+                    Password_Hash = hash,
+                    Password_Salt = salt,
+                    Status = UserStatus.Registered,
+                    Created_At = DateTime.UtcNow
+                };
+                userId = await _userRepository.CreateUser(userEntity);
+
+                if (userId <= 0) throw new Exception("创建用户失败");
+
+                // 分配默认角色
+                var assigned = await _permissionRepository.AssignRoleByCodeAsync(userId, RoleCodes.Guest);
+
+                if (!assigned) throw new Exception("分配默认用户角色失败");
+            });
+
+            if (!result.IsSuccess)
+            {
+                return new(false, result.ErrorMessage);
+            }
+
+            return new(userId > 0);
         }
 
         public async Task<LoginReturn> Login(string ip, LoginRequest param)

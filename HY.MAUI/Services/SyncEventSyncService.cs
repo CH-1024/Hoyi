@@ -335,7 +335,7 @@ namespace HY.MAUI.Services
 
         private async Task<bool> RefreshCurrentUserAsync()
         {
-            var response = await _userApi.GetCurrentUser();
+            var response = await _userApi.GetInfo();
             if (response?.IsSucc != true || response.GetValue<UserDto>("User") is not UserDto userDto) return false;
 
             var userVM = _globalMapper.ToVM(userDto);

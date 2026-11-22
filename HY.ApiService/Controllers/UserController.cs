@@ -12,6 +12,7 @@ namespace HY.ApiService.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class UserController : ControllerBase
     {
         readonly IChatNotificationService _chatNotificationService;
@@ -26,8 +27,8 @@ namespace HY.ApiService.Controllers
         }
 
         [Authorize]
-        [HttpGet("get/currentuser")]
-        public async Task<IActionResult> GetCurrentUser()
+        [HttpGet("get/info")]
+        public async Task<IActionResult> GetInfo()
         {
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
@@ -44,15 +45,6 @@ namespace HY.ApiService.Controllers
                     { "User", user }
                 }
             });
-        }
-
-        [AllowAnonymous]
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserRequest registerRequest)
-        {
-            var result = await _userService.CreateUser(registerRequest);
-
-            return Ok(new Response(result.IsSucc, result.Error));
         }
 
         [Authorize]
@@ -78,31 +70,37 @@ namespace HY.ApiService.Controllers
 
         [Authorize]
         [HttpPost("update/profile")]
-        public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserRequest updateUserRequest)
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserRequest param)
         {
             var userId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var platform = int.Parse(User.FindFirst("DevicePlatform")!.Value);
 
-            if (!RegexHelper.IsValidNickname(updateUserRequest.Nickname))
+            if (!RegexHelper.IsValidNickname(param.Nickname))
             {
                 return Ok(new Response(false, "昵称格式不正确"));
             }
-            else if (!RegexHelper.IsValidPhone(updateUserRequest.Phone))
+            else if (!RegexHelper.IsValidPhone(param.Phone))
             {
                 return Ok(new Response(false, "手机号格式不正确"));
             }
-            else if (!RegexHelper.IsValidEmail(updateUserRequest.Email))
+            else if (!RegexHelper.IsValidEmail(param.Email))
             {
                 return Ok(new Response(false, "邮箱格式不正确"));
             }
 
-            var result = await _userService.UpdateProfile(userId, updateUserRequest);
+            var result = await _userService.UpdateProfile(userId, param);
             if (!result.IsSucc) return Ok(new Response(false, result.Error));
 
             // 通知接收方
-            await _chatNotificationService.UpdateProfileNotify(userId, updateUserRequest, platform);
+            await _chatNotificationService.UpdateProfileNotify(userId, param, platform);
 
             return Ok(new Response(result.IsSucc));
         }
+
+        //[Authorize]
+        //[HttpPut("password")]
+        //public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest param)
+        //{
+        //}
     }
 }

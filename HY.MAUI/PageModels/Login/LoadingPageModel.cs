@@ -121,7 +121,7 @@ namespace HY.MAUI.PageModels.Login
             }
 
             LoadingMessage = "正在加载用户信息";
-            var resp = await _userApi.GetCurrentUser();
+            var resp = await _userApi.GetInfo();
             if (resp?.IsSucc != true || resp.GetValue<UserDto>("User") is not UserDto userDto)
             {
                 _loginService.Logout();

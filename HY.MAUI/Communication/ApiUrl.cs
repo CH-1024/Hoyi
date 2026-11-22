@@ -33,6 +33,7 @@ namespace HY.MAUI.Communication
 
         // Login & Auth
         public static string Refresh => $"{HttpBase}/auth/refresh/";
+        public static string Register => $"{HttpBase}/auth/register/";
         public static string Login => $"{HttpBase}/auth/login/";
         public static string Logout => $"{HttpBase}/auth/logout/";
 
@@ -78,8 +79,7 @@ namespace HY.MAUI.Communication
 
 
         // User
-        public static string GetCurrentUser => $"{HttpBase}/user/get/currentuser/";
-        public static string Register => $"{HttpBase}/user/register/";
+        public static string GetInfo => $"{HttpBase}/user/get/info/";
         public static string UpdateHead => $"{HttpBase}/user/update/head/";
         public static string UpdateProfile => $"{HttpBase}/user/update/profile/";
 

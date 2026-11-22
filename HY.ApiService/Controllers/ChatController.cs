@@ -9,6 +9,7 @@ namespace HY.ApiService.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class ChatController : ControllerBase
     {
         readonly IChatNotificationService _chatNotificationService;

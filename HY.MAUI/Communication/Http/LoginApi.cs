@@ -49,6 +49,20 @@ namespace HY.MAUI.Communication.Http
             return await PostAsync(ApiUrl.Ping2, null);
         }
 
+        public async Task<Response?> Register(string nickname, string username, string password, string email, string phone)
+        {
+            var param = new RegisterRequest
+            {
+                Nickname = nickname,
+                Username = username,
+                Password = password,
+                Email = email,
+                Phone = phone
+            };
+
+            return await PostAsJsonAsync(ApiUrl.Register, param);
+        }
+
         public async Task<Response?> Login(string username, string password)
         {
             var param = new LoginRequest

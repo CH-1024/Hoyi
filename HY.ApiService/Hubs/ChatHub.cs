@@ -20,6 +20,7 @@ using System.Text;
 
 namespace HY.ApiService.Hubs
 {
+    [Authorize]
     public class ChatHub : Hub
     {
         readonly IRedisConnectionService _redisConnectionService;
@@ -30,10 +31,6 @@ namespace HY.ApiService.Hubs
         readonly IContactService _contactService;
         readonly IGroupMemberService _groupMemberService;
 
-
-        private long _userId => long.TryParse(Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : throw new Exception("UserId not found in claims");
-        private string _deviceId => Context.User?.FindFirst("DeviceId")?.Value ?? throw new Exception("DeviceId not found in claims");
-        private int _devicePlatform => int.TryParse(Context.User?.FindFirst("DevicePlatform")?.Value, out var platform) ? platform : throw new Exception("DevicePlatform not found in claims");
 
 
         public ChatHub(IRedisConnectionService redisConnectionService, IRedisCallService redisCallService, IChatNotificationService chatNotificationService, ILoginService loginService, IContactService contactService, IGroupMemberService groupMemberService)
@@ -51,9 +48,8 @@ namespace HY.ApiService.Hubs
         [Authorize]
         public override async Task OnConnectedAsync()
         {
-            var userId = _userId;
-            var deviceId = _deviceId;
-            var platform = _devicePlatform;
+            var userId = long.Parse(Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var platform = int.Parse(Context.User!.FindFirst("DevicePlatform")!.Value);
 
             var isOnline = await _redisConnectionService.IsUserOnlineAsync(userId);
             if (!isOnline)
@@ -75,9 +71,8 @@ namespace HY.ApiService.Hubs
         [Authorize]
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var userId = _userId;
-            var deviceId = _deviceId;
-            var platform = _devicePlatform;
+            var userId = long.Parse(Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var platform = int.Parse(Context.User!.FindFirst("DevicePlatform")!.Value);
 
             await _redisConnectionService.RemoveConnectionAsync(userId, platform, Context.ConnectionId);
 
@@ -107,9 +102,7 @@ namespace HY.ApiService.Hubs
         [Authorize]
         public async Task SendIce(string callId, string ice)
         {
-            var userId = _userId;
-
-            Console.WriteLine($"SendIce : {userId}");
+            var userId = long.Parse(Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             var callInfo = await _redisCallService.GetCallInfo(callId);
             if (callInfo == null)
@@ -129,9 +122,7 @@ namespace HY.ApiService.Hubs
         [Authorize]
         public async Task SendOffer(string callId, string offer)
         {
-            var userId = _userId;
-
-            Debug.WriteLine($"SendOffer : {userId}");
+            var userId = long.Parse(Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             var callInfo = await _redisCallService.GetCallInfo(callId);
             if (callInfo == null)
@@ -151,9 +142,7 @@ namespace HY.ApiService.Hubs
         [Authorize]
         public async Task SendAnswer(string callId, string answer)
         {
-            var userId = _userId;
-
-            Debug.WriteLine($"SendAnswer : {userId}");
+            var userId = long.Parse(Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             var callInfo = await _redisCallService.GetCallInfo(callId);
             if (callInfo == null)

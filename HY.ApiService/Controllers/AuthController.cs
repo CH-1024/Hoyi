@@ -71,6 +71,16 @@ namespace HY.ApiService.Controllers
 
 
         [AllowAnonymous]
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest param)
+        {
+            var result = await _loginService.Register(param);
+
+            return Ok(new Response(result.IsSucc, result.Error));
+        }
+
+
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest param)
         {

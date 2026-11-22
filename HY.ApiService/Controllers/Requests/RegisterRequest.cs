@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HY.MAUI.Communication.Http.Requests
+namespace HY.ApiService.Controllers.Requests
 {
-    public class RegisterUserRequest
+    public class RegisterRequest
     {
         public string Nickname { get; set; } = null!;
         public string Username { get; set; } = null!;

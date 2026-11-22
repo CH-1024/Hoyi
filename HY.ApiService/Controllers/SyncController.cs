@@ -26,7 +26,7 @@ namespace HY.ApiService.Controllers
         }
 
 
-
+        [Authorize]
         [HttpGet("head")]
         public async Task<IActionResult> GetHead()
         {
@@ -43,6 +43,7 @@ namespace HY.ApiService.Controllers
             });
         }
 
+        [Authorize]
         [HttpGet("changes")]
         public async Task<IActionResult> GetChanges(long afterId, int take)
         {
@@ -60,6 +61,7 @@ namespace HY.ApiService.Controllers
             });
         }
 
+        [Authorize]
         [HttpGet("message")]
         public async Task<IActionResult> GetMessage(long chatId, long messageId)
         {

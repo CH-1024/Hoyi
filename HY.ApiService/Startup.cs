@@ -64,14 +64,14 @@ namespace HY.ApiService
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();          // 重定向到 HTTPS
-            app.UseStaticFiles();               // 如果提供静态文件
-            app.UseRouting();                   // 开始路由
-            app.UseCors("AllowAll");            // 应用 CORS 策略
-            app.UseAuthentication();            // 身份验证
-            app.UseAuthorization();             // 授权检查
-            app.MapControllers();               // 映射控制器端点
-            app.MapHub<ChatHub>("/chatHub");    // 映射 SignalR 集线器端点
+            app.UseHttpsRedirection();                                  // 重定向到 HTTPS
+            app.UseStaticFiles();                                       // 如果提供静态文件
+            app.UseRouting();                                           // 开始路由
+            app.UseCors("AllowAll");                                    // 应用 CORS 策略
+            app.UseAuthentication();                                    // 身份验证
+            app.UseAuthorization();                                     // 授权检查
+            app.MapControllers();                                       // 映射控制器端点
+            app.MapHub<ChatHub>("/chatHub").RequireAuthorization();     // 映射 SignalR 集线器端点
 
         }
     }

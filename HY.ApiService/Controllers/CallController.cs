@@ -15,6 +15,7 @@ namespace HY.ApiService.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class CallController : ControllerBase
     {
         readonly IRedisCallService _redisCallService;
@@ -44,6 +45,7 @@ namespace HY.ApiService.Controllers
 
 
         [RoleAuthorize(RoleCodes.User)]
+        [Authorize]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCall([FromBody] CreateCallRequest request)
         {

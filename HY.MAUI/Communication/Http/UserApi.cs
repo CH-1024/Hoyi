@@ -16,23 +16,9 @@ namespace HY.MAUI.Communication.Http
         }
 
 
-        public async Task<Response?> GetCurrentUser()
+        public async Task<Response?> GetInfo()
         {
-            return await GetAsync(ApiUrl.GetCurrentUser);
-        }
-
-        public async Task<Response?> Register(string nickname, string username, string password, string email, string phone)
-        {
-            var param = new RegisterUserRequest
-            {
-                Nickname = nickname,
-                Username = username,
-                Password = password,
-                Email = email,
-                Phone = phone
-            };
-
-            return await PostAsJsonAsync(ApiUrl.Register, param);
+            return await GetAsync(ApiUrl.GetInfo);
         }
 
         public async Task<Response?> UpdateHead(string url)
