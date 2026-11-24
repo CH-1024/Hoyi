@@ -180,12 +180,9 @@ namespace HY.MAUI.Communication.SignalR
                 // 使用 TokenProvider 获取访问令牌
                 options.AccessTokenProvider = async () =>
                 {
-                    if (await _tokenProvider.IsAccessTokenExpired())
-                    {
-                        var refreshed = await _authService.RefreshTokenAsync();
+                    var valid = await _authService.RefreshTokenAsync();
 
-                        if (!refreshed) return null;
-                    }
+                    if (!valid) return null;
 
                     return await _tokenProvider.GetAccessTokenAsync();
                 };

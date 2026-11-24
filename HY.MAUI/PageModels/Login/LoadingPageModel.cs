@@ -110,8 +110,7 @@ namespace HY.MAUI.PageModels.Login
         [RelayCommand]
         async Task Loaded()
         {
-            // 检查访问令牌是否过期，过期自动刷新令牌
-            if (await _tokenProvider.IsAccessTokenExpired() && !await _authService.RefreshTokenAsync())
+            if (!await _authService.RefreshTokenAsync())
             {
                 _loginService.Logout();
                 _tokenProvider.Clear();

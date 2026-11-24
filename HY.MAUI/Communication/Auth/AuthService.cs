@@ -11,7 +11,7 @@ namespace HY.MAUI.Communication.Auth
 {
     public interface IAuthService
     {
-        Task<bool> RefreshTokenAsync();
+        Task<bool> RefreshTokenAsync(string? failedAccessToken = null);
     }
 
 
@@ -34,17 +34,33 @@ namespace HY.MAUI.Communication.Auth
         }
 
 
-        public async Task<bool> RefreshTokenAsync()
+        public async Task<bool> RefreshTokenAsync(string? failedAccessToken = null)
         {
             await _refreshLock.WaitAsync();
             try
             {
+                // 必须在获得锁之后重新读取 Token
+                var currentAccessToken = await _tokenProvider.GetAccessTokenAsync();
+                var isExpired = await _tokenProvider.IsAccessTokenExpired();
+
+                // 如果调用者因为 401 请求刷新，
+                // 但当前 Token 已经被其他线程更新，则不必再次刷新
+                if (!string.IsNullOrEmpty(failedAccessToken) && !string.Equals(currentAccessToken, failedAccessToken, StringComparison.Ordinal) && !isExpired)
+                {
+                    return true;
+                }
+
+                // 普通刷新请求：如果其他线程已经刷新成功，直接返回
+                if (string.IsNullOrEmpty(failedAccessToken) && !isExpired)
+                {
+                    return !string.IsNullOrEmpty(currentAccessToken);
+                }
+
                 var deviceId = await _loginService.GetDeviceId();
                 var devicePlatform = await _loginService.GetDevicePlatform();
                 var refreshToken = await _tokenProvider.GetRefreshTokenAsync();
 
                 if (string.IsNullOrEmpty(refreshToken)) return false;
-
 
                 var param = new RefreshRequest
                 {
@@ -78,7 +94,6 @@ namespace HY.MAUI.Communication.Auth
                 _refreshLock.Release();
             }
         }
-
 
     }
 }

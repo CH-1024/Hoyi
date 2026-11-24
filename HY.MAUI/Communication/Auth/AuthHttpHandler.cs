@@ -55,12 +55,13 @@ namespace HY.MAUI.Communication.Auth
 
             if (response.StatusCode != HttpStatusCode.Unauthorized) return response;
 
+            var failedAccessToken = request.Headers.Authorization?.Parameter;
+
             response.Dispose();
 
-            var refreshed = await _authService.RefreshTokenAsync().ConfigureAwait(false);
+            var refreshed = await _authService.RefreshTokenAsync(failedAccessToken).ConfigureAwait(false);
             if (!refreshed)
             {
-                _tokenProvider.Clear();
                 return new HttpResponseMessage(HttpStatusCode.Unauthorized);
             }
 
