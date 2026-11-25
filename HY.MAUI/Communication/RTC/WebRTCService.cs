@@ -431,30 +431,28 @@ namespace HY.MAUI.Communication.RTC
             await _chatHub.SendOffer(_callId, JsonSerializer.Serialize(offer));
         }
 
+        private bool _disposed;
         public void Dispose()
         {
+            if (_disposed) return;
+
+            _disposed = true;
+
             _chatHub.OnReceiveIce_ChatHub -= HandleIce;
             _chatHub.OnReceiveOffer_ChatHub -= HandleOffer;
             _chatHub.OnReceiveAnswer_ChatHub -= HandleAnswer;
 
-            if (_audioService != null)
+            _audioService?.StopRecording();
+            _videoService?.StopRecording();
+
+            try
             {
-                _audioService.StopRecording();
+                _peerConnection?.close();
             }
-            if (_videoService != null)
+            finally
             {
-                _videoService.StopRecording();
+                _peerConnection?.Dispose();
             }
-            if (_configuration != null)
-            {
-                //_configuration.Dispose();
-            }
-            if (_peerConnection != null)
-            {
-                _peerConnection.close();
-            }
-            
-            _peerConnection.Dispose();
             
             _chatHub = null;
             _audioService = null;

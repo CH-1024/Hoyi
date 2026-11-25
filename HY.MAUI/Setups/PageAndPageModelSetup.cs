@@ -24,8 +24,6 @@ namespace HY.MAUI.Setups
             //AddSingletonWithShellRoute	全局唯一	需要全局共享状态的页面，例如设置页面、始终显示相同数据的仪表板页面
 
             services.AddTransient<AppShell, AppShellModel>();
-            services.AddTransient<AppShell_Phone, AppShellModel>();
-            services.AddTransient<AppShell_Desktop, AppShellModel>();
 
             // shell flyout
             services.AddTransientWithShellRoute<NewPage1, NewPage1>(nameof(NewPage1));

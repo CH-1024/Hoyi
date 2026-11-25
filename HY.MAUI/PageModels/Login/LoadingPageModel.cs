@@ -302,12 +302,6 @@ namespace HY.MAUI.PageModels.Login
         private void GoToAppShell()
         {
             Application.Current!.Windows[0].Page = _serviceProvider.GetRequiredService<AppShell>();
-
-            // #if WINDOWS || MACCATALYST
-            //             Application.Current!.Windows[0].Page = _serviceProvider.GetRequiredService<AppShell_Desktop>();
-            // #else
-            //             Application.Current!.Windows[0].Page = _serviceProvider.GetRequiredService<AppShell_Phone>();
-            // #endif
         }
 
 

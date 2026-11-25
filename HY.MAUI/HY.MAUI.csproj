@@ -97,9 +97,6 @@
 	  <Compile Update="AppShell.xaml.cs">
 	    <DependentUpon>AppShell.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="AppShell_Desktop.xaml.cs">
-	    <DependentUpon>AppShell_Desktop.xaml</DependentUpon>
-	  </Compile>
 	  <Compile Update="Controls\Bubble\CallVideoBubble.xaml.cs">
 	    <DependentUpon>CallVideoBubble.xaml</DependentUpon>
 	  </Compile>
@@ -130,9 +127,6 @@
 	  <Compile Update="Pages\Login\LoginPage.xaml.cs">
 	    <DependentUpon>LoginPage.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="AppShell_Phone.xaml.cs">
-	    <DependentUpon>AppShell_Phone.xaml</DependentUpon>
-	  </Compile>
 	  <Compile Update="Pages\Mine\MinePage.xaml.cs">
 	    <DependentUpon>MinePage.xaml</DependentUpon>
 	  </Compile>
@@ -146,9 +140,6 @@
 
 	<ItemGroup>
 	  <MauiXaml Update="AppShell.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="AppShell_Desktop.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Controls\BadgeView.xaml">
