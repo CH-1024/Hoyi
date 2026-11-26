@@ -28,7 +28,7 @@
                 <Setter Property="HeightRequest" Value="80"/>
                 <Setter Property="WidthRequest" Value="80"/>
                 <Setter Property="CornerRadius" Value="40"/>
-                <Setter Property="FontSize" Value="Body"/>
+                <Setter Property="FontSize" Value="18"/>
                 <Setter Property="TextColor" Value="Black"/>
             </Style>
 
@@ -55,7 +55,7 @@
 
         <Ellipse Grid.Row="0" Fill="{Binding StatusColor}" ZIndex="100" WidthRequest="20" HeightRequest="20" HorizontalOptions="End" VerticalOptions="Start" Margin="10"/>
 
-        <Button Text="缩小" Command="{Binding MinimizeCommand}" FontSize="13" BackgroundColor="#333333" TextColor="White" HorizontalOptions="Start" VerticalOptions="Start" MinimumWidthRequest="0" MinimumHeightRequest="0" Margin="12,8,0,0" Padding="3" ZIndex="101"/>
+        <Button Text="缩小" Command="{Binding MinimizeCommand}" FontSize="13" BackgroundColor="#333333" TextColor="White" HorizontalOptions="Start" VerticalOptions="Start" MinimumWidthRequest="0" MinimumHeightRequest="0" Margin="12,8,0,0" Padding="8" ZIndex="101"/>
         <!--<Grid Grid.Row="1" RowDefinitions="auto,*" ColumnDefinitions="*,auto" Margin="5">
             <Entry Grid.Column="0" Text="{Binding Text}"/>
             <Button Grid.Column="1" Text="Send" Command="{Binding SendCommand}" WidthRequest="100" Margin="5,0"/>

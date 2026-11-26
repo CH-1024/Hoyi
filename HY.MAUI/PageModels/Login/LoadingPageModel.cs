@@ -303,9 +303,6 @@ namespace HY.MAUI.PageModels.Login
         private void GoToAppShell()
         {
             Application.Current!.Windows[0].Page = _serviceProvider.GetRequiredService<AppShell>();
-
-            var window = Application.Current!.Windows[0];
-            window.AddOverlay(new TestOverlay(window));
         }
 
 

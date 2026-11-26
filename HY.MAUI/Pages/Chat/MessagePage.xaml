@@ -38,7 +38,7 @@
             <Style x:Key="IconBtn2" TargetType="Button">
                 <Setter Property="MinimumHeightRequest" Value="0"/>
                 <Setter Property="MinimumWidthRequest" Value="0"/>
-                <Setter Property="HeightRequest" Value="45"/>
+                <Setter Property="HeightRequest" Value="{OnIdiom Phone=50, Default=45}"/>
                 <Setter Property="WidthRequest" Value="180"/>
                 <Setter Property="ImageSource" Value="dotnet_bot.png"/>
                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource Gray950}, Light={StaticResource Gray000}}"/>

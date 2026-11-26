@@ -39,6 +39,8 @@ public sealed class CallService
     private readonly ChatStore _chatStore;
 
     private CallSession? _session;
+    private VideoCallOverlay? _videoCallOverlay;
+    private VoiceCallOverlay? _voiceCallOverlay;
     private bool _isMinimized;
     private int _restoreInProgress;
 
@@ -193,8 +195,6 @@ public sealed class CallService
 
 
 
-    private VideoCallOverlay? _videoCallOverlay;
-    private VoiceCallOverlay? _voiceCallOverlay;
 
     public void StartOrAttach(WebRTCService webRTC, string callId, string targetName, string targetAvatar, CallType callType, DateTime startAt, bool isCaller)
     {
@@ -387,7 +387,10 @@ public sealed class CallService
     private async Task EndCurrentCallAsync(string? alertMessage = null)
     {
         CallSession? session;
+        VideoCallOverlay? videoCallOverlay;
+        VoiceCallOverlay? voiceCallOverlay;
         bool wasMinimized;
+        CallType? callType;
 
         lock (_gate)
         {
@@ -396,10 +399,15 @@ public sealed class CallService
             if (session == null)
                 return;
 
+            videoCallOverlay = _videoCallOverlay;
+            voiceCallOverlay = _voiceCallOverlay;
             wasMinimized = _isMinimized;
+            callType = CurrentCallType;
 
             // 先清空，防止重复的 SignalR 事件重复释放
             _session = null;
+            _videoCallOverlay = null;
+            _voiceCallOverlay = null;
             _isMinimized = false;
 
             _chatHub.OnCallAbnormal_ChatHub -= OnCallAbnormal;
@@ -424,13 +432,13 @@ public sealed class CallService
         await UI.RunTask(async () =>
         {
             var window = Application.Current!.Windows[0];
-            if (CurrentCallType == CallType.Voice)
+            if (callType == CallType.Voice && voiceCallOverlay != null)
             {
-                window.RemoveOverlay(_voiceCallOverlay);
+                window.RemoveOverlay(voiceCallOverlay);
             }
-            else
+            else if (callType == CallType.Video && videoCallOverlay != null)
             {
-                window.RemoveOverlay(_videoCallOverlay);
+                window.RemoveOverlay(videoCallOverlay);
             }
 
             // 如果通话页面还在最上层，才需要返回上一页
