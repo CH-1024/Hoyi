@@ -63,6 +63,8 @@
         </skia:SKCanvasView>
 
         <Ellipse Grid.Row="0" Fill="{Binding StatusColor}" ZIndex="100" WidthRequest="20" HeightRequest="20" HorizontalOptions="End" VerticalOptions="Start" Margin="10"/>
+        
+        <Button Text="缩小" Command="{Binding MinimizeCommand}" FontSize="13" BackgroundColor="#333333" TextColor="White" HorizontalOptions="Start" VerticalOptions="Start" MinimumWidthRequest="0" MinimumHeightRequest="0" Margin="12,8,0,0" Padding="3" ZIndex="101"/>
 
         <!--<Grid Grid.Row="1" RowDefinitions="auto,*" ColumnDefinitions="*,auto" Margin="5">
             <Entry Grid.Column="0" Text="{Binding Text}"/>

@@ -4,6 +4,7 @@ using HY.MAUI.Communication.Auth;
 using HY.MAUI.Communication.Http;
 using HY.MAUI.Communication.SignalR;
 using HY.MAUI.Communication.SignalR.Requests;
+using HY.MAUI.Controls;
 using HY.MAUI.Dtos;
 using HY.MAUI.Enums;
 using HY.MAUI.Interfaces;
@@ -302,6 +303,9 @@ namespace HY.MAUI.PageModels.Login
         private void GoToAppShell()
         {
             Application.Current!.Windows[0].Page = _serviceProvider.GetRequiredService<AppShell>();
+
+            var window = Application.Current!.Windows[0];
+            window.AddOverlay(new TestOverlay(window));
         }
 
 

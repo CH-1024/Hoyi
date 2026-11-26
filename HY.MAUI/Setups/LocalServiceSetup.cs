@@ -20,6 +20,7 @@ namespace HY.MAUI.Setups
             services.AddSingleton<IGlobalMapper, GlobalMapper>();
             services.AddSingleton<ILoginService, LoginService>();
             services.AddSingleton<ISyncEventSyncService, SyncEventSyncService>();
+            services.AddSingleton<CallService>();
 
             services.AddSingleton<MessageSendQueue>();
             services.AddSingleton<MessageSendService>();

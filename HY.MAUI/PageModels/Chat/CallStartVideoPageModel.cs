@@ -25,12 +25,9 @@ namespace HY.MAUI.PageModels.Chat
 {
     public partial class CallStartVideoPageModel : ObservableObject, IQueryAttributable
     {
-        readonly IGlobalCache _globalCache;
-        readonly IGlobalMapper _globalMapper;
-        readonly ChatHubSignalR _chatHub;
-        readonly ChatStore _chatStore;
-        readonly ContactStore _contactStore;
-        readonly CallApi _callApi;
+        private readonly IServiceProvider _serviceProvider;
+
+        private readonly CallService _callService;
 
         IDispatcherTimer _timer;
 
@@ -78,84 +75,24 @@ namespace HY.MAUI.PageModels.Chat
         readonly object _remoteLock = new object();
 
 
-        public CallStartVideoPageModel(IGlobalCache globalCache, IGlobalMapper globalMapper, ChatHubSignalR chatHub, ChatStore chatStore, ContactStore contactStore, CallApi callApi)
+        public CallStartVideoPageModel(IServiceProvider serviceProvider, CallService callService)
         {
-            _globalCache = globalCache;
-            _globalMapper = globalMapper;
-            _chatHub = chatHub;
-            _chatStore = chatStore;
-            _contactStore = contactStore;
-            _callApi = callApi;
+            _serviceProvider = serviceProvider;
+            _callService = callService;
         }
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
             _webRTC = (WebRTCService)query["WebRTC"];
             _isCaller = (bool)query["IsCaller"];
-            _callId = query["CallId"]?.ToString();
+            _callId = query["CallId"]?.ToString() ?? string.Empty;
+
             _startAt = (DateTime)query["StartAt"];
-            TargetAvatar = query["TargetAvatar"]?.ToString();
-            TargetName = query["TargetName"]?.ToString();
-        }
 
+            TargetAvatar = query["TargetAvatar"]?.ToString() ?? string.Empty;
+            TargetName = query["TargetName"]?.ToString() ?? string.Empty;
 
-        #region 接听
-
-        private async void OnCallAbnormal_ChatHub(string callId)
-        {
-            if (callId == _callId)
-            {
-                _ = Application.Current!.Windows[0].Page!.DisplayAlertAsync("提示", "通话异常断开", "退出");
-                await Shell.Current.GoToAsync("..", false);
-            }
-        }
-
-        private async void OnCallHangUp_ChatHub(string callId)
-        {
-            if (callId == _callId)
-            {
-                //_ = Application.Current!.Windows[0].Page!.DisplayAlertAsync("提示", "通话已在其他设备处理", "退出");
-                await Shell.Current.GoToAsync("..", false);
-            }
-        }
-
-        private async void OnCallExpiry_ChatHub(string callId)
-        {
-            if (callId == _callId)
-            {
-                _ = Application.Current!.Windows[0].Page!.DisplayAlertAsync("提示", "请求超时", "退出");
-                await Shell.Current.GoToAsync("..", false);
-            }
-        }
-
-        private Task<bool> OnReceiveMessage_ChatHub(MessageDto msgDto)
-        {
-            var chat = _chatStore.GetChat(msgDto);
-            if (chat != null && chat.Type == ChatType.Private)
-            {
-                // 私聊 从联系人列表获取发送者信息
-
-                var messageVM = _globalMapper.ToVM(msgDto);
-                if (messageVM is CallVideoMessageVM videoCallMsg && videoCallMsg.CallId == _callId)
-                {
-                    if (!messageVM.IsSelf)
-                    {
-                        if (chat.Unread_Count > 0)
-                        {
-                            chat.Unread_Count -= 1;
-                        }
-                    }
-
-                    return Task.FromResult(true);
-                }
-            }
-            else if (chat != null && chat.Type == ChatType.Group)
-            {
-                // 群聊 从群成员列表获取发送者信息
-
-                throw new NotImplementedException("群聊视频通话消息处理未实现");
-            }
-            return Task.FromResult(false);
+            _callService.StartOrAttach(_webRTC, _callId, TargetName, TargetAvatar, CallType.Video, _startAt, _isCaller);
         }
 
         private void DispatcherTimer_Tick(object? sender, EventArgs e)
@@ -163,36 +100,13 @@ namespace HY.MAUI.PageModels.Chat
             StartTime = DateTime.UtcNow - _startAt;
         }
 
-        #endregion
 
 
+        #region RTC
 
-        #region 视频
-
-        bool _hasConnected;
         private void OnConnectionStateChanged_WebRTC(RTCPeerConnectionState state)
         {
-            if (state == RTCPeerConnectionState.connected)
-            {
-                if (_isCaller && !_hasConnected)
-                {
-                    _hasConnected = true;
-                    _ = _callApi.CallConnected(_callId);
-                }
-                StatusColor = Colors.LightGreen;
-            }
-            else if (state == RTCPeerConnectionState.connecting)
-            {
-                StatusColor = Colors.Orange;
-            }
-            else if (state == RTCPeerConnectionState.disconnected)
-            {
-                StatusColor = Colors.Red;
-            }
-            else if (state == RTCPeerConnectionState.closed)
-            {
-                StatusColor = Colors.Gray;
-            }
+            UpdateStatusColor(state);
         }
 
         private void OnLocalVideoFrameReceived_WebRTC(uint durationMilliseconds, int width, int height, byte[] sample, VideoPixelFormatsEnum pixelFormat)
@@ -348,16 +262,22 @@ namespace HY.MAUI.PageModels.Chat
             }
         }
 
+        private bool _isAttached;
 
         [RelayCommand]
         async Task Appearing()
         {
+            if (_isAttached) return;
+
+            _isAttached = true;
+
             _bigCanvas.PaintSurface += Local_PaintSurface;
             _smallCanvas.PaintSurface += Remote_PaintSurface;
 
             _bigCanvas.InvalidateSurface();
             _smallCanvas.InvalidateSurface();
 
+            StartTime = DateTime.UtcNow - _startAt;
 
             _timer = Application.Current!.Dispatcher.CreateTimer();
 
@@ -366,51 +286,62 @@ namespace HY.MAUI.PageModels.Chat
             _timer.Tick += DispatcherTimer_Tick;
             _timer.Start();
 
-            _chatHub.OnCallAbnormal_ChatHub += OnCallAbnormal_ChatHub;
-            _chatHub.OnCallHangUp_ChatHub += OnCallHangUp_ChatHub;
-            _chatHub.OnCallExpiry_ChatHub += OnCallExpiry_ChatHub;
-            _chatHub.OnReceiveMessage_ChatHub += OnReceiveMessage_ChatHub;
-
             _webRTC.OnConnectionStateChanged += OnConnectionStateChanged_WebRTC;
             _webRTC.OnLocalVideoFrameReceived += OnLocalVideoFrameReceived_WebRTC;
             _webRTC.OnRemoteVideoFrameReceived += OnRemoteVideoFrameReceived_WebRTC;
 
-            if (_isCaller)
-            {
-                await _webRTC.SendOffer();
-            }
-        }
+            UpdateStatusColor(_callService.ConnectionState);
 
+            await _callService.EnsureOfferSentAsync();
+        }
 
         [RelayCommand]
         void Disappearing()
         {
+            if (!_isAttached) return;
+
+            _isAttached = false;
+
             _bigCanvas.PaintSurface -= Local_PaintSurface;
             _smallCanvas.PaintSurface -= Remote_PaintSurface;
 
-
-            _timer.Stop();
-            _timer.Tick -= DispatcherTimer_Tick;
-
-            _chatHub.OnCallAbnormal_ChatHub -= OnCallAbnormal_ChatHub;
-            _chatHub.OnCallHangUp_ChatHub -= OnCallHangUp_ChatHub;
-            _chatHub.OnCallExpiry_ChatHub -= OnCallExpiry_ChatHub;
-            _chatHub.OnReceiveMessage_ChatHub -= OnReceiveMessage_ChatHub;
+            if (_timer != null)
+            {
+                _timer.Stop();
+                _timer.Tick -= DispatcherTimer_Tick;
+            }
 
             _webRTC.OnConnectionStateChanged -= OnConnectionStateChanged_WebRTC;
             _webRTC.OnLocalVideoFrameReceived -= OnLocalVideoFrameReceived_WebRTC;
             _webRTC.OnRemoteVideoFrameReceived -= OnRemoteVideoFrameReceived_WebRTC;
 
-            _webRTC.Dispose();
-            _webRTC = null;
+            // 页面退出后释放 UI 画面缓存
+            lock (_localLock)
+            {
+                _localFrame?.Dispose();
+                _localFrame = null;
+            }
+
+            lock (_remoteLock)
+            {
+                _remoteFrame?.Dispose();
+                _remoteFrame = null;
+            }
         }
 
 
         [RelayCommand]
-        async Task HangUp()
+        async Task Minimize()
         {
-            var resp = await _callApi.HangUpCall(_callId);
-            if (resp.IsSucc) await Shell.Current.GoToAsync("..", false);
+            _callService.Minimize();
+
+            await Shell.Current.GoToAsync("..", false);
+        }
+
+        [RelayCommand]
+        Task HangUp()
+        {
+            return _callService.HangUpAsync();
         }
 
         bool isLocalInBig = true;
@@ -434,6 +365,22 @@ namespace HY.MAUI.PageModels.Chat
             }
 
             isLocalInBig = !isLocalInBig;
+        }
+
+
+
+
+
+        private void UpdateStatusColor(RTCPeerConnectionState state)
+        {
+            StatusColor = state switch
+            {
+                RTCPeerConnectionState.connected => Colors.LightGreen,
+                RTCPeerConnectionState.connecting => Colors.Orange,
+                RTCPeerConnectionState.disconnected => Colors.Red,
+                RTCPeerConnectionState.failed => Colors.Red,
+                _ => Colors.Gray
+            };
         }
 
     }
