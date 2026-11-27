@@ -2,6 +2,7 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using SIPSorcery.Net;
 using System;
 using System.Data;
 using System.Linq;
@@ -54,6 +55,8 @@ public sealed class VoiceCallOverlay : BaseOverlay
     public override bool Deinitialize()
     {
         ElementTapped -= OnElementTapped;
+        _callService.StateChanged -= OnCallStateChanged;
+        _timer.Tick -= OnTimerTick;
 
         return base.Deinitialize();
     }
@@ -142,7 +145,14 @@ public sealed class VoiceCallOverlay : BaseOverlay
             canvas.FillRoundedRectangle(Bounds, 10f);
 
             // 通话状态圆点
-            canvas.FillColor = Color.FromArgb("#35D39A");
+            canvas.FillColor = _callService.ConnectionState switch
+            {
+                RTCPeerConnectionState.connected => Colors.LightGreen,
+                RTCPeerConnectionState.connecting => Colors.Orange,
+                RTCPeerConnectionState.disconnected => Colors.Red,
+                RTCPeerConnectionState.failed => Colors.Red,
+                _ => Colors.Gray
+            };
             canvas.FillEllipse(X + 17f, Y + 20f, 12f, 12f);
 
             // 第一行

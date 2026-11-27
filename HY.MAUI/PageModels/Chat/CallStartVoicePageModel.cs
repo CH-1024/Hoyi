@@ -52,10 +52,7 @@ namespace HY.MAUI.PageModels.Chat
         public Brush StatusColor
         {
             get { return statusColor; }
-            set
-            {
-                if (SetProperty(ref statusColor, value)) UI.Run(MinimizeCommand.NotifyCanExecuteChanged);
-            }
+            set { SetProperty(ref statusColor, value); }
         }
 
         bool _isCaller;
@@ -147,9 +144,7 @@ namespace HY.MAUI.PageModels.Chat
             _webRTC.OnConnectionStateChanged -= OnConnectionStateChanged_WebRTC;
         }
 
-        private bool CanMinimize() => StatusColor is SolidColorBrush solid && solid.Color == Colors.LightGreen;
-
-        [RelayCommand(CanExecute = nameof(CanMinimize))]
+        [RelayCommand]
         async Task Minimize()
         {
             _callService.Minimize();

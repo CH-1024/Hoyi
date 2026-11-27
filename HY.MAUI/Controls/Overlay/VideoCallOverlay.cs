@@ -1,238 +1,331 @@
-﻿using HY.MAUI.Services;
+﻿using HY.MAUI.Communication.RTC;
+using HY.MAUI.Services;
+using Microsoft.Maui.Graphics.Platform;
+using SIPSorceryMedia.Abstractions;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
-
-#if WINDOWS
-using Microsoft.UI.Xaml.Input;
-#endif
+using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace HY.MAUI.Controls
 {
-    public sealed class VideoCallOverlay : WindowOverlay
+    public sealed class VideoCallOverlay : BaseOverlay
     {
         private readonly CallService _callService;
         private readonly VideoCallElement _element;
+        private readonly WebRTCService _webRTC;
 
-        public VideoCallOverlay(Window window, CallService callService) : base(window)
+        private bool IsOverlayVisible => _callService.IsActive && _callService.IsMinimized;
+
+        private int _invalidatePending;
+        private bool _deinitialized;
+
+        private readonly object _frameLock = new();
+
+        private IImage? _remoteFrame;
+        private IImage? _localFrame;
+
+        public VideoCallOverlay(Window window, CallService callService, WebRTCService webRTC) : base(window)
         {
             _callService = callService;
             _element = new VideoCallElement(this, callService);
+            _webRTC = webRTC;
 
-            EnableDrawableTouchHandling = true;
-            DisableUITouchEventPassthrough = false;
+            AddOverlayElement(_element, OverlayInteraction.TapAndDrag);
 
-            AddWindowElement(_element);
+            ElementTapped += OnElementTapped;
+            _callService.StateChanged += OnCallStateChanged;
+            _webRTC.OnLocalVideoFrameReceived += OnLocalVideoFrameReceived;
+            _webRTC.OnRemoteVideoFrameReceived += OnRemoteVideoFrameReceived;
 
-            Tapped += OnTapped;
+            UpdateState();
         }
 
-#if WINDOWS
-
-        private Microsoft.UI.Xaml.FrameworkElement? _dragSurface;
-
-        private bool _isDragging;
-        private bool _hasDragged;
-
-        private Point _pointerStart;
-        private float _elementStartX;
-        private float _elementStartY;
-
-        /// <summary>
-        /// 等待 WindowOverlay 的原生绘制视图初始化完成。
-        /// </summary>
-        public override bool Initialize()
+        private async void OnElementTapped(object? sender, OverlayTappedEventArgs e)
         {
-            if (!base.Initialize())
-                return false;
-
-            AttachPointerHandlers();
-
-            return true;
-        }
-
-        private void AttachPointerHandlers()
-        {
-            if (_dragSurface != null)
-                return;
-
-            _dragSurface = GraphicsView;
-
-            if (_dragSurface == null)
-                return;
-
-            _dragSurface.PointerPressed += OnPointerPressed;
-            _dragSurface.PointerMoved += OnPointerMoved;
-            _dragSurface.PointerReleased += OnPointerReleased;
-            _dragSurface.PointerCaptureLost += OnPointerCaptureLost;
-        }
-
-        /// <summary>
-        /// 鼠标按下。
-        /// </summary>
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            _hasDragged = false;
-
-            if (_dragSurface == null)
-                return;
-
-            var position = e.GetCurrentPoint(_dragSurface).Position;
-
-            var point = new Point(position.X, position.Y);
-
-            // 只允许在悬浮窗区域开始拖动。
-            if (!_element.Contains(point))
-                return;
-
-            _isDragging = true;
-
-            _pointerStart = point;
-
-            _elementStartX = _element.X;
-            _elementStartY = _element.Y;
-
-            // 捕获鼠标，防止拖出悬浮窗后丢失移动事件。
-            _dragSurface.CapturePointer(e.Pointer);
-        }
-
-        /// <summary>
-        /// 鼠标移动。
-        /// </summary>
-        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            if (!_isDragging || _dragSurface == null)
-                return;
-
-            var position = e.GetCurrentPoint(_dragSurface).Position;
-
-            float dx = (float)(position.X - _pointerStart.X);
-            float dy = (float)(position.Y - _pointerStart.Y);
-
-            // 过滤轻微鼠标抖动，避免普通点击被识别成拖动。
-            if (!_hasDragged && dx * dx + dy * dy < 16f)
-                return;
-
-            _hasDragged = true;
-
-            float x = _elementStartX + dx;
-            float y = _elementStartY + dy;
-
-            UpdateElementPosition(x, y);
-        }
-
-        /// <summary>
-        /// 鼠标松开。
-        /// </summary>
-        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (!_isDragging)
-                return;
-
-            _isDragging = false;
-
-            _dragSurface?.ReleasePointerCaptures();
-        }
-
-        /// <summary>
-        /// 鼠标捕获丢失。
-        /// </summary>
-        private void OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
-        {
-            _isDragging = false;
-        }
-
-        /// <summary>
-        /// 更新位置并限制在窗口范围内。
-        /// </summary>
-        private void UpdateElementPosition(float x, float y)
-        {
-            if (_dragSurface != null &&
-                _dragSurface.ActualWidth > 0 &&
-                _dragSurface.ActualHeight > 0)
+            if (ReferenceEquals(e.Element, _element))
             {
-                float maxX = Math.Max(0, (float)_dragSurface.ActualWidth - _element.Width);
-
-                float maxY = Math.Max(0, (float)_dragSurface.ActualHeight - _element.Height);
-
-                x = Math.Clamp(x, 0, maxX);
-                y = Math.Clamp(y, 0, maxY);
+                try
+                {
+                    await _callService.RestoreAsync();
+                }
+                catch (Exception ex)
+                {
+                    //Debug.WriteLine($"恢复通话失败：{ex}");
+                }
             }
-            else
-            {
-                x = Math.Max(0, x);
-                y = Math.Max(0, y);
-            }
-
-            _element.X = x;
-            _element.Y = y;
-
-            // 请求重绘。
-            Invalidate();
-        }
-
-        private void DetachPointerHandlers()
-        {
-            if (_dragSurface == null)
-                return;
-
-            _dragSurface.PointerPressed -= OnPointerPressed;
-            _dragSurface.PointerMoved -= OnPointerMoved;
-            _dragSurface.PointerReleased -= OnPointerReleased;
-            _dragSurface.PointerCaptureLost -= OnPointerCaptureLost;
-
-            _dragSurface = null;
-            _isDragging = false;
-        }
-
-#endif
-
-        private void OnTapped(object? sender, WindowOverlayTappedEventArgs e)
-        {
-            if (!e.WindowOverlayElements.Contains(_element))
-                return;
-            ;
-#if WINDOWS
-            // 拖动结束后不执行点击操作。
-            if (_hasDragged)
-            {
-                _hasDragged = false;
-                return;
-            }
-#endif
-
-            // 正常点击悬浮窗的逻辑。
-            // 例如：
-            // _ = _callService.RestoreAsync();
         }
 
         public override bool Deinitialize()
         {
-            Tapped -= OnTapped;
+            _deinitialized = true;
+            ElementTapped -= OnElementTapped;
+            _callService.StateChanged -= OnCallStateChanged;
+            _webRTC.OnLocalVideoFrameReceived -= OnLocalVideoFrameReceived;
+            _webRTC.OnRemoteVideoFrameReceived -= OnRemoteVideoFrameReceived;
 
-#if WINDOWS
-            DetachPointerHandlers();
-#endif
+            IImage? local;
+            IImage? remote;
+
+            lock (_frameLock)
+            {
+                local = _localFrame;
+                remote = _remoteFrame;
+
+                _localFrame = null;
+                _remoteFrame = null;
+            }
+
+            local?.Dispose();
+            remote?.Dispose();
 
             return base.Deinitialize();
         }
 
-        private sealed class VideoCallElement : IWindowOverlayElement
+        private void OnCallStateChanged(object? sender, EventArgs e)
         {
+            MainThread.BeginInvokeOnMainThread(UpdateState);
+        }
+
+        private void OnLocalVideoFrameReceived(uint duration, int width, int height, byte[] sample, VideoPixelFormatsEnum format)
+        {
+            if (!_callService.IsMinimized)
+                return;
+
+            try
+            {
+                // 本地摄像头目前输出 I420。
+                byte[] bgr = format switch
+                {
+                    VideoPixelFormatsEnum.I420 => PixelConverter.I420toBGR(sample, width, height, out _),
+                    VideoPixelFormatsEnum.Bgr => sample,
+                    _ => throw new NotSupportedException($"不支持的本地视频格式：{format}")
+                };
+
+                UpdateFrame(isLocal: true, bgr, width, height);
+            }
+            catch (Exception ex)
+            {
+                //Debug.WriteLine($"本地视频帧处理失败：{ex}");
+            }
+        }
+
+        private void OnRemoteVideoFrameReceived(byte[] sample, uint width, uint height, VideoPixelFormatsEnum format)
+        {
+            if (!_callService.IsMinimized)
+                return;
+
+            try
+            {
+                // 远端解码器目前输出 BGR。
+                byte[] bgr = format switch
+                {
+                    VideoPixelFormatsEnum.Bgr => sample,
+                    VideoPixelFormatsEnum.I420 => PixelConverter.I420toBGR(sample, (int)width, (int)height, out _),
+                    _ => throw new NotSupportedException($"不支持的远端视频格式：{format}")
+                };
+
+                UpdateFrame(isLocal: false, bgr, (int)width, (int)height);
+            }
+            catch (Exception ex)
+            {
+                //Debug.WriteLine($"远端视频帧处理失败：{ex}");
+            }
+        }
+
+        private void UpdateState()
+        {
+            //bool visible = _callService.IsActive && _callService.IsMinimized;
+
+            //if (visible && !_timerRunning)
+            //{
+            //    _timer.Start();
+            //    _timerRunning = true;
+            //}
+            //else if (!visible && _timerRunning)
+            //{
+            //    _timer.Stop();
+            //    _timerRunning = false;
+            //}
+
+            Invalidate();
+        }
+
+
+        #region MyRegion
+
+        private static IImage? CreateImageFromBgr(byte[] bgr, int width, int height)
+        {
+            if (width <= 0 || height <= 0)
+                return null;
+
+            int requiredLength = checked(width * height * 3);
+
+            if (bgr.Length < requiredLength)
+                return null;
+
+            // 创建 BGRA Bitmap。
+            using var bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Opaque);
+
+            IntPtr pixels = bitmap.GetPixels();
+
+            if (pixels == IntPtr.Zero)
+                return null;
+
+            // BGR24 转 BGRA8888。
+            unsafe
+            {
+                fixed (byte* src = bgr)
+                {
+                    byte* dst = (byte*)pixels;
+
+                    int srcStride = width * 3;
+                    int dstStride = bitmap.RowBytes;
+
+                    for (int y = 0; y < height; y++)
+                    {
+                        byte* srcRow = src + y * srcStride;
+                        byte* dstRow = dst + y * dstStride;
+
+                        for (int x = 0; x < width; x++)
+                        {
+                            dstRow[x * 4] = srcRow[x * 3];
+                            dstRow[x * 4 + 1] = srcRow[x * 3 + 1];
+                            dstRow[x * 4 + 2] = srcRow[x * 3 + 2];
+                            dstRow[x * 4 + 3] = 255;
+                        }
+                    }
+                }
+            }
+
+            // 编码为 JPEG。
+            using var encoded = bitmap.Encode(SKEncodedImageFormat.Jpeg, 85);
+
+            if (encoded == null)
+                return null;
+
+            // 转成 MAUI Graphics IImage。
+            byte[] imageBytes = encoded.ToArray();
+
+            using var stream = new MemoryStream(imageBytes, writable: false);
+
+            return PlatformImage.FromStream(stream, ImageFormat.Jpeg);
+        }
+
+        private void UpdateFrame(bool isLocal, byte[] bgr, int width, int height)
+        {
+            // 创建新图片。
+            IImage? newFrame = CreateImageFromBgr(bgr, width, height);
+
+            if (newFrame == null)
+                return;
+
+            IImage? oldFrame;
+
+            lock (_frameLock)
+            {
+                // Overlay 已释放，不能再接收新图片。
+                if (_deinitialized)
+                {
+                    newFrame.Dispose();
+                    return;
+                }
+
+                if (isLocal)
+                {
+                    oldFrame = _localFrame;
+                    _localFrame = newFrame;
+                }
+                else
+                {
+                    oldFrame = _remoteFrame;
+                    _remoteFrame = newFrame;
+                }
+            }
+
+            // 替换成功后释放旧图片。
+            oldFrame?.Dispose();
+
+            // 通知 Overlay 重绘。
+            RequestInvalidate();
+        }
+
+        private void RequestInvalidate()
+        {
+            if (_deinitialized)
+                return;
+
+            // 合并重复重绘请求。
+            if (Interlocked.Exchange(ref _invalidatePending, 1) != 0)
+                return;
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                Interlocked.Exchange(ref _invalidatePending, 0);
+
+                if (!_deinitialized && IsOverlayVisible)
+                {
+                    Invalidate();
+                }
+            });
+        }
+
+        private void DrawVideoFrame(ICanvas canvas, RectF bounds, bool isLocal)
+        {
+            canvas.SaveState();
+
+            // 限制绘制区域，防止视频超出小窗。
+            canvas.ClipRectangle(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+
+            canvas.FillColor = Colors.Transparent;
+            canvas.FillRectangle(bounds);
+
+            lock (_frameLock)
+            {
+                IImage? image = isLocal ? _localFrame : _remoteFrame;
+
+                if (image != null && image.Width > 0 && image.Height > 0)
+                {
+                    // AspectFill，铺满目标区域。
+                    float scale = Math.Max(bounds.Width / image.Width, bounds.Height / image.Height);
+
+                    float drawWidth = image.Width * scale;
+                    float drawHeight = image.Height * scale;
+
+                    float x = bounds.X + (bounds.Width - drawWidth) / 2;
+
+                    float y = bounds.Y + (bounds.Height - drawHeight) / 2;
+
+                    canvas.DrawImage(image, x, y, drawWidth, drawHeight);
+                }
+            }
+
+            canvas.RestoreState();
+        }
+
+        #endregion
+
+
+        private sealed class VideoCallElement : IOverlayElement, IMovableOverlayElement
+        {
+            private const float DefaultWidth = 120f;
+            private const float DefaultHeight = 200f;
+
+            // 本地视频固定尺寸
+            private const float LocalWidth = 30f;
+            private const float LocalHeight = 50f;
+
             private readonly VideoCallOverlay _owner;
             private readonly CallService _callService;
 
-            private RectF _bounds;
-
-            private const float DefaultWidth = 200f;
-            private const float DefaultHeight = 50f;
+            public RectF Bounds { get; private set; }
 
             public float X { get; set; }
-
-            public float Y { get; set; } = 50f;
+            public float Y { get; set; } = DeviceInfo.Platform == DevicePlatform.WinUI ? 30f : 35f;
 
             public float Width => DefaultWidth;
-
             public float Height => DefaultHeight;
 
             public VideoCallElement(VideoCallOverlay owner, CallService callService)
@@ -241,23 +334,46 @@ namespace HY.MAUI.Controls
                 _callService = callService;
             }
 
+            private bool IsVisible => _callService.IsActive && _callService.IsMinimized;
+
             public bool Contains(Point point)
             {
-                return _bounds.Contains(point);
+                if (!IsVisible)
+                    return false;
+
+                return Bounds.Contains(point);
+            }
+
+            public void MoveTo(float x, float y)
+            {
+                X = x;
+                Y = y;
             }
 
             public void Draw(ICanvas canvas, RectF dirtyRect)
             {
-                _bounds = new RectF(X, Y, Width, Height);
+                if (!IsVisible)
+                {
+                    Bounds = RectF.Zero;
+                    return;
+                }
+
+                // 整个浮动窗
+                Bounds = new RectF(X, Y, Width, Height);
 
                 canvas.SaveState();
 
-                canvas.FillColor = Color.FromArgb("#252936");
+                // 第一层：远端视频铺满
+                _owner.DrawVideoFrame(canvas, Bounds, isLocal: false);
 
-                canvas.FillRoundedRectangle(_bounds, 5);
+                // 第二层：本地视频覆盖右上角
+                var localBounds = new RectF(Bounds.Right - LocalWidth, Bounds.Top, LocalWidth, LocalHeight);
+
+                _owner.DrawVideoFrame(canvas, localBounds, isLocal: true);
 
                 canvas.RestoreState();
             }
+
         }
     }
 }

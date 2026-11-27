@@ -100,6 +100,68 @@ namespace HY.MAUI.PageModels.Chat
             StartTime = DateTime.UtcNow - _startAt;
         }
 
+        private void Local_PaintSurface(object? sender, SKPaintSurfaceEventArgs args)
+        {
+            var surface = args.Surface;
+            var canvas = surface.Canvas;
+
+            // 清除画布
+            canvas.Clear(SKColors.Transparent);
+
+            // 检查是否有有效帧
+            if (_localFrame == null) return;
+
+            // 锁定帧数据避免更新冲突
+            lock (_localLock)
+            {
+                if (_localFrame == null) return;
+
+                // 计算缩放比例以保持宽高比
+                float scale = Math.Min((float)args.Info.Width / _localFrame.Width, (float)args.Info.Height / _localFrame.Height);
+
+                // 计算目标矩形（居中显示）
+                float scaledWidth = _localFrame.Width * scale;
+                float scaledHeight = _localFrame.Height * scale;
+                float x = (args.Info.Width - scaledWidth) / 2;
+                float y = (args.Info.Height - scaledHeight) / 2;
+                var destRect = new SKRect(x, y, x + scaledWidth, y + scaledHeight);
+
+                // 绘制帧
+                canvas.DrawBitmap(_localFrame, destRect, SKSamplingOptions.Default);
+            }
+        }
+
+        private void Remote_PaintSurface(object? sender, SKPaintSurfaceEventArgs args)
+        {
+            var surface = args.Surface;
+            var canvas = surface.Canvas;
+
+            // 清除画布
+            canvas.Clear(SKColors.Transparent);
+
+            // 检查是否有有效帧
+            if (_remoteFrame == null) return;
+
+            // 锁定帧数据避免更新冲突
+            lock (_remoteLock)
+            {
+                if (_remoteFrame == null) return;
+
+                // 计算缩放比例以保持宽高比
+                float scale = Math.Min((float)args.Info.Width / _remoteFrame.Width, (float)args.Info.Height / _remoteFrame.Height);
+
+                // 计算目标矩形（居中显示）
+                float scaledWidth = _remoteFrame.Width * scale;
+                float scaledHeight = _remoteFrame.Height * scale;
+                float x = (args.Info.Width - scaledWidth) / 2;
+                float y = (args.Info.Height - scaledHeight) / 2;
+                var destRect = new SKRect(x, y, x + scaledWidth, y + scaledHeight);
+
+                // 绘制帧
+                canvas.DrawBitmap(_remoteFrame, destRect, SKSamplingOptions.Default);
+            }
+        }
+
 
 
         #region RTC
@@ -201,67 +263,6 @@ namespace HY.MAUI.PageModels.Chat
 
 
 
-        private void Local_PaintSurface(object? sender, SKPaintSurfaceEventArgs args)
-        {
-            var surface = args.Surface;
-            var canvas = surface.Canvas;
-
-            // 清除画布
-            canvas.Clear(SKColors.Transparent);
-
-            // 检查是否有有效帧
-            if (_localFrame == null) return;
-
-            // 锁定帧数据避免更新冲突
-            lock (_localLock)
-            {
-                if (_localFrame == null) return;
-
-                // 计算缩放比例以保持宽高比
-                float scale = Math.Min((float)args.Info.Width / _localFrame.Width, (float)args.Info.Height / _localFrame.Height);
-
-                // 计算目标矩形（居中显示）
-                float scaledWidth = _localFrame.Width * scale;
-                float scaledHeight = _localFrame.Height * scale;
-                float x = (args.Info.Width - scaledWidth) / 2;
-                float y = (args.Info.Height - scaledHeight) / 2;
-                var destRect = new SKRect(x, y, x + scaledWidth, y + scaledHeight);
-
-                // 绘制帧
-                canvas.DrawBitmap(_localFrame, destRect, SKSamplingOptions.Default);
-            }
-        }
-        private void Remote_PaintSurface(object? sender, SKPaintSurfaceEventArgs args)
-        {
-            var surface = args.Surface;
-            var canvas = surface.Canvas;
-
-            // 清除画布
-            canvas.Clear(SKColors.Transparent);
-
-            // 检查是否有有效帧
-            if (_remoteFrame == null) return;
-
-            // 锁定帧数据避免更新冲突
-            lock (_remoteLock)
-            {
-                if (_remoteFrame == null) return;
-
-                // 计算缩放比例以保持宽高比
-                float scale = Math.Min((float)args.Info.Width / _remoteFrame.Width, (float)args.Info.Height / _remoteFrame.Height);
-
-                // 计算目标矩形（居中显示）
-                float scaledWidth = _remoteFrame.Width * scale;
-                float scaledHeight = _remoteFrame.Height * scale;
-                float x = (args.Info.Width - scaledWidth) / 2;
-                float y = (args.Info.Height - scaledHeight) / 2;
-                var destRect = new SKRect(x, y, x + scaledWidth, y + scaledHeight);
-
-                // 绘制帧
-                canvas.DrawBitmap(_remoteFrame, destRect, SKSamplingOptions.Default);
-            }
-        }
-
         private bool _isAttached;
 
         [RelayCommand]
@@ -292,6 +293,7 @@ namespace HY.MAUI.PageModels.Chat
 
             UpdateStatusColor(_callService.ConnectionState);
 
+            // 只发送一次 Offer
             await _callService.EnsureOfferSentAsync();
         }
 

@@ -217,7 +217,7 @@ public sealed class CallService
             }
             else
             {
-                _videoCallOverlay = new VideoCallOverlay(window, this);
+                _videoCallOverlay = new VideoCallOverlay(window, this, webRTC);
                 window.AddOverlay(_videoCallOverlay);
             }
 
